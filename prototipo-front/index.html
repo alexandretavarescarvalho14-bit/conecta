@@ -744,6 +744,18 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .grupoTag>b{font-size:var(--sm);display:block;margin-bottom:4px}
 .grupoTag>.hint{font-size:var(--xs);color:var(--i52);margin-bottom:9px;line-height:1.6}
 
+/* ======= aviso de perfil no painel da vaga =======
+   Mesma informação que o portão dá à empresa, dita como ação de quem lê:
+   "confirme seu perfil", não "revisão humana". */
+.acaoperfil{display:flex;gap:11px;align-items:flex-start;text-align:left;
+  background:var(--al-bg);border:1px solid var(--al);border-radius:var(--r2);
+  padding:12px 13px;margin-top:var(--s2)}
+.acaoperfil .ic{width:26px;height:26px;border-radius:8px;background:var(--al);color:var(--sobre);
+  display:grid;place-items:center;flex:none}
+.acaoperfil b{font-family:var(--d);font-size:var(--sm);display:block}
+.acaoperfil p{font-size:var(--xs);color:var(--i72);line-height:1.55;margin:3px 0 9px}
+.acaoperfil .btn{width:100%}
+
 /* ======= faixa de confirmação de perfil ======= */
 .confirma{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;
   background:var(--al-bg);border:1px solid var(--al);border-radius:var(--r);padding:var(--s3);
@@ -756,6 +768,74 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 /* alinha a barra de confiança sob o rótulo da dimensão, na coluna da nota */
 .cfw{margin:-4px 0 10px;padding-left:98px}
 .envbt{align-self:flex-end}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOVIMENTO
+   Regra que vale para tudo aqui: a animação serve para explicar uma
+   relação, não para enfeitar. O radar cresce do centro porque distância
+   ao centro é o que ele mede; as evidências entram em cascata porque são
+   uma lista ordenada por peso; o anel preenche porque é uma fração.
+
+   Nenhuma delas parte de um estado escondido no CSS base — todas usam
+   `animation ... both` com o `from` no keyframe. Isso importa porque o
+   bloco de prefers-reduced-motion no fim do arquivo mata `animation`, e
+   um elemento com `opacity:0` de base ficaria invisível para sempre.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes sobeSuave{from{opacity:0;transform:translateY(14px)}}
+@keyframes aparece{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.82)}}
+
+/* ---- entrada do hero: uma leitura conduzida, não tudo de uma vez ---- */
+.hero>.selo     {animation:sobeSuave .5s var(--e) both .04s}
+.hero>h1        {animation:sobeSuave .58s var(--e) both .12s}
+.hero>p         {animation:sobeSuave .58s var(--e) both .2s}
+.hero>.buscador {animation:sobeSuave .58s var(--e) both .28s}
+.hero>.sugere   {animation:sobeSuave .58s var(--e) both .36s}
+
+/* a malha de fundo respira devagar. 26s é longo de propósito: movimento
+   perceptível numa tela de trabalho vira distração em dez minutos */
+@keyframes deriva{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%    {transform:translate3d(-16px,9px,0) scale(1.04)}
+}
+.malha{animation:deriva 26s ease-in-out infinite;will-change:transform}
+
+/* ---- radar: cresce do centro, e os pontos assentam em sequência ---- */
+@keyframes radarAbre{from{opacity:0;transform:scale(.55)}}
+.radar .polC,.radar .polE{transform-box:fill-box;transform-origin:center}
+.radar .polE{animation:radarAbre .62s var(--e) both .1s}
+.radar .polC{animation:radarAbre .7s var(--e) both .2s}
+.radar .dotp{transform-box:fill-box;transform-origin:center;
+  animation:pop .36s var(--e2) both;animation-delay:calc(.52s + var(--i,0) * .028s)}
+.radar .malhaR,.radar .spoke{animation:aparece .5s var(--e) both}
+.radar .lbl{animation:aparece .5s var(--e) both .45s}
+
+/* ---- evidências em cascata: a ordem é a ordem de peso ---- */
+.ev{animation:evin .42s var(--e) both;animation-delay:calc(var(--i,0) * .05s)}
+
+/* ---- selo do portão: aparece como decisão, com peso ---- */
+.gt{animation:pop .34s var(--e2) both}
+
+/* ---- o medidor sobe junto com o card ---- */
+.med{transition:transform .25s var(--e)}
+@media(hover:hover){.vaga:hover .med{transform:translateY(-2px) scale(1.05)}}
+
+/* ---- barra de abas: indicador que cresce sob a aba ativa ---- */
+.tabbar button{position:relative}
+.tabbar button::before{content:"";position:absolute;top:2px;left:50%;width:0;height:2.5px;
+  border-radius:2px;background:var(--ac1);transform:translateX(-50%);
+  transition:width .3s var(--e2)}
+.tabbar button[aria-current=page]::before{width:22px}
+
+/* ---- troca de conteúdo da lista sem corte seco ---- */
+.vagas{animation:aparece .32s var(--e) both}
+
+/* nada acima pode deixar rastro quando o sistema pede menos movimento */
+@media(prefers-reduced-motion:reduce){
+  .malha{animation:none}
+  .radar .dotp,.radar .polC,.radar .polE,.radar .lbl{opacity:1;transform:none}
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    RESPONSIVO
@@ -1011,7 +1091,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const BUILD = Object.freeze({partes:28, sha:"1190504db278", em:"2026-08-30"});
+const BUILD = Object.freeze({partes:28, sha:"bea64d433c85", em:"2026-08-30"});
 /* ══ parte: partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
@@ -2334,10 +2414,16 @@ function medidor(p, conf, grande){
 function contar(el, alvo){
   if(reduz()){ el.textContent=alvo; return; }
   const t0=performance.now(), dur=750;
+  // Rede de segurança: requestAnimationFrame não roda em aba de segundo
+  // plano. Sem isto, quem abre o link numa aba que não está à frente vê
+  // "0 vagas" congelado até trocar de aba. O número correto vale mais que
+  // a animação.
+  const rede = setTimeout(() => { el.textContent = alvo; }, 1400);
   const passo = t => {
-    const k=Math.min(1,(t-t0)/dur), eased=1-Math.pow(1-k,3);
-    el.textContent=Math.round(alvo*eased);
-    if(k<1) requestAnimationFrame(passo);
+    const k = Math.min(1, (t - t0) / dur), eased = 1 - Math.pow(1 - k, 3);
+    el.textContent = Math.round(alvo * eased);
+    if(k < 1) requestAnimationFrame(passo);
+    else clearTimeout(rede);
   };
   requestAnimationFrame(passo);
 }
@@ -2365,8 +2451,11 @@ const EV_IC = {strength:'✓', gap:'!', constraint:'×'};
 function evidencias(list, limite){
   const l = limite ? list.slice(0,limite) : list;
   if(!l.length) return '';
-  return '<div class="evs">'+l.map(e=>
-    '<div class="ev '+e.kind+'"><span class="ei" aria-hidden="true">'+EV_IC[e.kind]+'</span>'+
+  // --i alimenta o atraso em cascata: a lista já vem ordenada por peso,
+  // então a cascata acompanha a ordem de importância em vez de contrariá-la
+  return '<div class="evs">'+l.map((e,i)=>
+    '<div class="ev '+e.kind+'" style="--i:'+Math.min(i,12)+'">'+
+    '<span class="ei" aria-hidden="true">'+EV_IC[e.kind]+'</span>'+
     '<div><p>'+esc(e.humano)+'</p><code>'+esc(e.reasonCode)+' · '+esc(e.featureId)+'</code></div></div>'
   ).join('')+'</div>';
 }
@@ -2409,7 +2498,7 @@ function radar(cand, emp){
     const [x,y]=pt(i,vc[i]);
     const d=Math.abs(vc[i]-ve[i]);
     return '<circle class="dotp'+(d>e.tolerancia?' fora':'')+'" cx="'+x.toFixed(1)+'" cy="'+
-      y.toFixed(1)+'" r="2" data-eixo="'+e.id+'"/>';
+      y.toFixed(1)+'" r="2" style="--i:'+i+'" data-eixo="'+e.id+'"/>';
   }).join('');
 
   return '<div class="radarw"><svg class="radar" viewBox="0 0 240 236" role="img" '+
@@ -2451,8 +2540,7 @@ function filtrar(){
   const q=S.q.trim().toLowerCase(), l=S.local;
   return VAGAS.filter(v=>{
     const okF = S.filtro==='todas' || v.modelo===S.filtro
-      || (S.filtro==='match' && S.logado && M(v).total>=70)
-      || (S.filtro==='pub' && S.logado && M(v).desfecho==='allow');
+      || (S.filtro==='match' && S.logado && M(v).total>=70);
     const okL = !l || v.local.toLowerCase().includes(l.toLowerCase());
     const okQ = !q || (v.cargo+' '+EMPRESAS[v.emp].n+' '+v.tags.join(' ')).toLowerCase().includes(q);
     return okF&&okL&&okQ;
@@ -2460,9 +2548,9 @@ function filtrar(){
 }
 
 function vHome(){
-  const chips = [['todas','Todas'],['match','Melhor match'],['pub','Só publicável'],
+  const chips = [['todas','Todas'],['match','Melhor match'],
                  ['remoto','Remoto'],['hibrido','Híbrido'],['presencial','Presencial']]
-    .filter(([k])=> S.logado || (k!=='match' && k!=='pub'));
+    .filter(([k])=> S.logado || k!=='match');
 
   $('#v-home').innerHTML =
   '<section class="hero">'+malha()+
@@ -2490,10 +2578,10 @@ function vHome(){
   '<div id="listaVagas"></div>'+
   '<div id="barraCmp"></div>'+
   '<p class="nota">Protótipo de avaliação da Conectaria. Dados fictícios e coerentes entre si. '+
-  'O match roda o mesmo motor determinístico de <b>packages/matching-core</b>: política '+
-  '<b>'+POLITICA.policy_version+'</b>, 14 eixos com tolerância, portão de confiança e trace '+
-  'auditável em cada recomendação. Pagamento, login real e integração com ATS externo não '+
-  'estão implementados.</p>';
+  'O match roda o mesmo motor determinístico de <b>packages/matching-core</b>, com a política '+
+  '<b>'+POLITICA.policy_version+'</b>: 14 eixos com tolerância própria, confiança ponderada '+
+  'pela origem do dado e trace auditável em cada recomendação. Pagamento, login real e '+
+  'integração com ATS externo não estão implementados.</p>';
 
   const buscarDeb = debounce(()=>renderVagas(), 180);
   $('#q').oninput = e => { S.q=e.target.value; buscarDeb(); };
@@ -2512,14 +2600,19 @@ async function renderVagas(primeira){
     await espera(560);
   }
   const r=filtrar();
-  ct.textContent = r.length + (r.length===1?' vaga':' vagas') +
+  // o número conta em vez de trocar: com 31 vagas e filtros combinados, ver
+  // a contagem se mover é o retorno de que o filtro pegou
+  ct.innerHTML = '<b class="tnum" data-n="'+r.length+'">0</b>' +
+    (r.length===1?' vaga':' vagas') +
     (S.filtro!=='todas'||S.q||S.local ? ' com esse filtro'
       : S.logado ? ', ordenadas pelo seu match' : ', mais recentes primeiro');
+  contar($('b',ct), r.length);
 
   if(!r.length){
     el.innerHTML='<div class="estado"><div class="ic">'+I.vazio+'</div>'+
       '<h3>Nenhuma vaga com esse recorte.</h3>'+
-      '<p>São 4 vagas abertas no total. Você pode limpar os filtros, ou cadastrar seu perfil '+
+      '<p>São '+VAGAS.length+' vagas abertas no total. Você pode limpar os filtros, ou cadastrar '+
+      'seu perfil '+
       'para receber por WhatsApp assim que entrar uma que combine com seu objetivo.</p>'+
       '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
       '<button class="btn g" id="limpa">Limpar filtros</button>'+
@@ -2541,8 +2634,7 @@ async function renderVagas(primeira){
         ' em '+esc(e.n)+'"></button>'+
       '<div class="conteudo">'+
         '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b>'+
-          '<span class="tag">'+esc(e.s.split('·')[0].trim())+'</span>'+
-          (m ? selo(m.desfecho) : '')+'</div>'+
+          '<span class="tag">'+esc(e.s.split('·')[0].trim())+'</span></div>'+
         '<h3>'+esc(v.cargo)+'</h3>'+
         '<div class="meta"><span>'+I.pin+esc(v.local)+'</span><span>'+esc(v.faixa)+'</span>'+
           '<span>'+(v.dias===1?'publicada ontem':'há '+v.dias+' dias')+'</span>'+
@@ -2666,7 +2758,16 @@ function painelMatch(v){
       dim('Cultural', m.cultural, m.pesos.cultural)+
       dim('Contexto', m.contexto, m.pesos.contexto)+
     '</div>'+
-    '<div style="text-align:left">'+portao(m)+'</div>'+
+    // O portão é decisão de governança: vale para a empresa e para a
+    // curadoria, não para quem está procurando vaga. Do lado do candidato
+    // a mesma informação vira o que ele pode fazer a respeito.
+    (S.cand.fonte!=='user'
+      ? '<div class="acaoperfil"><span class="ic">'+I.al+'</span>'+
+        '<div><b>Confirme seu perfil</b>'+
+        '<p>Ele veio da conversa e ainda não passou pela sua revisão. Confirmado, ele chega '+
+        'completo para a empresa.</p>'+
+        '<button class="btn sm" data-irtags="1">Revisar meu perfil</button></div></div>'
+      : '')+
     '<details style="margin-top:var(--s2);text-align:left" open>'+
       '<summary style="font-size:var(--xs);color:var(--ac1);cursor:pointer;font-weight:600">'+
       'Evidências que sustentam esta nota</summary>'+
@@ -2774,7 +2875,6 @@ function vComparar(){
       '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b></div>'+
       '<h3 style="font-size:var(--lg);font-family:var(--d)">'+esc(v.cargo)+'</h3>'+
       '<div style="display:grid;place-items:center">'+medidor(m.total,m.confidence,true)+'</div>'+
-      '<div>'+selo(m.desfecho)+'</div>'+
       '<div class="eixos">'+
         [['Técnico',m.tecnico,m.pesos.tecnico],['Cultural',m.cultural,m.pesos.cultural],
          ['Contexto',m.contexto,m.pesos.contexto]].map(([r,o,p])=>
@@ -2948,7 +3048,7 @@ function vMinhas(){
     '<div class="cds">'+S.candidaturas.map(c=>{
       const v=VAGAS.find(x=>x.id===c.v), e=EMPRESAS[v.emp], m=M(v);
       return '<div class="cd rv"><div class="cdtop"><div style="flex:1;min-width:210px">'+
-        '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b>'+selo(m.desfecho)+'</div>'+
+        '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b></div>'+
         '<h3 style="font-size:var(--lg);font-family:var(--d)">'+esc(v.cargo)+'</h3>'+
         '<div class="meta"><span>'+esc(v.local)+'</span><span>'+esc(v.faixa)+'</span></div></div>'+
         medidor(m.total,m.confidence)+'</div>'+
@@ -3055,11 +3155,11 @@ function vTags(){
     '<div class="linha"><span>Eixos respondidos</span><b>14 de 14</b></div>'+
     '<div class="linha"><span>Confiança do perfil</span><b id="lnConf">'+pc(conf)+'</b></div>'+
     '<div class="linha"><span>Vagas acima de 60%</span><b id="lnAlc">'+alcance+' de '+VAGAS.length+'</b></div>'+
-    '<div class="linha"><span>Recomendações publicáveis</span><b id="lnPub">'+publicaveis+' de '+VAGAS.length+'</b></div>'+
+    '<div class="linha"><span>Vagas onde seu perfil vai completo</span><b id="lnPub">'+publicaveis+' de '+VAGAS.length+'</b></div>'+
     '<div style="margin-top:var(--s2)">'+provenienciaSelo(S.cand.fonte)+'</div>'+
     '<p class="porque">Os números acima recalculam de verdade: rodam o mesmo motor que a vaga '+
     'usa. Tire uma competência obrigatória e veja o alcance cair; troque a origem do dado e '+
-    'veja as publicáveis sumirem.</p></div></aside></div>';
+    'veja quantas vagas recebem seu perfil completo mudar.</p></div></aside></div>';
 
   const rotula=()=>EIXOS.filter(e=>e.tolerancia<=22).forEach(e=>{
     const v=S.cand.eixos[e.id].value;
@@ -3363,11 +3463,19 @@ function vEdash(){
   'do usuário reclamar. Enquanto só o baseline determinístico roda, ele é zero por construção.</p>';
   requestAnimationFrame(()=>$$('.col[data-h]').forEach((el,i)=>
     setTimeout(()=>{el.style.height=el.dataset.h+'%'},120+i*70)));
-  animaEixos();
+  animaEixos(); animaKpis();
 }
+/* Número inteiro puro conta na entrada; o resto ("21 dias", "80%") entra
+   direto, porque animar só metade de um rótulo fica pior que não animar. */
 function kpi(l,n,d,sp){
-  return '<div class="kpi rv"><div class="l">'+l+'</div><div class="n">'+n+'</div>'+
+  const puro = /^\d+$/.test(String(n));
+  const valor = puro ? '<span class="tnum" data-kpi="'+n+'">0</span>' : n;
+  return '<div class="kpi rv"><div class="l">'+l+'</div><div class="n">'+valor+'</div>'+
     '<div class="d">'+d+'</div>'+(sp?spark(sp):'')+'</div>';
+}
+function animaKpis(){
+  requestAnimationFrame(()=>$$('[data-kpi]').forEach((el,i)=>
+    setTimeout(()=>contar(el, +el.dataset.kpi), 120+i*90)));
 }
 
 /* ══ parte: partes/js/70-acesso.js ══ */
@@ -3668,6 +3776,7 @@ const ACOES = {
             S.cand.fonte==='user'?1:.8); repintarSkills(); } },
   ver:  el => ir('vaga', Number(el.dataset.ver)),
   trace: el => abrirTrace(Number(el.dataset.trace)),
+  irtags: () => ir('tags'),
 };
 document.addEventListener('click', e => {
   const it=e.target.closest('.cmdk .it');

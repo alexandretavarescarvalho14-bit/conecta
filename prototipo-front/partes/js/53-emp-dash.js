@@ -44,9 +44,17 @@ function vEdash(){
   'do usuário reclamar. Enquanto só o baseline determinístico roda, ele é zero por construção.</p>';
   requestAnimationFrame(()=>$$('.col[data-h]').forEach((el,i)=>
     setTimeout(()=>{el.style.height=el.dataset.h+'%'},120+i*70)));
-  animaEixos();
+  animaEixos(); animaKpis();
 }
+/* Número inteiro puro conta na entrada; o resto ("21 dias", "80%") entra
+   direto, porque animar só metade de um rótulo fica pior que não animar. */
 function kpi(l,n,d,sp){
-  return '<div class="kpi rv"><div class="l">'+l+'</div><div class="n">'+n+'</div>'+
+  const puro = /^\d+$/.test(String(n));
+  const valor = puro ? '<span class="tnum" data-kpi="'+n+'">0</span>' : n;
+  return '<div class="kpi rv"><div class="l">'+l+'</div><div class="n">'+valor+'</div>'+
     '<div class="d">'+d+'</div>'+(sp?spark(sp):'')+'</div>';
+}
+function animaKpis(){
+  requestAnimationFrame(()=>$$('[data-kpi]').forEach((el,i)=>
+    setTimeout(()=>contar(el, +el.dataset.kpi), 120+i*90)));
 }

@@ -87,7 +87,16 @@ function painelMatch(v){
       dim('Cultural', m.cultural, m.pesos.cultural)+
       dim('Contexto', m.contexto, m.pesos.contexto)+
     '</div>'+
-    '<div style="text-align:left">'+portao(m)+'</div>'+
+    // O portão é decisão de governança: vale para a empresa e para a
+    // curadoria, não para quem está procurando vaga. Do lado do candidato
+    // a mesma informação vira o que ele pode fazer a respeito.
+    (S.cand.fonte!=='user'
+      ? '<div class="acaoperfil"><span class="ic">'+I.al+'</span>'+
+        '<div><b>Confirme seu perfil</b>'+
+        '<p>Ele veio da conversa e ainda não passou pela sua revisão. Confirmado, ele chega '+
+        'completo para a empresa.</p>'+
+        '<button class="btn sm" data-irtags="1">Revisar meu perfil</button></div></div>'
+      : '')+
     '<details style="margin-top:var(--s2);text-align:left" open>'+
       '<summary style="font-size:var(--xs);color:var(--ac1);cursor:pointer;font-weight:600">'+
       'Evidências que sustentam esta nota</summary>'+
@@ -195,7 +204,6 @@ function vComparar(){
       '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b></div>'+
       '<h3 style="font-size:var(--lg);font-family:var(--d)">'+esc(v.cargo)+'</h3>'+
       '<div style="display:grid;place-items:center">'+medidor(m.total,m.confidence,true)+'</div>'+
-      '<div>'+selo(m.desfecho)+'</div>'+
       '<div class="eixos">'+
         [['Técnico',m.tecnico,m.pesos.tecnico],['Cultural',m.cultural,m.pesos.cultural],
          ['Contexto',m.contexto,m.pesos.contexto]].map(([r,o,p])=>

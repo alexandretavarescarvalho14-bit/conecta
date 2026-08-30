@@ -24,10 +24,16 @@ function medidor(p, conf, grande){
 function contar(el, alvo){
   if(reduz()){ el.textContent=alvo; return; }
   const t0=performance.now(), dur=750;
+  // Rede de segurança: requestAnimationFrame não roda em aba de segundo
+  // plano. Sem isto, quem abre o link numa aba que não está à frente vê
+  // "0 vagas" congelado até trocar de aba. O número correto vale mais que
+  // a animação.
+  const rede = setTimeout(() => { el.textContent = alvo; }, 1400);
   const passo = t => {
-    const k=Math.min(1,(t-t0)/dur), eased=1-Math.pow(1-k,3);
-    el.textContent=Math.round(alvo*eased);
-    if(k<1) requestAnimationFrame(passo);
+    const k = Math.min(1, (t - t0) / dur), eased = 1 - Math.pow(1 - k, 3);
+    el.textContent = Math.round(alvo * eased);
+    if(k < 1) requestAnimationFrame(passo);
+    else clearTimeout(rede);
   };
   requestAnimationFrame(passo);
 }
@@ -55,8 +61,11 @@ const EV_IC = {strength:'✓', gap:'!', constraint:'×'};
 function evidencias(list, limite){
   const l = limite ? list.slice(0,limite) : list;
   if(!l.length) return '';
-  return '<div class="evs">'+l.map(e=>
-    '<div class="ev '+e.kind+'"><span class="ei" aria-hidden="true">'+EV_IC[e.kind]+'</span>'+
+  // --i alimenta o atraso em cascata: a lista já vem ordenada por peso,
+  // então a cascata acompanha a ordem de importância em vez de contrariá-la
+  return '<div class="evs">'+l.map((e,i)=>
+    '<div class="ev '+e.kind+'" style="--i:'+Math.min(i,12)+'">'+
+    '<span class="ei" aria-hidden="true">'+EV_IC[e.kind]+'</span>'+
     '<div><p>'+esc(e.humano)+'</p><code>'+esc(e.reasonCode)+' · '+esc(e.featureId)+'</code></div></div>'
   ).join('')+'</div>';
 }
@@ -99,7 +108,7 @@ function radar(cand, emp){
     const [x,y]=pt(i,vc[i]);
     const d=Math.abs(vc[i]-ve[i]);
     return '<circle class="dotp'+(d>e.tolerancia?' fora':'')+'" cx="'+x.toFixed(1)+'" cy="'+
-      y.toFixed(1)+'" r="2" data-eixo="'+e.id+'"/>';
+      y.toFixed(1)+'" r="2" style="--i:'+i+'" data-eixo="'+e.id+'"/>';
   }).join('');
 
   return '<div class="radarw"><svg class="radar" viewBox="0 0 240 236" role="img" '+

@@ -77,11 +77,11 @@ function vTags(){
     '<div class="linha"><span>Eixos respondidos</span><b>14 de 14</b></div>'+
     '<div class="linha"><span>Confiança do perfil</span><b id="lnConf">'+pc(conf)+'</b></div>'+
     '<div class="linha"><span>Vagas acima de 60%</span><b id="lnAlc">'+alcance+' de '+VAGAS.length+'</b></div>'+
-    '<div class="linha"><span>Recomendações publicáveis</span><b id="lnPub">'+publicaveis+' de '+VAGAS.length+'</b></div>'+
+    '<div class="linha"><span>Vagas onde seu perfil vai completo</span><b id="lnPub">'+publicaveis+' de '+VAGAS.length+'</b></div>'+
     '<div style="margin-top:var(--s2)">'+provenienciaSelo(S.cand.fonte)+'</div>'+
     '<p class="porque">Os números acima recalculam de verdade: rodam o mesmo motor que a vaga '+
     'usa. Tire uma competência obrigatória e veja o alcance cair; troque a origem do dado e '+
-    'veja as publicáveis sumirem.</p></div></aside></div>';
+    'veja quantas vagas recebem seu perfil completo mudar.</p></div></aside></div>';
 
   const rotula=()=>EIXOS.filter(e=>e.tolerancia<=22).forEach(e=>{
     const v=S.cand.eixos[e.id].value;

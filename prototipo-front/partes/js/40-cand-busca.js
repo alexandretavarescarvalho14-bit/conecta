@@ -3,8 +3,7 @@ function filtrar(){
   const q=S.q.trim().toLowerCase(), l=S.local;
   return VAGAS.filter(v=>{
     const okF = S.filtro==='todas' || v.modelo===S.filtro
-      || (S.filtro==='match' && S.logado && M(v).total>=70)
-      || (S.filtro==='pub' && S.logado && M(v).desfecho==='allow');
+      || (S.filtro==='match' && S.logado && M(v).total>=70);
     const okL = !l || v.local.toLowerCase().includes(l.toLowerCase());
     const okQ = !q || (v.cargo+' '+EMPRESAS[v.emp].n+' '+v.tags.join(' ')).toLowerCase().includes(q);
     return okF&&okL&&okQ;
@@ -12,9 +11,9 @@ function filtrar(){
 }
 
 function vHome(){
-  const chips = [['todas','Todas'],['match','Melhor match'],['pub','Só publicável'],
+  const chips = [['todas','Todas'],['match','Melhor match'],
                  ['remoto','Remoto'],['hibrido','Híbrido'],['presencial','Presencial']]
-    .filter(([k])=> S.logado || (k!=='match' && k!=='pub'));
+    .filter(([k])=> S.logado || k!=='match');
 
   $('#v-home').innerHTML =
   '<section class="hero">'+malha()+
@@ -42,10 +41,10 @@ function vHome(){
   '<div id="listaVagas"></div>'+
   '<div id="barraCmp"></div>'+
   '<p class="nota">Protótipo de avaliação da Conectaria. Dados fictícios e coerentes entre si. '+
-  'O match roda o mesmo motor determinístico de <b>packages/matching-core</b>: política '+
-  '<b>'+POLITICA.policy_version+'</b>, 14 eixos com tolerância, portão de confiança e trace '+
-  'auditável em cada recomendação. Pagamento, login real e integração com ATS externo não '+
-  'estão implementados.</p>';
+  'O match roda o mesmo motor determinístico de <b>packages/matching-core</b>, com a política '+
+  '<b>'+POLITICA.policy_version+'</b>: 14 eixos com tolerância própria, confiança ponderada '+
+  'pela origem do dado e trace auditável em cada recomendação. Pagamento, login real e '+
+  'integração com ATS externo não estão implementados.</p>';
 
   const buscarDeb = debounce(()=>renderVagas(), 180);
   $('#q').oninput = e => { S.q=e.target.value; buscarDeb(); };
@@ -64,14 +63,19 @@ async function renderVagas(primeira){
     await espera(560);
   }
   const r=filtrar();
-  ct.textContent = r.length + (r.length===1?' vaga':' vagas') +
+  // o número conta em vez de trocar: com 31 vagas e filtros combinados, ver
+  // a contagem se mover é o retorno de que o filtro pegou
+  ct.innerHTML = '<b class="tnum" data-n="'+r.length+'">0</b>' +
+    (r.length===1?' vaga':' vagas') +
     (S.filtro!=='todas'||S.q||S.local ? ' com esse filtro'
       : S.logado ? ', ordenadas pelo seu match' : ', mais recentes primeiro');
+  contar($('b',ct), r.length);
 
   if(!r.length){
     el.innerHTML='<div class="estado"><div class="ic">'+I.vazio+'</div>'+
       '<h3>Nenhuma vaga com esse recorte.</h3>'+
-      '<p>São 4 vagas abertas no total. Você pode limpar os filtros, ou cadastrar seu perfil '+
+      '<p>São '+VAGAS.length+' vagas abertas no total. Você pode limpar os filtros, ou cadastrar '+
+      'seu perfil '+
       'para receber por WhatsApp assim que entrar uma que combine com seu objetivo.</p>'+
       '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
       '<button class="btn g" id="limpa">Limpar filtros</button>'+
@@ -93,8 +97,7 @@ async function renderVagas(primeira){
         ' em '+esc(e.n)+'"></button>'+
       '<div class="conteudo">'+
         '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b>'+
-          '<span class="tag">'+esc(e.s.split('·')[0].trim())+'</span>'+
-          (m ? selo(m.desfecho) : '')+'</div>'+
+          '<span class="tag">'+esc(e.s.split('·')[0].trim())+'</span></div>'+
         '<h3>'+esc(v.cargo)+'</h3>'+
         '<div class="meta"><span>'+I.pin+esc(v.local)+'</span><span>'+esc(v.faixa)+'</span>'+
           '<span>'+(v.dias===1?'publicada ontem':'há '+v.dias+' dias')+'</span>'+

@@ -14,7 +14,7 @@ function vMinhas(){
     '<div class="cds">'+S.candidaturas.map(c=>{
       const v=VAGAS.find(x=>x.id===c.v), e=EMPRESAS[v.emp], m=M(v);
       return '<div class="cd rv"><div class="cdtop"><div style="flex:1;min-width:210px">'+
-        '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b>'+selo(m.desfecho)+'</div>'+
+        '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b></div>'+
         '<h3 style="font-size:var(--lg);font-family:var(--d)">'+esc(v.cargo)+'</h3>'+
         '<div class="meta"><span>'+esc(v.local)+'</span><span>'+esc(v.faixa)+'</span></div></div>'+
         medidor(m.total,m.confidence)+'</div>'+

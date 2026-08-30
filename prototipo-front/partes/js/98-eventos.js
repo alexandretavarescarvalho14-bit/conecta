@@ -22,6 +22,7 @@ const ACOES = {
             S.cand.fonte==='user'?1:.8); repintarSkills(); } },
   ver:  el => ir('vaga', Number(el.dataset.ver)),
   trace: el => abrirTrace(Number(el.dataset.trace)),
+  irtags: () => ir('tags'),
 };
 document.addEventListener('click', e => {
   const it=e.target.closest('.cmdk .it');
