@@ -1011,13 +1011,15 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+const BUILD = Object.freeze({partes:28, sha:"1190504db278", em:"2026-08-30"});
+/* ══ parte: partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
 
    O motor abaixo é porte fiel de packages/matching-core do conectaria-core.
    Mesma política, mesmas fórmulas, mesmos reasonCodes, mesmo portão. O que
    muda é só a superfície: aqui ele roda no navegador para dar preview, e no
-   core roda como biblioteca pura com 34 testes de propriedade em cima.
+   core roda como biblioteca pura com testes de propriedade em cima.
 
    Enquanto não existe API, este arquivo é a autoridade do cálculo. Quando
    POST /v1/recommendations:generate entrar, ele vira preview e o servidor
@@ -1026,66 +1028,275 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ══════════════════ 1 · POLÍTICA VERSIONADA ══════════════════
-   Espelha packages/recommendation-policy/policies/policy-2026.09.0.json.
-   Nenhum peso, tolerância ou limiar vive solto no código: mudar número
-   aqui exige versão nova e nova rodada contra o baseline.               */
-const POLITICA = Object.freeze({
-  policy_version: 'policy-2026.09.0',
-  taxonomy_version: 'skills-2026.09',
-  feature_schema_version: 'features-2026.09.0',
-  explanation_version: 'expl-2026.09.0',
-  eixos: [
-    {id:'ritmo',      grupo:'Cultura', nome:'Ritmo',           curto:'Ritmo',      poloA:'Estável e previsível',   poloB:'Acelerado e mutável',   tolerancia:22},
-    {id:'autonomia',  grupo:'Cultura', nome:'Autonomia',       curto:'Autonomia',  poloA:'Caminho já definido',    poloB:'Cada um desenha',       tolerancia:15},
-    {id:'formal',     grupo:'Cultura', nome:'Formalidade',     curto:'Formal.',    poloA:'Informal e direto',      poloB:'Estruturado e formal',  tolerancia:26},
-    {id:'erro',       grupo:'Cultura', nome:'Erro',            curto:'Erro',       poloA:'Errar custa caro',       poloB:'Testar e corrigir',     tolerancia:20},
-    {id:'decisao',    grupo:'Cultura', nome:'Decisão',         curto:'Decisão',    poloA:'Centralizada',           poloB:'Distribuída',           tolerancia:22},
-    {id:'colab',      grupo:'Cultura', nome:'Colaboração',     curto:'Colab.',     poloA:'Trabalho individual',    poloB:'Muito coletivo',        tolerancia:28},
-    {id:'previsib',   grupo:'Rotina',  nome:'Previsibilidade', curto:'Previsib.',  poloA:'Agenda estável',         poloB:'Muda toda hora',        tolerancia:24},
-    {id:'presenca',   grupo:'Rotina',  nome:'Presença',        curto:'Presença',   poloA:'Presencial',             poloB:'Remoto',                tolerancia:30},
-    {id:'interrup',   grupo:'Rotina',  nome:'Interrupção',     curto:'Interrup.',  poloA:'Foco longo protegido',   poloB:'Muita interrupção',     tolerancia:26},
-    {id:'escopo',     grupo:'Rotina',  nome:'Escopo',          curto:'Escopo',     poloA:'Estreito e profundo',    poloB:'Largo e variado',       tolerancia:24},
-    {id:'senior',     grupo:'Perfil',  nome:'Senioridade',     curto:'Senior.',    poloA:'Executa o definido',     poloB:'Define o que executar', tolerancia:16},
-    {id:'espec',      grupo:'Perfil',  nome:'Especialização',  curto:'Espec.',     poloA:'Especialista profundo',  poloB:'Generalista versátil',  tolerancia:26},
-    {id:'dados',      grupo:'Perfil',  nome:'Decisão por',     curto:'Dados',      poloA:'Experiência e intuição', poloB:'Dado e medição',        tolerancia:24},
-    {id:'relacional', grupo:'Perfil',  nome:'Contato externo', curto:'Relac.',     poloA:'Pouco contato',          poloB:'Muito contato',         tolerancia:28},
-  ],
-  pesos_por_familia: {
-    'Gente':      {tecnico:.40, cultural:.38, contexto:.22},
-    'Liderança':  {tecnico:.32, cultural:.46, contexto:.22},
-    'Tecnologia': {tecnico:.58, cultural:.22, contexto:.20},
-    'Marketing':  {tecnico:.48, cultural:.30, contexto:.22},
-    'Financeiro': {tecnico:.52, cultural:.26, contexto:.22},
-    '_padrao':    {tecnico:.46, cultural:.32, contexto:.22},
-  },
-  requisito_obrigatorio: {modo:'cap', nota_maxima:45},
-  cultural: {fator_decaimento:2.6},
-  contexto: {
-    localidade:{compativel:100, incompativel:25},
-    modelo:{compativel:100, incompativel:35},
-    pretensao:{dentro:100, margem:62, fora:20, tolerancia_relativa:.15},
-  },
-  confianca: {
-    minima_para_publicar:.65,
-    revisar_abaixo_de:.78,
-    peso_fonte:{user:1, company:1, curator:1, conversation:.82, document:.7},
-  },
-  features: {
-    allowlist:['eixo.ritmo','eixo.autonomia','eixo.formal','eixo.erro','eixo.decisao','eixo.colab',
-      'eixo.previsib','eixo.presenca','eixo.interrup','eixo.escopo',
-      'eixo.senior','eixo.espec','eixo.dados','eixo.relacional',
-      'skill.nivel','contexto.uf','contexto.modelo','contexto.pretensao',
-      'vaga.familia','vaga.faixa'],
-    denylist:['candidato.nome','candidato.foto','candidato.idade','candidato.genero',
-      'candidato.raca','candidato.etnia','candidato.estado_civil',
-      'candidato.cep_exato','candidato.instituicao'],
-  },
-});
-const EIXOS = POLITICA.eixos;
-const EIXO = Object.fromEntries(EIXOS.map(e=>[e.id,e]));
-const EIXO_IDS = EIXOS.map(e=>e.id);
-const pesosDe = (pol,fam) => pol.pesos_por_familia[fam] || pol.pesos_por_familia._padrao;
 
+   O JSON abaixo NÃO é escrito à mão: montar.py o injeta lendo o arquivo
+   publicado em conectaria-core/packages/recommendation-policy/policies/,
+   na versão que POLITICA_ATUAL aponta.
+
+   O motivo é o que a política existe para garantir. Front-end, API, job
+   offline e avaliação histórica precisam ler exatamente os mesmos números;
+   uma cópia manual aqui divergiria do core no primeiro ajuste e ninguém
+   perceberia, porque o resultado continuaria plausível. Com a injeção, o
+   protótipo não consegue discordar do motor.                             */
+
+const POLITICA = Object.freeze({
+  "policy_version": "policy-2026.10.0",
+  "taxonomy_version": "skills-2026.10",
+  "feature_schema_version": "features-2026.09.0",
+  "explanation_version": "expl-2026.09.0",
+  "eixos": [
+    {
+      "id": "ritmo",
+      "grupo": "Cultura",
+      "nome": "Ritmo",
+      "poloA": "Estável e previsível",
+      "poloB": "Acelerado e mutável",
+      "tolerancia": 22
+    },
+    {
+      "id": "autonomia",
+      "grupo": "Cultura",
+      "nome": "Autonomia",
+      "poloA": "Caminho já definido",
+      "poloB": "Cada um desenha",
+      "tolerancia": 15
+    },
+    {
+      "id": "formal",
+      "grupo": "Cultura",
+      "nome": "Formalidade",
+      "poloA": "Informal e direto",
+      "poloB": "Estruturado e formal",
+      "tolerancia": 26
+    },
+    {
+      "id": "erro",
+      "grupo": "Cultura",
+      "nome": "Erro",
+      "poloA": "Errar custa caro",
+      "poloB": "Testar e corrigir",
+      "tolerancia": 20
+    },
+    {
+      "id": "decisao",
+      "grupo": "Cultura",
+      "nome": "Decisão",
+      "poloA": "Centralizada",
+      "poloB": "Distribuída",
+      "tolerancia": 22
+    },
+    {
+      "id": "colab",
+      "grupo": "Cultura",
+      "nome": "Colaboração",
+      "poloA": "Trabalho individual",
+      "poloB": "Muito coletivo",
+      "tolerancia": 28
+    },
+    {
+      "id": "previsib",
+      "grupo": "Rotina",
+      "nome": "Previsibilidade",
+      "poloA": "Agenda estável",
+      "poloB": "Muda toda hora",
+      "tolerancia": 24
+    },
+    {
+      "id": "presenca",
+      "grupo": "Rotina",
+      "nome": "Presença",
+      "poloA": "Presencial",
+      "poloB": "Remoto",
+      "tolerancia": 30
+    },
+    {
+      "id": "interrup",
+      "grupo": "Rotina",
+      "nome": "Interrupção",
+      "poloA": "Foco longo protegido",
+      "poloB": "Muita interrupção",
+      "tolerancia": 26
+    },
+    {
+      "id": "escopo",
+      "grupo": "Rotina",
+      "nome": "Escopo",
+      "poloA": "Estreito e profundo",
+      "poloB": "Largo e variado",
+      "tolerancia": 24
+    },
+    {
+      "id": "senior",
+      "grupo": "Perfil",
+      "nome": "Senioridade",
+      "poloA": "Executa o definido",
+      "poloB": "Define o que executar",
+      "tolerancia": 16
+    },
+    {
+      "id": "espec",
+      "grupo": "Perfil",
+      "nome": "Especialização",
+      "poloA": "Especialista profundo",
+      "poloB": "Generalista versátil",
+      "tolerancia": 26
+    },
+    {
+      "id": "dados",
+      "grupo": "Perfil",
+      "nome": "Decisão por",
+      "poloA": "Experiência e intuição",
+      "poloB": "Dado e medição",
+      "tolerancia": 24
+    },
+    {
+      "id": "relacional",
+      "grupo": "Perfil",
+      "nome": "Contato externo",
+      "poloA": "Pouco contato",
+      "poloB": "Muito contato",
+      "tolerancia": 28
+    }
+  ],
+  "pesos_por_familia": {
+    "Gente": {
+      "tecnico": 0.4,
+      "cultural": 0.38,
+      "contexto": 0.22
+    },
+    "Liderança": {
+      "tecnico": 0.32,
+      "cultural": 0.46,
+      "contexto": 0.22
+    },
+    "Tecnologia": {
+      "tecnico": 0.58,
+      "cultural": 0.22,
+      "contexto": 0.2
+    },
+    "Marketing": {
+      "tecnico": 0.48,
+      "cultural": 0.3,
+      "contexto": 0.22
+    },
+    "Financeiro": {
+      "tecnico": 0.52,
+      "cultural": 0.26,
+      "contexto": 0.22
+    },
+    "Operações": {
+      "tecnico": 0.5,
+      "cultural": 0.28,
+      "contexto": 0.22
+    },
+    "Produto": {
+      "tecnico": 0.5,
+      "cultural": 0.3,
+      "contexto": 0.2
+    },
+    "Atendimento": {
+      "tecnico": 0.38,
+      "cultural": 0.4,
+      "contexto": 0.22
+    },
+    "Vendas": {
+      "tecnico": 0.44,
+      "cultural": 0.34,
+      "contexto": 0.22
+    },
+    "_padrao": {
+      "tecnico": 0.46,
+      "cultural": 0.32,
+      "contexto": 0.22
+    }
+  },
+  "requisito_obrigatorio": {
+    "modo": "cap",
+    "nota_maxima": 45
+  },
+  "cultural": {
+    "fator_decaimento": 2.6,
+    "_comentario": "Na distancia igual a tolerancia o eixo entrega ~62% do ponto. Chute calibrado; primeiro candidato a virar parametro aprendido."
+  },
+  "contexto": {
+    "localidade": {
+      "compativel": 100,
+      "incompativel": 25
+    },
+    "modelo": {
+      "compativel": 100,
+      "incompativel": 35
+    },
+    "pretensao": {
+      "dentro": 100,
+      "margem": 62,
+      "fora": 20,
+      "tolerancia_relativa": 0.15
+    }
+  },
+  "confianca": {
+    "minima_para_publicar": 0.65,
+    "revisar_abaixo_de": 0.78,
+    "peso_fonte": {
+      "user": 1.0,
+      "company": 1.0,
+      "curator": 1.0,
+      "conversation": 0.82,
+      "document": 0.7
+    }
+  },
+  "features": {
+    "allowlist": [
+      "eixo.ritmo",
+      "eixo.autonomia",
+      "eixo.formal",
+      "eixo.erro",
+      "eixo.decisao",
+      "eixo.colab",
+      "eixo.previsib",
+      "eixo.presenca",
+      "eixo.interrup",
+      "eixo.escopo",
+      "eixo.senior",
+      "eixo.espec",
+      "eixo.dados",
+      "eixo.relacional",
+      "skill.nivel",
+      "contexto.uf",
+      "contexto.modelo",
+      "contexto.pretensao",
+      "vaga.familia",
+      "vaga.faixa"
+    ],
+    "denylist": [
+      "candidato.nome",
+      "candidato.foto",
+      "candidato.idade",
+      "candidato.genero",
+      "candidato.raca",
+      "candidato.etnia",
+      "candidato.estado_civil",
+      "candidato.cep_exato",
+      "candidato.instituicao"
+    ]
+  }
+});
+
+/* Rótulo curto por eixo, só para caber nas pontas do radar. É apresentação,
+   não política: por isso mora aqui e não no artefato versionado. */
+const EIXO_CURTO = {
+  ritmo:'Ritmo', autonomia:'Autonomia', formal:'Formal.', erro:'Erro',
+  decisao:'Decisão', colab:'Colab.', previsib:'Previsib.', presenca:'Presença',
+  interrup:'Interrup.', escopo:'Escopo', senior:'Senior.', espec:'Espec.',
+  dados:'Dados', relacional:'Relac.',
+};
+
+const EIXOS = POLITICA.eixos.map(e => ({...e, curto: EIXO_CURTO[e.id] || e.nome}));
+const EIXO = Object.fromEntries(EIXOS.map(e => [e.id, e]));
+const EIXO_IDS = EIXOS.map(e => e.id);
+const pesosDe = (pol, fam) => pol.pesos_por_familia[fam] || pol.pesos_por_familia._padrao;
+
+/* ══ parte: partes/js/01-motor.js ══ */
 /* ══════════════════ 2 · SOURCED VALUE ══════════════════
    Todo dado que entra no match carrega de onde veio e quanta confiança
    tem. É o tipo que impõe a regra "IA sugere, pessoa confirma": extração
@@ -1301,6 +1512,7 @@ function evaluate(i){
     features:[...vetor.porId.keys()]};
 }
 
+/* ══ parte: partes/js/02-gate.js ══ */
 /* ══════════════════ 5 · PORTÃO DE POLÍTICA ══════════════════
    Score nunca é publicado direto. Passa por um portão que pode liberar,
    mandar para revisão humana ou bloquear.                              */
@@ -1335,6 +1547,7 @@ const RAZAO = {
 };
 const GATE_ROT = {allow:'publicável', review:'revisão humana', block:'bloqueado'};
 
+/* ══ parte: partes/js/03-trace.js ══ */
 /* ══════════════════ 6 · HASH E TRACE ══════════════════ */
 function canonico(v){
   if(v===null || typeof v!=='object') return JSON.stringify(v);
@@ -1390,171 +1603,7 @@ async function montarTrace(e){
   });
 }
 
-/* ══════════════════ 7 · TAXONOMIA E DADOS ══════════════════
-   Competência entra por id compartilhado. Texto livre não pontua: duas
-   grafias da mesma coisa degradam o match em silêncio, e silêncio é o
-   pior modo de falhar.                                                 */
-const SKILLS = [
-  {id:'s01', r:'Processo seletivo',       f:'Gente'},
-  {id:'s02', r:'Avaliação de desempenho', f:'Gente'},
-  {id:'s03', r:'Clima e engajamento',     f:'Gente'},
-  {id:'s04', r:'Folha e admissão',        f:'Gente'},
-  {id:'s05', r:'Treinamento e T&D',       f:'Gente'},
-  {id:'s06', r:'Operação de varejo',      f:'Operações'},
-  {id:'s07', r:'Gestão de equipe',        f:'Liderança'},
-  {id:'s08', r:'Mídia paga',              f:'Marketing'},
-  {id:'s09', r:'Análise de dados',        f:'Dados'},
-  {id:'s10', r:'Conciliação financeira',  f:'Financeiro'},
-  {id:'s11', r:'Negociação',              f:'Comercial'},
-  {id:'s12', r:'Excel avançado',          f:'Ferramenta'},
-];
-const SKILL = Object.fromEntries(SKILLS.map(s=>[s.id,s]));
-const skillNome = id => (SKILL[id]||{r:id}).r;
-const NIVEIS = ['básico','intermediário','avançado'];
-
-const eixosEmp = v => Object.fromEntries(EIXO_IDS.map(id=>[id, sv(v[id] ?? 50, 'company', 1)]));
-
-const EMPRESAS = {
-  aurora:{id:'emp-aurora', versao:'emp-v1', n:'Grupo Aurora', c:'#0C5F92', s:'Varejo · 620 pessoas',
-    eixos: eixosEmp({ritmo:64,autonomia:78,formal:34,erro:62,decisao:70,colab:58,
-      previsib:56,presenca:14,interrup:66,escopo:74,senior:76,espec:38,dados:52,relacional:68})},
-  vertigo:{id:'emp-vertigo', versao:'emp-v1', n:'Vertigo Saúde', c:'#1E8E6A', s:'Healthtech · 90 pessoas',
-    eixos: eixosEmp({ritmo:88,autonomia:82,formal:22,erro:80,decisao:76,colab:70,
-      previsib:80,presenca:52,interrup:74,escopo:82,senior:66,espec:44,dados:84,relacional:56})},
-  malbec:{id:'emp-malbec', versao:'emp-v1', n:'Malbec Tech', c:'#8A4FBE', s:'Logística · 210 pessoas',
-    eixos: eixosEmp({ritmo:72,autonomia:86,formal:30,erro:74,decisao:80,colab:52,
-      previsib:62,presenca:92,interrup:32,escopo:48,senior:80,espec:82,dados:88,relacional:26})},
-  valeverde:{id:'emp-valeverde', versao:'emp-v1', n:'Cooperativa Vale Verde', c:'#B0741A', s:'Agro · 1.400 associados',
-    eixos: eixosEmp({ritmo:26,autonomia:34,formal:74,erro:24,decisao:28,colab:60,
-      previsib:22,presenca:30,interrup:44,escopo:36,senior:32,espec:56,dados:38,relacional:44})},
-};
-
-const req = l => l.map(([skillId,peso,obrigatorio])=>({skillId,peso,obrigatorio}));
-
-const VAGAS = [
-  {id:1, vid:'vaga-001', versao:'vaga-v1', cargo:'Coordenador de RH', emp:'aurora',
-   local:'Recife, presencial', modelo:'presencial', uf:'PE',
-   faixa:'R$ 9.000 a R$ 11.000', faixaMin:9000, faixaMax:11000, dias:2, cand:9,
-   familia:'Gente', sen:'senior', tags:['Recrutamento','Avaliação de desempenho','Varejo'],
-   requisitos: req([['s01',3,true],['s02',3,true],['s06',2,false],['s07',2,false],['s03',1,false]]),
-   res:'Grupo de varejo com 620 funcionários em nove lojas. A posição é nova e responde direto para a diretoria de gente.',
-   faz:['Estruturar o processo seletivo, hoje feito por indicação',
-        'Montar o ciclo de avaliação de desempenho do zero',
-        'Cuidar do clima nas nove lojas, com visita quinzenal'],
-   pede:['Experiência em varejo ou operação de alto volume',
-         'Ter montado processo, não só executado',
-         'Disponibilidade para viajar dentro de Pernambuco']},
-  {id:2, vid:'vaga-002', versao:'vaga-v1', cargo:'Analista de Marketing Pleno', emp:'vertigo',
-   local:'Recife, híbrido', modelo:'hibrido', uf:'PE',
-   faixa:'R$ 6.500 a R$ 8.200', faixaMin:6500, faixaMax:8200, dias:5, cand:23,
-   familia:'Marketing', sen:'pleno', tags:['Mídia paga','RD Station','Growth'],
-   requisitos: req([['s08',3,true],['s09',2,false],['s12',2,false],['s11',1,false]]),
-   res:'Área de aquisição de uma healthtech com 40 mil pacientes ativos no Nordeste. O time de growth dobrou de dois para quatro pessoas neste semestre.',
-   faz:['Rodar campanhas em Meta e Google, com verba mensal de R$ 90 mil',
-        'Estruturar o funil no RD Station junto com vendas',
-        'Acompanhar CAC e retenção por coorte de plano'],
-   pede:['3 anos ou mais em marketing digital com verba própria',
-         'Prática de mídia paga, não só planejamento',
-         'Confortável com planilha e leitura de dado']},
-  {id:3, vid:'vaga-003', versao:'vaga-v1', cargo:'Pessoa Desenvolvedora Backend Sênior', emp:'malbec',
-   local:'Remoto, Brasil', modelo:'remoto', uf:'BR',
-   faixa:'R$ 12.000 a R$ 15.000', faixaMin:12000, faixaMax:15000, dias:8, cand:41,
-   familia:'Tecnologia', sen:'senior', tags:['Node','TypeScript','PostgreSQL'],
-   requisitos: req([['s09',2,false],['s12',1,false]]),
-   res:'Squad de integrações de uma empresa de logística que processa 1,2 milhão de rastreios por dia.',
-   faz:['Manter as integrações com transportadoras em Node e TypeScript',
-        'Reduzir o tempo de resposta da API pública, hoje em 840ms no p95',
-        'Participar do plantão, uma semana a cada oito'],
-   pede:['5 anos ou mais em backend sob carga','Node, TypeScript e PostgreSQL',
-         'Ter passado por migração de monólito para serviços']},
-  {id:4, vid:'vaga-004', versao:'vaga-v1', cargo:'Analista Financeiro Júnior', emp:'valeverde',
-   local:'Recife, híbrido', modelo:'hibrido', uf:'PE',
-   faixa:'R$ 3.400 a R$ 4.100', faixaMin:3400, faixaMax:4100, dias:11, cand:56,
-   familia:'Financeiro', sen:'junior', tags:['Conciliação','Excel','Fluxo de caixa'],
-   requisitos: req([['s10',3,true],['s12',2,true]]),
-   res:'Cooperativa agrícola com 1.400 associados. O financeiro tem quatro pessoas e fecha o mês em cinco dias úteis.',
-   faz:['Conciliação bancária e contas a pagar','Apoiar o fechamento mensal',
-        'Manter a planilha de fluxo de caixa de 90 dias'],
-   pede:['Formação em contábeis, administração ou economia','Excel com procv e tabela dinâmica',
-         'Primeira ou segunda experiência']},
-];
-
-const ETAPAS = ['Enviada','Triagem','Entrevista Conectaria','Entrevista empresa','Proposta'];
-const CANDS_EMP = [
-  {ini:'M.S.', obj:'Coordenador de RH', et:4, match:94, conf:.93, at:'há 2 dias',
-   pt:'Montou ciclo de avaliação em duas empresas. Cultura casa em autonomia.'},
-  {ini:'R.A.', obj:'Coordenador de RH', et:3, match:88, conf:.81, at:'há 1 dia',
-   pt:'Generalista de RH em indústria. Busca mais autonomia, o que a vaga oferece.'},
-  {ini:'L.F.', obj:'Analista de RH Sênior', et:2, match:71, conf:.68, at:'há 4 dias',
-   pt:'Perfil mais operacional que a vaga pede. Cultura e contexto casam bem.'},
-  {ini:'C.P.', obj:'Coordenador de Gente', et:1, match:64, conf:.59, at:'há 6 dias',
-   pt:'Experiência em startup, sem operação de loja física.'},
-];
-
-/* ══════════════════ 8 · ESTADO ══════════════════
-   O candidato nasce com fonte "conversation": o perfil veio da triagem,
-   é inferência até a pessoa confirmar. É essa distinção que faz o portão
-   devolver "revisão" em vez de "publicável" logo depois do cadastro.   */
-const EIXOS_CAND_BASE = {ritmo:58,autonomia:82,formal:30,erro:66,decisao:72,colab:54,
-  previsib:52,presenca:20,interrup:58,escopo:70,senior:78,espec:40,dados:58,relacional:64};
-
-function candidatoNovo(fonte){
-  const f = fonte || 'conversation';
-  const cf = f==='user' ? 1 : f==='conversation' ? .85 : .78;
-  return {
-    id:'cand-001', versao:'prof-v1', v:0, fonte:f,
-    uf: sv('PE', f, f==='user'?1:.9),
-    modelos: sv(['presencial','hibrido'], f, cf),
-    pretensao: sv(9500, f, f==='user'?1:.8),
-    competencias: [['s01',3],['s02',3],['s06',2]].map(([skillId,n])=>
-      ({skillId, nivel: sv(n, f, f==='user'?1:.8)})),
-    eixos: Object.fromEntries(EIXO_IDS.map(id=>[id, sv(EIXOS_CAND_BASE[id], f, cf)])),
-  };
-}
-
-const S = {
-  view:'home', modo:'cand', q:'', local:'', filtro:'todas', vaga:null,
-  logado:false, contaEmp:false, conta:null, passo:0, perfil:{}, candidaturas:[],
-  ddAberto:false, aba:'criar',
-  cand: candidatoNovo('conversation'),
-  empPasso:0, empSalvo:false,
-  comparar: [],
-};
-
-/* Reprojeta a fonte de todo o perfil. É o que a tela de confirmação faz:
-   o dado não muda de valor, muda de estatuto.                          */
-function reprojetarFonte(f){
-  const cf = f==='user' ? 1 : f==='conversation' ? .85 : .78;
-  const c = S.cand;
-  c.fonte = f;
-  c.uf = sv(c.uf.value, f, f==='user'?1:.9);
-  c.modelos = sv(c.modelos.value, f, cf);
-  if(c.pretensao) c.pretensao = sv(c.pretensao.value, f, f==='user'?1:.8);
-  c.competencias = c.competencias.map(x=>({skillId:x.skillId, nivel: sv(x.nivel.value, f, f==='user'?1:.8)}));
-  c.eixos = Object.fromEntries(EIXO_IDS.map(id=>[id, sv(c.eixos[id].value, f, cf)]));
-  c.v++;
-  invalidarMatch();
-}
-
-/* ══════════════════ 9 · FACHADA DO MOTOR ══════════════════ */
-const _memo = new Map();
-function invalidarMatch(){ _memo.clear(); }
-
-function vagaEntidade(v){
-  return {id:v.vid, versao:v.versao, empresaId:EMPRESAS[v.emp].id, familia:v.familia,
-    uf:v.uf, modelo:v.modelo, faixaMin:v.faixaMin, faixaMax:v.faixaMax, requisitos:v.requisitos};
-}
-function M(v){
-  const chave = v.id+'|'+S.cand.v+'|'+(EMPRESAS[v.emp].__v||0);
-  if(_memo.has(chave)) return _memo.get(chave);
-  const r = evaluate({candidato:S.cand, vaga:vagaEntidade(v), empresa:EMPRESAS[v.emp],
-    politica:POLITICA, rotuloSkill:skillNome});
-  r.decisoes = avaliarPoliticas(r, POLITICA);
-  r.desfecho = desfechoFinal(r.decisoes);
-  _memo.set(chave, r);
-  return r;
-}
-
+/* ══ parte: partes/js/30-ui-base.js ══ */
 /* ══════════════════ 10 · HELPERS ══════════════════ */
 const $ = (s,r) => (r||document).querySelector(s);
 const $$ = (s,r) => [...(r||document).querySelectorAll(s)];
@@ -1635,6 +1684,630 @@ function malha(){
   return _malha;
 }
 
+/* ══ parte: partes/js/10-taxonomia.js ══ */
+/* ══════════════════ 7 · TAXONOMIA DE CARREIRA ══════════════════
+
+   Três níveis, e cada um existe por um motivo diferente:
+
+   ÁREA    porta de entrada da triagem e recorte da busca. NÃO é feature:
+           não entra no cálculo, não aparece na allowlist. Serve para
+           navegar e para escolher o peso padrão.
+   CARGO   é quem carrega a família de peso da política. Não é a área:
+           "Gerente de Operações" pesa cultura como Liderança, "Analista
+           de Operações" não. Peso de cargo é decisão de política.
+   SKILL   a unidade que o motor compara. O candidato declara como
+           atividade que já fez; a empresa declara como requisito da vaga.
+           Mesmo id dos dois lados, senão o match não é comparável.
+
+   Texto livre nunca pontua: duas grafias da mesma coisa degradam o match
+   em silêncio, e silêncio é o pior modo de falhar. O que não está no
+   catálogo vira sugestão para a curadoria, não competência.            */
+
+/* ── áreas ──
+   `fam` é a chave EXATA em POLITICA.pesos_por_familia. Duas traduções são
+   deliberadas: RH responde pela família "Gente" e Finanças pela
+   "Financeiro", que são os nomes que a política já usava antes das áreas
+   existirem. Renomear aqui faz `pesosDe` cair no _padrao sem erro nenhum,
+   por isso 99-boot.js valida esse vínculo no carregamento.              */
+const AREAS = [
+  {id:'operacoes',   n:'Operações',   fam:'Operações',   c:'#0C5F92'},
+  {id:'financas',    n:'Finanças',    fam:'Financeiro',  c:'#B0741A'},
+  {id:'rh',          n:'RH',          fam:'Gente',       c:'#1E8E6A'},
+  {id:'vendas',      n:'Vendas',      fam:'Vendas',      c:'#C1443A'},
+  {id:'marketing',   n:'Marketing',   fam:'Marketing',   c:'#D0559B'},
+  {id:'tecnologia',  n:'Tecnologia',  fam:'Tecnologia',  c:'#8A4FBE'},
+  {id:'produto',     n:'Produto',     fam:'Produto',     c:'#4A6FD8'},
+  {id:'atendimento', n:'Atendimento', fam:'Atendimento', c:'#2E7D8F'},
+];
+const AREA = Object.fromEntries(AREAS.map(a=>[a.id,a]));
+
+/* ── competências ──
+   s01 a s12 são CONGELADAS em id e rótulo: o baseline do ADR 001 e as
+   fixtures do core dependem delas. O catálogo só cresce.
+
+   `a`  áreas onde a competência aparece na triagem
+   `tr` transversal: aparece em toda área, independente do cargo
+   `st` ativa | pendente (sugerida por candidato, aguarda curadoria)     */
+const SKILLS = [
+  // ── congeladas ──
+  {id:'s01', r:'Processo seletivo',        a:['rh'],                  st:'ativa'},
+  {id:'s02', r:'Avaliação de desempenho',  a:['rh'],                  st:'ativa'},
+  {id:'s03', r:'Clima e engajamento',      a:['rh'],                  st:'ativa'},
+  {id:'s04', r:'Folha e admissão',         a:['rh'],                  st:'ativa'},
+  {id:'s05', r:'Treinamento e T&D',        a:['rh'],                  st:'ativa'},
+  {id:'s06', r:'Operação de varejo',       a:['operacoes','vendas'],  st:'ativa'},
+  {id:'s07', r:'Gestão de equipe',         a:[], tr:true,             st:'ativa'},
+  {id:'s08', r:'Mídia paga',               a:['marketing'],           st:'ativa'},
+  {id:'s09', r:'Análise de dados',         a:[], tr:true,             st:'ativa'},
+  {id:'s10', r:'Conciliação financeira',   a:['financas'],            st:'ativa'},
+  {id:'s11', r:'Negociação',               a:['vendas'],              st:'ativa'},
+  {id:'s12', r:'Excel avançado',           a:[], tr:true,             st:'ativa'},
+  // ── operações ──
+  {id:'s13', r:'Gestão de estoque',            a:['operacoes'],       st:'ativa'},
+  {id:'s14', r:'Logística e distribuição',     a:['operacoes'],       st:'ativa'},
+  {id:'s15', r:'Planejamento de produção',     a:['operacoes'],       st:'ativa'},
+  {id:'s16', r:'Compras e suprimentos',        a:['operacoes'],       st:'ativa'},
+  {id:'s17', r:'Melhoria contínua',            a:['operacoes'],       st:'ativa'},
+  {id:'s18', r:'Qualidade e auditoria',        a:['operacoes'],       st:'ativa'},
+  {id:'s19', r:'Gestão de facilities',         a:['operacoes'],       st:'ativa'},
+  // ── finanças ──
+  {id:'s20', r:'Contas a pagar e receber',     a:['financas'],        st:'ativa'},
+  {id:'s21', r:'Fluxo de caixa',               a:['financas'],        st:'ativa'},
+  {id:'s22', r:'Fechamento contábil',          a:['financas'],        st:'ativa'},
+  {id:'s23', r:'Planejamento financeiro',      a:['financas'],        st:'ativa'},
+  {id:'s24', r:'Rotinas fiscais',              a:['financas'],        st:'ativa'},
+  {id:'s25', r:'Precificação e margem',        a:['financas'],        st:'ativa'},
+  // ── RH ──
+  {id:'s26', r:'Cargos e salários',            a:['rh'],              st:'ativa'},
+  {id:'s27', r:'Relações sindicais',           a:['rh'],              st:'ativa'},
+  {id:'s28', r:'RH analytics',                 a:['rh'],              st:'ativa'},
+  {id:'s29', r:'Employer branding',            a:['rh','marketing'],  st:'ativa'},
+  // ── vendas ──
+  {id:'s30', r:'Prospecção ativa',             a:['vendas'],          st:'ativa'},
+  {id:'s31', r:'Gestão de carteira',           a:['vendas'],          st:'ativa'},
+  {id:'s32', r:'Venda consultiva B2B',         a:['vendas'],          st:'ativa'},
+  {id:'s33', r:'CRM e pipeline',               a:['vendas'],          st:'ativa'},
+  {id:'s34', r:'Pós-venda e renovação',        a:['vendas','atendimento'], st:'ativa'},
+  {id:'s35', r:'Venda em ponto de venda',      a:['vendas'],          st:'ativa'},
+  // ── tecnologia ──
+  {id:'s36', r:'Desenvolvimento backend',      a:['tecnologia'],      st:'ativa'},
+  {id:'s37', r:'Desenvolvimento frontend',     a:['tecnologia'],      st:'ativa'},
+  {id:'s38', r:'SQL e banco de dados',         a:['tecnologia'],      st:'ativa'},
+  {id:'s39', r:'Cloud e infraestrutura',       a:['tecnologia'],      st:'ativa'},
+  {id:'s40', r:'QA e testes',                  a:['tecnologia'],      st:'ativa'},
+  {id:'s41', r:'Segurança da informação',      a:['tecnologia'],      st:'ativa'},
+  {id:'s42', r:'Suporte de TI',                a:['tecnologia','atendimento'], st:'ativa'},
+  // ── produto ──
+  {id:'s43', r:'Discovery e pesquisa',         a:['produto'],         st:'ativa'},
+  {id:'s44', r:'Roadmap e priorização',        a:['produto'],         st:'ativa'},
+  {id:'s45', r:'Métricas de produto',          a:['produto'],         st:'ativa'},
+  {id:'s46', r:'Design de fluxo',              a:['produto'],         st:'ativa'},
+  {id:'s47', r:'Escrita de requisitos',        a:['produto'],         st:'ativa'},
+  // ── atendimento ──
+  {id:'s48', r:'Atendimento ao cliente',       a:['atendimento'],     st:'ativa'},
+  {id:'s49', r:'Suporte técnico N1 e N2',      a:['atendimento'],     st:'ativa'},
+  {id:'s50', r:'Gestão de SLA e filas',        a:['atendimento'],     st:'ativa'},
+  {id:'s51', r:'Ouvidoria e reclamações',      a:['atendimento'],     st:'ativa'},
+  // ── marketing ──
+  {id:'s52', r:'Conteúdo e SEO',               a:['marketing'],       st:'ativa'},
+  {id:'s53', r:'CRM e automação',              a:['marketing'],       st:'ativa'},
+  {id:'s54', r:'Eventos e trade marketing',    a:['marketing'],       st:'ativa'},
+  // ── transversais ──
+  {id:'s55', r:'Gestão de orçamento',          a:[], tr:true,         st:'ativa'},
+  {id:'s56', r:'Gestão de projetos',           a:[], tr:true,         st:'ativa'},
+  {id:'s57', r:'Desenvolvimento de time',      a:[], tr:true,         st:'ativa'},
+];
+const SKILL = Object.fromEntries(SKILLS.map(s=>[s.id,s]));
+const skillNome = id => (SKILL[id]||{r:id}).r;
+const NIVEIS = ['básico','intermediário','avançado'];
+
+/* ── cargos ──
+   `sen`  junior | pleno | senior | lideranca
+   `base` faixa salarial de referência; a vaga aplica um fator por empresa
+   `sk`   atividades típicas. Serve os DOIS lados: alimenta o passo de
+          atividades da triagem e o sorteio de requisitos do gerador de
+          vagas. Uma lista só é o que mantém o match comparável.         */
+const CARGOS = [
+  // ── operações ──
+  {id:'c-ope-1', a:'operacoes', n:'Assistente de Operações',    sen:'junior',    base:[2400,3200],   sk:['s13','s06','s12']},
+  {id:'c-ope-2', a:'operacoes', n:'Analista de Operações',      sen:'pleno',     base:[4200,5600],   sk:['s13','s15','s17','s09','s12']},
+  {id:'c-ope-3', a:'operacoes', n:'Analista de Logística',      sen:'pleno',     base:[4500,6000],   sk:['s14','s13','s16','s12']},
+  {id:'c-ope-4', a:'operacoes', n:'Analista de Qualidade',      sen:'pleno',     base:[4300,5800],   sk:['s18','s17','s09']},
+  {id:'c-ope-5', a:'operacoes', n:'Coordenador de Operações',   sen:'lideranca', base:[8000,10500],  sk:['s13','s17','s07','s56','s55']},
+  {id:'c-ope-6', a:'operacoes', n:'Gerente de Operações',       sen:'lideranca', base:[13000,17000], sk:['s07','s55','s17','s56','s57']},
+  // ── finanças ──
+  {id:'c-fin-1', a:'financas', n:'Assistente Financeiro',       sen:'junior',    base:[2300,3000],   sk:['s20','s10','s12']},
+  {id:'c-fin-2', a:'financas', n:'Analista Financeiro',         sen:'pleno',     base:[4400,5900],   sk:['s21','s10','s20','s12','s09']},
+  {id:'c-fin-3', a:'financas', n:'Analista Contábil',           sen:'pleno',     base:[4600,6200],   sk:['s22','s24','s10','s12']},
+  {id:'c-fin-4', a:'financas', n:'Analista de FP&A',            sen:'senior',    base:[7000,9500],   sk:['s23','s25','s09','s12','s55']},
+  {id:'c-fin-5', a:'financas', n:'Coordenador Financeiro',      sen:'lideranca', base:[9500,12500],  sk:['s21','s23','s07','s55']},
+  {id:'c-fin-6', a:'financas', n:'Controller',                  sen:'lideranca', base:[15000,20000], sk:['s22','s23','s55','s07','s24']},
+  // ── RH ──
+  {id:'c-rh-1',  a:'rh', n:'Assistente de RH',                  sen:'junior',    base:[2400,3100],   sk:['s04','s01','s12']},
+  {id:'c-rh-2',  a:'rh', n:'Analista de Recrutamento',          sen:'pleno',     base:[4200,5600],   sk:['s01','s29','s28','s12']},
+  {id:'c-rh-3',  a:'rh', n:'Analista de Desenvolvimento',       sen:'pleno',     base:[4500,6000],   sk:['s05','s02','s03']},
+  {id:'c-rh-4',  a:'rh', n:'Business Partner de RH',            sen:'senior',    base:[7500,10000],  sk:['s02','s03','s26','s07']},
+  // Coordenador de RH é 'senior', não 'lideranca': é o cargo da vaga do
+  // ADR 001, cuja família tem de continuar sendo "Gente". Marcá-lo como
+  // liderança mudaria os pesos para .32/.46/.22 e o baseline iria de 84
+  // para 86 — o número que o core inteiro existe para travar.
+  {id:'c-rh-5',  a:'rh', n:'Coordenador de RH',                 sen:'senior',    base:[9000,11000],  sk:['s01','s02','s06','s07','s03']},
+  {id:'c-rh-6',  a:'rh', n:'Gerente de Gente e Gestão',         sen:'lideranca', base:[14000,18000], sk:['s07','s26','s02','s57','s55']},
+  // ── vendas ──
+  {id:'c-ven-1', a:'vendas', n:'Vendedor de Loja',              sen:'junior',    base:[2000,2800],   sk:['s35','s06','s48']},
+  {id:'c-ven-2', a:'vendas', n:'Representante Comercial',       sen:'pleno',     base:[4000,6500],   sk:['s30','s11','s33']},
+  {id:'c-ven-3', a:'vendas', n:'Executivo de Contas',           sen:'senior',    base:[7000,11000],  sk:['s32','s31','s11','s33']},
+  {id:'c-ven-4', a:'vendas', n:'Analista de Customer Success',  sen:'pleno',     base:[4500,6200],   sk:['s34','s31','s33','s09']},
+  {id:'c-ven-5', a:'vendas', n:'Coordenador Comercial',         sen:'lideranca', base:[9000,13000],  sk:['s31','s07','s33','s55']},
+  {id:'c-ven-6', a:'vendas', n:'Gerente Comercial',             sen:'lideranca', base:[15000,21000], sk:['s07','s32','s55','s57','s11']},
+  // ── marketing ──
+  {id:'c-mkt-1', a:'marketing', n:'Assistente de Marketing',    sen:'junior',    base:[2600,3400],   sk:['s52','s08','s12']},
+  {id:'c-mkt-2', a:'marketing', n:'Analista de Marketing',      sen:'pleno',     base:[4500,6500],   sk:['s08','s52','s53','s09']},
+  {id:'c-mkt-3', a:'marketing', n:'Analista de Growth',         sen:'pleno',     base:[5500,8000],   sk:['s08','s09','s53','s45']},
+  {id:'c-mkt-4', a:'marketing', n:'Analista de Eventos',        sen:'pleno',     base:[4000,5500],   sk:['s54','s56','s55']},
+  {id:'c-mkt-5', a:'marketing', n:'Coordenador de Marketing',   sen:'lideranca', base:[9000,12500],  sk:['s08','s52','s07','s55']},
+  // ── tecnologia ──
+  {id:'c-tec-1', a:'tecnologia', n:'Pessoa Desenvolvedora Júnior',   sen:'junior',    base:[4000,6000],   sk:['s36','s38','s40']},
+  {id:'c-tec-2', a:'tecnologia', n:'Pessoa Desenvolvedora Backend',  sen:'senior',    base:[12000,15000], sk:['s36','s38','s39','s09']},
+  {id:'c-tec-3', a:'tecnologia', n:'Pessoa Desenvolvedora Frontend', sen:'pleno',     base:[8000,11000],  sk:['s37','s40','s46']},
+  {id:'c-tec-4', a:'tecnologia', n:'Analista de Dados',              sen:'pleno',     base:[6500,9000],   sk:['s38','s09','s12','s45']},
+  {id:'c-tec-5', a:'tecnologia', n:'Analista de Infraestrutura',     sen:'pleno',     base:[7000,9500],   sk:['s39','s41','s42']},
+  {id:'c-tec-6', a:'tecnologia', n:'Analista de QA',                 sen:'pleno',     base:[6000,8500],   sk:['s40','s47','s38']},
+  {id:'c-tec-7', a:'tecnologia', n:'Tech Lead',                      sen:'lideranca', base:[16000,22000], sk:['s36','s07','s39','s56','s57']},
+  // ── produto ──
+  {id:'c-pro-1', a:'produto', n:'Analista de Produto',          sen:'pleno',     base:[6000,8500],   sk:['s45','s47','s43','s09']},
+  {id:'c-pro-2', a:'produto', n:'Product Owner',                sen:'pleno',     base:[8000,11000],  sk:['s44','s47','s56','s43']},
+  {id:'c-pro-3', a:'produto', n:'Product Manager',              sen:'senior',    base:[12000,16000], sk:['s44','s43','s45','s46']},
+  {id:'c-pro-4', a:'produto', n:'Pesquisador de Produto',       sen:'pleno',     base:[7000,9500],   sk:['s43','s46','s09']},
+  {id:'c-pro-5', a:'produto', n:'Head de Produto',              sen:'lideranca', base:[18000,25000], sk:['s44','s07','s45','s57','s55']},
+  // ── atendimento ──
+  {id:'c-ate-1', a:'atendimento', n:'Atendente de Suporte',     sen:'junior',    base:[2000,2700],   sk:['s48','s49']},
+  {id:'c-ate-2', a:'atendimento', n:'Analista de Suporte',      sen:'pleno',     base:[3600,5000],   sk:['s49','s42','s50']},
+  {id:'c-ate-3', a:'atendimento', n:'Analista de Ouvidoria',    sen:'pleno',     base:[4000,5500],   sk:['s51','s48','s09']},
+  {id:'c-ate-4', a:'atendimento', n:'Analista de Sucesso do Cliente', sen:'pleno', base:[4500,6200], sk:['s34','s48','s33']},
+  {id:'c-ate-5', a:'atendimento', n:'Coordenador de Atendimento', sen:'lideranca', base:[7500,10000], sk:['s50','s07','s48','s55']},
+];
+const CARGO = Object.fromEntries(CARGOS.map(c=>[c.id,c]));
+
+/* A família de peso vem do CARGO, não da área. Liderança pesa cultura mais
+   alto em qualquer área, e é isso que faz "Gerente de Operações" e
+   "Analista de Operações" não serem avaliados com a mesma régua. */
+const familiaDe = c => c.fam || (c.sen==='lideranca' ? 'Liderança' : AREA[c.a].fam);
+
+const SEN_ROT = {junior:'Júnior', pleno:'Pleno', senior:'Sênior', lideranca:'Liderança'};
+
+const cargosDaArea = areaId => CARGOS.filter(c=>c.a===areaId);
+
+/* Catálogo do passo de atividades: o que os cargos escolhidos pedem, mais
+   as transversais, que aparecem sempre. Só competência ativa — sugestão
+   pendente de curadoria não entra no match. */
+function skillsDosCargos(cargoIds){
+  const s = new Set();
+  cargoIds.forEach(id => (CARGO[id]?.sk || []).forEach(x => s.add(x)));
+  SKILLS.filter(k=>k.tr).forEach(k => s.add(k.id));
+  return [...s].map(id=>SKILL[id]).filter(k=>k && k.st==='ativa');
+}
+
+/* ── motivos de rejeição ──
+   Vocabulário fechado desde a primeira versão. Texto livre não treina, e
+   ninguém volta para categorizar depois.
+
+   `g`   grupo, para o gráfico de distribuição
+   `dec` de quem partiu a decisão
+   `eng` o reasonCode que o motor emite quando ele já previa esse motivo.
+         É o que permite medir calibração: em quantas reprovações por
+         requisito ausente o motor já tinha levantado a mão? Sem esse
+         vínculo, vocabulário fechado é só um select bonito.             */
+const MOTIVOS_REJEICAO = [
+  {id:'mr-req',       r:'Requisito obrigatório ausente',   g:'tecnico',  dec:'empresa',   eng:'REQ_OBRIGATORIO_AUSENTE'},
+  {id:'mr-exp',       r:'Experiência aquém do necessário', g:'tecnico',  dec:'empresa',   eng:null},
+  {id:'mr-nivel',     r:'Nível acima do escopo da vaga',   g:'tecnico',  dec:'empresa',   eng:null},
+  {id:'mr-cultura',   r:'Desalinhamento de ambiente',      g:'cultural', dec:'empresa',   eng:'EIXO_FORA_TOLERANCIA'},
+  {id:'mr-pretensao', r:'Pretensão fora da faixa',         g:'contexto', dec:'ambos',     eng:'PRETENSAO_FORA'},
+  {id:'mr-local',     r:'Localidade incompatível',         g:'contexto', dec:'ambos',     eng:'LOCAL_DIVERGENTE'},
+  {id:'mr-modelo',    r:'Modelo de trabalho incompatível', g:'contexto', dec:'ambos',     eng:'MODELO_DIVERGENTE'},
+  {id:'mr-outro',     r:'Selecionamos outra pessoa',       g:'processo', dec:'empresa',   eng:null},
+  {id:'mr-congelada', r:'Vaga congelada ou cancelada',     g:'processo', dec:'empresa',   eng:null},
+  {id:'mr-desistiu',  r:'Candidato desistiu',              g:'processo', dec:'candidato', eng:null},
+  {id:'mr-semresp',   r:'Sem resposta do candidato',       g:'processo', dec:'candidato', eng:null},
+];
+const MOTIVO = Object.fromEntries(MOTIVOS_REJEICAO.map(m=>[m.id,m]));
+
+const GRUPO_MOTIVO = {tecnico:'Técnico', cultural:'Cultural', contexto:'Contexto', processo:'Processo'};
+
+/* ══ parte: partes/js/11-prng.js ══ */
+/* ══════════════════ 7b · ALEATÓRIO DETERMINÍSTICO ══════════════════
+
+   Os dados de demonstração são gerados, não escritos à mão, mas precisam
+   ser os MESMOS a cada carregamento: sem isso não dá para reproduzir um
+   bug de funil, e o dashboard muda de forma a cada F5.
+
+   O mesmo PRNG do core (fixtures.ts), com uma diferença importante: a
+   semente vem de uma string, não de um contador. Semente por id significa
+   que inserir a vaga 17 não desloca as vagas 18 a 32 — cada item é
+   reconstruível isoladamente, e a persistência guarda só o id.          */
+
+function prng(semente){
+  let s = semente >>> 0;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+/* FNV-1a: string → semente. Determinística entre execuções e navegadores. */
+function sementeDe(str){
+  let h = 0x811c9dc5 >>> 0;
+  for(let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+
+const escolher = (r, arr) => arr[Math.floor(r() * arr.length)];
+const entre = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+
+/* Sorteio ponderado por `p`. Os pesos não precisam somar 1. */
+function sortearPonderado(r, itens){
+  const total = itens.reduce((a, x) => a + x.p, 0);
+  let k = r() * total;
+  for(const x of itens){ k -= x.p; if(k <= 0) return x; }
+  return itens[itens.length - 1];
+}
+
+/* Embaralha sem mutar a origem, usando o PRNG injetado (nunca Math.random). */
+function embaralhar(r, arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(r() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* Âncora de tempo fixa. Datas semeadas contam a partir daqui, nunca de
+   Date.now(): senão o dashboard muda de forma entre um reload e outro e
+   nenhum bug de funil se reproduz. */
+const AGORA_DEMO = new Date('2026-08-30T12:00:00.000Z');
+const diasAtras = n => new Date(AGORA_DEMO.getTime() - n * 86400000).toISOString();
+
+/* ══ parte: partes/js/12-empresas.js ══ */
+const eixosEmp = v => Object.fromEntries(EIXO_IDS.map(id=>[id, sv(v[id] ?? 50, 'company', 1)]));
+
+const EMPRESAS = {
+  aurora:{id:'emp-aurora', versao:'emp-v1', n:'Grupo Aurora', c:'#0C5F92', s:'Varejo · 620 pessoas',
+    eixos: eixosEmp({ritmo:64,autonomia:78,formal:34,erro:62,decisao:70,colab:58,
+      previsib:56,presenca:14,interrup:66,escopo:74,senior:76,espec:38,dados:52,relacional:68})},
+  vertigo:{id:'emp-vertigo', versao:'emp-v1', n:'Vertigo Saúde', c:'#1E8E6A', s:'Healthtech · 90 pessoas',
+    eixos: eixosEmp({ritmo:88,autonomia:82,formal:22,erro:80,decisao:76,colab:70,
+      previsib:80,presenca:52,interrup:74,escopo:82,senior:66,espec:44,dados:84,relacional:56})},
+  malbec:{id:'emp-malbec', versao:'emp-v1', n:'Malbec Tech', c:'#8A4FBE', s:'Logística · 210 pessoas',
+    eixos: eixosEmp({ritmo:72,autonomia:86,formal:30,erro:74,decisao:80,colab:52,
+      previsib:62,presenca:92,interrup:32,escopo:48,senior:80,espec:82,dados:88,relacional:26})},
+  valeverde:{id:'emp-valeverde', versao:'emp-v1', n:'Cooperativa Vale Verde', c:'#B0741A', s:'Agro · 1.400 associados',
+    eixos: eixosEmp({ritmo:26,autonomia:34,formal:74,erro:24,decisao:28,colab:60,
+      previsib:22,presenca:30,interrup:44,escopo:36,senior:32,espec:56,dados:38,relacional:44})},
+};
+
+/* ══ parte: partes/js/13-vagas.js ══ */
+/* ══════════════════ 7d · VAGAS ══════════════════
+
+   As quatro primeiras são escritas à mão e ficam literais: a vaga 1 é o
+   caso canônico do ADR 001, e é ela que mostra na tela o baseline de 84.
+   As demais são geradas, para a busca ter volume de verdade.
+
+   `familia` NUNCA é escrita à mão numa vaga gerada — sai de familiaDe(cargo).
+   Nas quatro fixas ela está escrita, e 99-boot.js confere que bate com o
+   cargo. Duas fontes para a mesma verdade divergem no primeiro que alguém
+   editar.                                                                */
+
+const req = l => l.map(([skillId,peso,obrigatorio])=>({skillId,peso,obrigatorio}));
+
+const VAGAS_FIXAS = [
+  {id:1, vid:'vaga-001', versao:'vaga-v1', cargo:'Coordenador de RH', cargoId:'c-rh-5',
+   area:'rh', emp:'aurora',
+   local:'Recife, presencial', modelo:'presencial', uf:'PE',
+   faixa:'R$ 9.000 a R$ 11.000', faixaMin:9000, faixaMax:11000, dias:2, cand:9,
+   familia:'Gente', sen:'senior', tags:['Recrutamento','Avaliação de desempenho','Varejo'],
+   requisitos: req([['s01',3,true],['s02',3,true],['s06',2,false],['s07',2,false],['s03',1,false]]),
+   res:'Grupo de varejo com 620 funcionários em nove lojas. A posição é nova e responde direto para a diretoria de gente.',
+   faz:['Estruturar o processo seletivo, hoje feito por indicação',
+        'Montar o ciclo de avaliação de desempenho do zero',
+        'Cuidar do clima nas nove lojas, com visita quinzenal'],
+   pede:['Experiência em varejo ou operação de alto volume',
+         'Ter montado processo, não só executado',
+         'Disponibilidade para viajar dentro de Pernambuco']},
+  {id:2, vid:'vaga-002', versao:'vaga-v1', cargo:'Analista de Marketing Pleno', cargoId:'c-mkt-2',
+   area:'marketing', emp:'vertigo',
+   local:'Recife, híbrido', modelo:'hibrido', uf:'PE',
+   faixa:'R$ 6.500 a R$ 8.200', faixaMin:6500, faixaMax:8200, dias:5, cand:23,
+   familia:'Marketing', sen:'pleno', tags:['Mídia paga','RD Station','Growth'],
+   requisitos: req([['s08',3,true],['s09',2,false],['s12',2,false],['s11',1,false]]),
+   res:'Área de aquisição de uma healthtech com 40 mil pacientes ativos no Nordeste. O time de growth dobrou de dois para quatro pessoas neste semestre.',
+   faz:['Rodar campanhas em Meta e Google, com verba mensal de R$ 90 mil',
+        'Estruturar o funil no RD Station junto com vendas',
+        'Acompanhar CAC e retenção por coorte de plano'],
+   pede:['3 anos ou mais em marketing digital com verba própria',
+         'Prática de mídia paga, não só planejamento',
+         'Confortável com planilha e leitura de dado']},
+  {id:3, vid:'vaga-003', versao:'vaga-v1', cargo:'Pessoa Desenvolvedora Backend Sênior', cargoId:'c-tec-2',
+   area:'tecnologia', emp:'malbec',
+   local:'Remoto, Brasil', modelo:'remoto', uf:'BR',
+   faixa:'R$ 12.000 a R$ 15.000', faixaMin:12000, faixaMax:15000, dias:8, cand:41,
+   familia:'Tecnologia', sen:'senior', tags:['Node','TypeScript','PostgreSQL'],
+   requisitos: req([['s09',2,false],['s12',1,false]]),
+   res:'Squad de integrações de uma empresa de logística que processa 1,2 milhão de rastreios por dia.',
+   faz:['Manter as integrações com transportadoras em Node e TypeScript',
+        'Reduzir o tempo de resposta da API pública, hoje em 840ms no p95',
+        'Participar do plantão, uma semana a cada oito'],
+   pede:['5 anos ou mais em backend sob carga','Node, TypeScript e PostgreSQL',
+         'Ter passado por migração de monólito para serviços']},
+  {id:4, vid:'vaga-004', versao:'vaga-v1', cargo:'Analista Financeiro Júnior', cargoId:'c-fin-2',
+   area:'financas', emp:'valeverde',
+   local:'Recife, híbrido', modelo:'hibrido', uf:'PE',
+   faixa:'R$ 3.400 a R$ 4.100', faixaMin:3400, faixaMax:4100, dias:11, cand:56,
+   familia:'Financeiro', sen:'junior', tags:['Conciliação','Excel','Fluxo de caixa'],
+   requisitos: req([['s10',3,true],['s12',2,true]]),
+   res:'Cooperativa agrícola com 1.400 associados. O financeiro tem quatro pessoas e fecha o mês em cinco dias úteis.',
+   faz:['Conciliação bancária e contas a pagar','Apoiar o fechamento mensal',
+        'Manter a planilha de fluxo de caixa de 90 dias'],
+   pede:['Formação em contábeis, administração ou economia','Excel com procv e tabela dinâmica',
+         'Primeira ou segunda experiência']},
+];
+
+/* ── gerador ──
+   Peso alto em PE e no remoto nacional de propósito. `okLocal` dá 25 quando
+   a UF diverge, o que tira uns 5 pontos do total; espalhar as vagas por
+   sete estados deixaria o board inteiro entre 60 e 70 e o produto pareceria
+   não separar ninguém de ninguém.                                         */
+const UFS_VAGA = [
+  ['PE','Recife'], ['PE','Recife'], ['PE','Recife'],
+  ['BR','Remoto, Brasil'], ['BR','Remoto, Brasil'],
+  ['SP','São Paulo'], ['MG','Belo Horizonte'], ['BA','Salvador'],
+  ['CE','Fortaleza'], ['RS','Porto Alegre'],
+];
+const ROT_MODELO = {presencial:'presencial', hibrido:'híbrido', remoto:'remoto'};
+
+const RES_AREA = {
+  operacoes:   e => 'Operação de '+e.s.split('·')[0].trim().toLowerCase()+' com rotina distribuída entre unidades. A área responde por prazo, custo e ruptura.',
+  financas:    e => 'Time financeiro enxuto, com fechamento mensal em cinco dias úteis e auditoria anual.',
+  rh:          e => 'Área de gente em estruturação, com processo ainda sendo desenhado e espaço para deixar marca.',
+  vendas:      e => 'Time comercial com meta trimestral e carteira ativa. A área responde por receita nova e recorrência.',
+  marketing:   e => 'Área de aquisição com verba própria e meta de custo por lead acordada com vendas.',
+  tecnologia:  e => 'Squad de produto com entrega contínua, plantão rotativo e código revisado por pares.',
+  produto:     e => 'Time de produto trabalhando por descoberta, com acesso direto a quem usa e a quem vende.',
+  atendimento: e => 'Central de atendimento com SLA acordado e volume concentrado no início do mês.',
+};
+const PEDE_SEN = {
+  junior:    ['Primeira ou segunda experiência na área','Vontade de aprender o processo por dentro','Formação em andamento ou concluída'],
+  pleno:     ['3 anos ou mais na função','Autonomia para tocar a rotina sem supervisão diária','Confortável com planilha e leitura de dado'],
+  senior:    ['5 anos ou mais na função','Ter estruturado processo, não só executado','Capacidade de defender uma decisão com dado'],
+  lideranca: ['Experiência prévia liderando time direto','Responsabilidade por orçamento e por meta','Prática em contratar e desenvolver pessoas'],
+};
+
+function gerarVaga(n, cargo){
+  const vid = 'vaga-' + String(n).padStart(3, '0');
+  const r = prng(sementeDe(vid));
+  const empK = escolher(r, Object.keys(EMPRESAS));
+  const [uf, cidade] = escolher(r, UFS_VAGA);
+  const modelo = uf === 'BR' ? 'remoto' : escolher(r, ['presencial','hibrido','hibrido','remoto']);
+
+  const fator = 0.9 + r() * 0.35;
+  const faixaMin = Math.round(cargo.base[0] * fator / 100) * 100;
+  const faixaMax = Math.round(cargo.base[1] * fator / 100) * 100;
+
+  // 3 a 5 competências do cargo. Peso decrescente, ao menos um obrigatório:
+  // sem obrigatório o teto de 45 nunca dispara e metade das telas de portão
+  // fica sem dado para mostrar.
+  const pool = embaralhar(r, cargo.sk);
+  const qtd = Math.min(pool.length, entre(r, 3, 5));
+  const requisitos = pool.slice(0, qtd).map((skillId, i) => ({
+    skillId,
+    peso: i === 0 ? 3 : i <= 2 ? 2 : 1,
+    obrigatorio: i === 0 || (i === 1 && r() < 0.5),
+  }));
+
+  return {
+    id: n, vid, versao:'vaga-v1',
+    cargo: cargo.n, cargoId: cargo.id, area: cargo.a,
+    emp: empK, familia: familiaDe(cargo), sen: cargo.sen,
+    local: uf === 'BR' ? 'Remoto, Brasil' : cidade + ', ' + ROT_MODELO[modelo],
+    modelo, uf, faixaMin, faixaMax,
+    faixa: 'R$ ' + faixaMin.toLocaleString('pt-BR') + ' a R$ ' + faixaMax.toLocaleString('pt-BR'),
+    dias: entre(r, 1, 28), cand: entre(r, 3, 60),
+    requisitos,
+    tags: requisitos.slice(0, 3).map(x => skillNome(x.skillId)),
+    res: RES_AREA[cargo.a](EMPRESAS[empK]),
+    faz: requisitos.slice(0, 3).map(x => 'Responder por ' + skillNome(x.skillId).toLowerCase()),
+    pede: PEDE_SEN[cargo.sen],
+  };
+}
+
+/* Cobertura forçada por área. Sorteio livre de cargo deixaria Atendimento
+   com zero vagas e o filtro daquela área morto na tela. */
+function gerarVagas(){
+  const out = [];
+  let n = VAGAS_FIXAS.length + 1;
+  for(const area of AREAS){
+    const r = prng(sementeDe('area|' + area.id));
+    const disp = embaralhar(r, cargosDaArea(area.id));
+    const quantas = Math.min(disp.length, entre(r, 3, 4));
+    for(let i = 0; i < quantas; i++) out.push(gerarVaga(n++, disp[i]));
+  }
+  return out;
+}
+
+const VAGAS = [...VAGAS_FIXAS, ...gerarVagas()];
+const VAGA = Object.fromEntries(VAGAS.map(v => [v.id, v]));
+
+const ETAPAS = ['Enviada','Triagem','Entrevista Conectaria','Entrevista empresa','Proposta'];
+
+/* ══ parte: partes/js/20-estado.js ══ */
+/* ══════════════════ 8 · ESTADO ══════════════════
+   O candidato nasce com fonte "conversation": o perfil veio da triagem,
+   é inferência até a pessoa confirmar. É essa distinção que faz o portão
+   devolver "revisão" em vez de "publicável" logo depois do cadastro.   */
+const EIXOS_CAND_BASE = {ritmo:58,autonomia:82,formal:30,erro:66,decisao:72,colab:54,
+  previsib:52,presenca:20,interrup:58,escopo:70,senior:78,espec:40,dados:58,relacional:64};
+
+function candidatoNovo(fonte){
+  const f = fonte || 'conversation';
+  const cf = f==='user' ? 1 : f==='conversation' ? .85 : .78;
+  return {
+    id:'cand-001', versao:'prof-v1', __v:0, fonte:f,
+    uf: sv('PE', f, f==='user'?1:.9),
+    modelos: sv(['presencial','hibrido'], f, cf),
+    pretensao: sv(9500, f, f==='user'?1:.8),
+    competencias: [['s01',3],['s02',3],['s06',2]].map(([skillId,n])=>
+      ({skillId, nivel: sv(n, f, f==='user'?1:.8)})),
+    eixos: Object.fromEntries(EIXO_IDS.map(id=>[id, sv(EIXOS_CAND_BASE[id], f, cf)])),
+  };
+}
+
+const S = {
+  view:'home', modo:'cand', q:'', local:'', filtro:'todas', vaga:null,
+  logado:false, contaEmp:false, conta:null, passo:0, perfil:{}, candidaturas:[],
+  ddAberto:false, aba:'criar',
+  cand: candidatoNovo('conversation'),
+  empPasso:0, empSalvo:false,
+  comparar: [],
+};
+
+/* Reprojeta a fonte de todo o perfil. É o que a tela de confirmação faz:
+   o dado não muda de valor, muda de estatuto.                          */
+function reprojetarFonte(f){
+  const cf = f==='user' ? 1 : f==='conversation' ? .85 : .78;
+  const c = S.cand;
+  c.fonte = f;
+  c.uf = sv(c.uf.value, f, f==='user'?1:.9);
+  c.modelos = sv(c.modelos.value, f, cf);
+  if(c.pretensao) c.pretensao = sv(c.pretensao.value, f, f==='user'?1:.8);
+  c.competencias = c.competencias.map(x=>({skillId:x.skillId, nivel: sv(x.nivel.value, f, f==='user'?1:.8)}));
+  c.eixos = Object.fromEntries(EIXO_IDS.map(id=>[id, sv(c.eixos[id].value, f, cf)]));
+  // versiona a pessoa: a chave do memo cuida da invalidação sozinha
+  tocar(c);
+}
+
+/* ══ parte: partes/js/21-fachada.js ══ */
+/* ══════════════════ 9 · FACHADA DO MOTOR ══════════════════
+
+   A chave do memo é o ponto mais frágil desta camada, e vale explicar o
+   que ela precisa cobrir. O resultado de evaluate() depende de quatro
+   coisas: quem é a pessoa, qual é a vaga, como está a empresa e qual
+   política está valendo. Se qualquer uma delas mudar e a chave não mudar
+   junto, a tela mostra um número desatualizado — plausível, e por isso
+   invisível. É a pior classe de bug que este arquivo pode ter.
+
+   A versão anterior usava `vagaId|cand.v|empresa.__v`: sem a pessoa (o
+   fit de duas pessoas na mesma vaga colidia), sem a vaga (editar requisito
+   não invalidava) e sem a política. Funcionava por acidente, porque todo
+   caminho de mutação chamava _memo.clear() — a chave versionada era
+   decorativa, e o clear() global jogava fora o cache das 31 vagas a cada
+   movimento de slider.                                                   */
+
+const _memo = new Map();
+const LIMITE_MEMO = 2000;
+
+/** Versão de uma entidade mutável. */
+const vv = e => e.__v || 0;
+
+/** Único lugar que incrementa versão. Nunca faça `x.__v++` solto: a
+ *  garantia de invalidação depende de todo caminho passar por aqui. */
+function tocar(e){ if(e) e.__v = vv(e) + 1; }
+
+function chaveMatch(pessoa, v){
+  const emp = EMPRESAS[v.emp];
+  return pessoa.id + '@' + vv(pessoa)
+    + '|' + v.vid + '@' + vv(v)
+    + '|' + emp.id + '@' + vv(emp)
+    + '|' + POLITICA.policy_version;
+}
+
+function vagaEntidade(v){
+  return {id:v.vid, versao:v.versao, empresaId:EMPRESAS[v.emp].id, familia:v.familia,
+    uf:v.uf, modelo:v.modelo, faixaMin:v.faixaMin, faixaMax:v.faixaMax, requisitos:v.requisitos};
+}
+
+/** Fit de qualquer pessoa contra qualquer vaga. */
+function Mp(pessoa, v){
+  const chave = chaveMatch(pessoa, v);
+  const emCache = _memo.get(chave);
+  if(emCache) return emCache;
+
+  const r = evaluate({candidato:pessoa, vaga:vagaEntidade(v), empresa:EMPRESAS[v.emp],
+    politica:POLITICA, rotuloSkill:skillNome});
+  r.decisoes = avaliarPoliticas(r, POLITICA);
+  r.desfecho = desfechoFinal(r.decisoes);
+
+  // Cada resultado carrega três listas de evidência com strings. Sem teto,
+  // uma sessão longa de busca acumula alguns MB sem necessidade.
+  if(_memo.size >= LIMITE_MEMO) _memo.clear();
+  _memo.set(chave, r);
+  return r;
+}
+
+/** Fit do candidato logado. Mantém as chamadas existentes intactas. */
+const M = v => Mp(S.cand, v);
+
+/** Escape para troca de política em runtime, que muda tudo de uma vez.
+ *  Mutação de perfil, vaga ou empresa NÃO precisa disto: passa por tocar()
+ *  e a chave já cuida. */
+function invalidarMatch(){ _memo.clear(); }
+
+/* ══ parte: partes/js/32-persistencia.js ══ */
+/* ══════════════════ 12 · PERSISTÊNCIA ══════════════════
+   Recarregar a página perdia tudo, o que atrapalhava justamente quem
+   estava avaliando o protótipo com calma.                             */
+const CHAVE='conectaria.proto.v2';
+function salvar(){
+  try{
+    localStorage.setItem(CHAVE, JSON.stringify({
+      logado:S.logado, contaEmp:S.contaEmp, modo:S.modo, view:S.view,
+      candidaturas:S.candidaturas, empSalvo:S.empSalvo, comparar:S.comparar,
+      fonte:S.cand.fonte,
+      eixosCand:Object.fromEntries(EIXO_IDS.map(id=>[id,S.cand.eixos[id].value])),
+      skills:S.cand.competencias.map(c=>[c.skillId,c.nivel.value]),
+      eixosEmp:Object.fromEntries(EIXO_IDS.map(id=>[id,EMPRESAS.aurora.eixos[id].value])),
+    }));
+  }catch(_){ /* modo privado ou storage cheio: o protótipo segue sem persistir */ }
+}
+function restaurar(){
+  let d; try{ d=JSON.parse(localStorage.getItem(CHAVE)||'null'); }catch(_){ return false; }
+  if(!d) return false;
+  try{
+    S.logado=!!d.logado; S.contaEmp=!!d.contaEmp; S.modo=d.modo||'cand';
+    S.candidaturas=d.candidaturas||[]; S.empSalvo=!!d.empSalvo; S.comparar=d.comparar||[];
+    if(d.skills) S.cand.competencias = d.skills.map(([skillId,n])=>({skillId, nivel:sv(n,'user',1)}));
+    if(d.eixosCand) EIXO_IDS.forEach(id=>{ if(d.eixosCand[id]!=null) S.cand.eixos[id]=sv(d.eixosCand[id],'user',1); });
+    if(d.eixosEmp) EIXO_IDS.forEach(id=>{ if(d.eixosEmp[id]!=null) EMPRESAS.aurora.eixos[id]=sv(d.eixosEmp[id],'company',1); });
+    reprojetarFonte(d.fonte||'user');
+    return true;
+  }catch(_){ return false; }
+}
+function limparTudo(){
+  try{ localStorage.removeItem(CHAVE); }catch(_){}
+  location.reload();
+}
+
+/* ══ parte: partes/js/33-tema.js ══ */
+/* ══════════════════ 13 · TEMA ══════════════════ */
+const T_CHAVE='conectaria.tema';
+function aplicarTema(t){
+  if(t) document.documentElement.setAttribute('data-theme',t);
+  else document.documentElement.removeAttribute('data-theme');
+  try{ t ? localStorage.setItem(T_CHAVE,t) : localStorage.removeItem(T_CHAVE); }catch(_){}
+}
+function alternarTema(){
+  const atual = document.documentElement.getAttribute('data-theme');
+  const escuroSistema = matchMedia('(prefers-color-scheme: dark)').matches;
+  const efetivo = atual || (escuroSistema?'dark':'light');
+  aplicarTema(efetivo==='dark'?'light':'dark');
+  toast(efetivo==='dark'?'Tema claro.':'Tema escuro.', I.esc);
+}
+(function iniTema(){
+  let t=null; try{ t=localStorage.getItem(T_CHAVE); }catch(_){}
+  if(t) aplicarTema(t);
+})();
+
+/* ══ parte: partes/js/31-ui-comp.js ══ */
 /* ══════════════════ 11 · COMPONENTES ══════════════════ */
 
 /* Medidor: anel externo é a nota, arco interno é a confiança. Duas
@@ -1772,59 +2445,7 @@ function revelar(escopo){
   $$('.rv:not(.vis)',escopo).forEach(el=>io.observe(el));
 }
 
-/* ══════════════════ 12 · PERSISTÊNCIA ══════════════════
-   Recarregar a página perdia tudo, o que atrapalhava justamente quem
-   estava avaliando o protótipo com calma.                             */
-const CHAVE='conectaria.proto.v2';
-function salvar(){
-  try{
-    localStorage.setItem(CHAVE, JSON.stringify({
-      logado:S.logado, contaEmp:S.contaEmp, modo:S.modo, view:S.view,
-      candidaturas:S.candidaturas, empSalvo:S.empSalvo, comparar:S.comparar,
-      fonte:S.cand.fonte,
-      eixosCand:Object.fromEntries(EIXO_IDS.map(id=>[id,S.cand.eixos[id].value])),
-      skills:S.cand.competencias.map(c=>[c.skillId,c.nivel.value]),
-      eixosEmp:Object.fromEntries(EIXO_IDS.map(id=>[id,EMPRESAS.aurora.eixos[id].value])),
-    }));
-  }catch(_){ /* modo privado ou storage cheio: o protótipo segue sem persistir */ }
-}
-function restaurar(){
-  let d; try{ d=JSON.parse(localStorage.getItem(CHAVE)||'null'); }catch(_){ return false; }
-  if(!d) return false;
-  try{
-    S.logado=!!d.logado; S.contaEmp=!!d.contaEmp; S.modo=d.modo||'cand';
-    S.candidaturas=d.candidaturas||[]; S.empSalvo=!!d.empSalvo; S.comparar=d.comparar||[];
-    if(d.skills) S.cand.competencias = d.skills.map(([skillId,n])=>({skillId, nivel:sv(n,'user',1)}));
-    if(d.eixosCand) EIXO_IDS.forEach(id=>{ if(d.eixosCand[id]!=null) S.cand.eixos[id]=sv(d.eixosCand[id],'user',1); });
-    if(d.eixosEmp) EIXO_IDS.forEach(id=>{ if(d.eixosEmp[id]!=null) EMPRESAS.aurora.eixos[id]=sv(d.eixosEmp[id],'company',1); });
-    reprojetarFonte(d.fonte||'user');
-    return true;
-  }catch(_){ return false; }
-}
-function limparTudo(){
-  try{ localStorage.removeItem(CHAVE); }catch(_){}
-  location.reload();
-}
-
-/* ══════════════════ 13 · TEMA ══════════════════ */
-const T_CHAVE='conectaria.tema';
-function aplicarTema(t){
-  if(t) document.documentElement.setAttribute('data-theme',t);
-  else document.documentElement.removeAttribute('data-theme');
-  try{ t ? localStorage.setItem(T_CHAVE,t) : localStorage.removeItem(T_CHAVE); }catch(_){}
-}
-function alternarTema(){
-  const atual = document.documentElement.getAttribute('data-theme');
-  const escuroSistema = matchMedia('(prefers-color-scheme: dark)').matches;
-  const efetivo = atual || (escuroSistema?'dark':'light');
-  aplicarTema(efetivo==='dark'?'light':'dark');
-  toast(efetivo==='dark'?'Tema claro.':'Tema escuro.', I.esc);
-}
-(function iniTema(){
-  let t=null; try{ t=localStorage.getItem(T_CHAVE); }catch(_){}
-  if(t) aplicarTema(t);
-})();
-
+/* ══ parte: partes/js/40-cand-busca.js ══ */
 /* ══════════════════ 14 · HOME ══════════════════ */
 function filtrar(){
   const q=S.q.trim().toLowerCase(), l=S.local;
@@ -1955,6 +2576,7 @@ function renderBarraCmp(){
   $('#cmpVer').onclick=()=>ir('comparar');
 }
 
+/* ══ parte: partes/js/41-cand-vaga.js ══ */
 /* ══════════════════ 15 · DETALHE DA VAGA ══════════════════ */
 function vVaga(id){
   const v=VAGAS.find(x=>x.id===id); S.vaga=id; const e=EMPRESAS[v.emp];
@@ -2080,7 +2702,7 @@ async function abrirTrace(vagaId){
   $('#drwId').textContent=v.vid;
 
   const t = await montarTrace({
-    recommendationId:'rec-'+v.vid+'-p'+S.cand.v,
+    recommendationId:'rec-'+v.vid+'-p'+vv(S.cand),
     candidato:S.cand, vaga:vagaEntidade(v), empresa:EMPRESAS[v.emp],
     resultado:m, politica:POLITICA,
     versoes:{embedding:'sem-embedding-baseline', reranker:'sem-reranker-baseline'},
@@ -2178,6 +2800,7 @@ function vComparar(){
   animaMed(); animaEixos();
 }
 
+/* ══ parte: partes/js/42-cand-triagem.js ══ */
 /* ══════════════════ 18 · TRIAGEM ══════════════════ */
 const ROTEIRO = [
   {campo:'objetivo', rot:'objetivo.cargo_alvo', p:'Para começar, qual posição você está buscando agora?',
@@ -2308,6 +2931,7 @@ function candidatar(id, deTriagem){
                   : 'Candidatura enviada com seu perfil já estruturado.');
 }
 
+/* ══ parte: partes/js/43-cand-minhas.js ══ */
 /* ══════════════════ 19 · MINHAS CANDIDATURAS ══════════════════ */
 function vMinhas(){
   const el=$('#v-minhas');
@@ -2351,6 +2975,149 @@ function vMinhas(){
   animaMed(); revelar(el);
 }
 
+/* ══ parte: partes/js/71-cand-perfil.js ══ */
+/* ══════════════════ 25 · ETIQUETAS E CONFIRMAÇÃO ══════════════════ */
+function chipsSkill(){
+  return S.cand.competencias.map(c=>
+    '<span class="tk">'+esc(skillNome(c.skillId))+
+    ' <button class="nvbt" data-niv="'+c.skillId+'" title="Nível" aria-label="Mudar nível de '+
+    esc(skillNome(c.skillId))+', agora '+NIVEIS[c.nivel.value-1]+'">'+NIVEIS[c.nivel.value-1]+'</button>'+
+    '<button data-rms="'+c.skillId+'" aria-label="Remover '+esc(skillNome(c.skillId))+'">'+I.x+
+    '</button></span>').join('');
+}
+
+function vTags(){
+  const tem = new Set(S.cand.competencias.map(c=>c.skillId));
+  const disp = SKILLS.filter(k=>!tem.has(k.id));
+  const n = S.cand.competencias.length;
+  const conf = confiancaDe([...S.cand.competencias.map(c=>c.nivel),
+    ...EIXO_IDS.map(id=>S.cand.eixos[id]), S.cand.uf, S.cand.modelos], POLITICA);
+  const alcance = VAGAS.filter(v=>M(v).total>=60).length;
+  const publicaveis = VAGAS.filter(v=>M(v).desfecho==='allow').length;
+
+  $('#v-tags').innerHTML=
+  '<h1 style="font-size:var(--xxl);max-width:21ch;margin-top:var(--s5)">O que fica indexado do seu perfil.</h1>'+
+  '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Competência aqui não é texto livre: '+
+  'você escolhe do mesmo catálogo que a empresa usa no anúncio. É o que permite comparar '+
+  'requisito com competência sem depender de palavra-chave no currículo.</p>'+
+
+  (S.cand.fonte!=='user'
+    ? '<div class="confirma"><span class="ic">'+I.al+'</span>'+
+      '<div style="flex:1;min-width:240px"><b>Seu perfil ainda é inferência</b>'+
+      '<p>Ele saiu da conversa, não da sua mão. Enquanto estiver assim, o portão de política '+
+      'marca suas recomendações como revisão humana. Confirme e elas passam a publicável.</p></div>'+
+      '<button class="btn" id="confirmaBt">Confirmar meu perfil</button></div>'
+    : '<div class="confirma" style="background:var(--ok-bg);border-color:var(--ok)">'+
+      '<span class="ic" style="background:var(--ok)">'+I.ok+'</span>'+
+      '<div style="flex:1;min-width:240px"><b>Perfil confirmado por você</b>'+
+      '<p>Confiança no topo da escala. As recomendações passam pelo portão como publicáveis.</p></div></div>')+
+
+  '<div class="split" style="margin-top:var(--s4)"><div class="corpo">'+
+    '<div class="grupoTag"><b>Suas competências</b>'+
+      '<p class="hint">Clique no nível para alternar entre básico, intermediário e avançado. '+
+      'Nível pesa no fit técnico.</p>'+
+      '<div class="tagin" id="boxSkills">'+chipsSkill()+
+        '<input id="buscaSkill" placeholder="'+(n?'Buscar outra':'Digite para buscar')+
+        '" aria-label="Buscar competência" autocomplete="off"></div>'+
+      '<div class="sugt" id="sugSkill">'+disp.slice(0,7).map(k=>
+        '<button data-addk="'+k.id+'">+ '+esc(k.r)+'</button>').join('')+'</div></div>'+
+
+    '<div class="grupoTag"><b>Origem dos seus dados</b>'+
+      '<p class="hint">O motor pondera confiança pela fonte. Troque aqui para ver o portão de '+
+      'política mudar de decisão em tempo real: é o mecanismo que impede a plataforma de tratar '+
+      'extração automática como fato.</p>'+
+      '<div class="opcoes">'+
+        [['user','Confirmado por mim'],['conversation','Extraído da conversa'],
+         ['document','Extraído do currículo']].map(([k,r])=>
+          '<button class="op'+(S.cand.fonte===k?' on':'')+'" data-fonte="'+k+'" '+
+          'aria-pressed="'+(S.cand.fonte===k)+'" style="'+
+          (S.cand.fonte===k?'border-color:var(--ac3);color:var(--ac1);background:var(--veu2)':'')+
+          '">'+r+'</button>').join('')+'</div>'+
+      '<p class="hint" style="margin-top:10px">Peso de cada fonte na política '+
+      POLITICA.policy_version+': confirmado 1.0, conversa 0.82, documento 0.7. '+
+      'Abaixo de '+POLITICA.confianca.minima_para_publicar+' a recomendação é bloqueada; '+
+      'abaixo de '+POLITICA.confianca.revisar_abaixo_de+' vai para revisão humana.</p></div>'+
+
+    '<div class="grupoTag"><b>Onde você rende melhor</b>'+
+      '<p class="hint">Os mesmos catorze eixos que a empresa responde, com a pergunta espelhada. '+
+      'É daqui que sai o fit cultural. Mostrando os de menor tolerância, que são os que mais '+
+      'mexem no resultado.</p>'+
+      EIXOS.filter(e=>e.tolerancia<=22).map(e=>
+        '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b><span id="cl-'+e.id+'"></span></div>'+
+        '<input type="range" min="0" max="100" value="'+S.cand.eixos[e.id].value+'" data-ce="'+e.id+'" '+
+        'aria-label="'+esc(e.nome)+'"><div class="polos"><span>'+esc(e.poloA)+'</span>'+
+        '<span>'+esc(e.poloB)+'</span></div></div>').join('')+'</div>'+
+    '<button class="btn" id="fimTags" style="margin-top:var(--s3)">Concluir meu perfil</button>'+
+
+  '</div><aside class="lateral"><div class="box">'+
+    '<h4>Efeito no seu alcance</h4>'+
+    '<div class="linha"><span>Competências no catálogo</span><b>'+n+'</b></div>'+
+    '<div class="linha"><span>Eixos respondidos</span><b>14 de 14</b></div>'+
+    '<div class="linha"><span>Confiança do perfil</span><b id="lnConf">'+pc(conf)+'</b></div>'+
+    '<div class="linha"><span>Vagas acima de 60%</span><b id="lnAlc">'+alcance+' de '+VAGAS.length+'</b></div>'+
+    '<div class="linha"><span>Recomendações publicáveis</span><b id="lnPub">'+publicaveis+' de '+VAGAS.length+'</b></div>'+
+    '<div style="margin-top:var(--s2)">'+provenienciaSelo(S.cand.fonte)+'</div>'+
+    '<p class="porque">Os números acima recalculam de verdade: rodam o mesmo motor que a vaga '+
+    'usa. Tire uma competência obrigatória e veja o alcance cair; troque a origem do dado e '+
+    'veja as publicáveis sumirem.</p></div></aside></div>';
+
+  const rotula=()=>EIXOS.filter(e=>e.tolerancia<=22).forEach(e=>{
+    const v=S.cand.eixos[e.id].value;
+    $('#cl-'+e.id).textContent = v<35?e.poloA:v>65?e.poloB:'equilibrado';});
+  rotula();
+
+  $$('[data-ce]').forEach(i=>i.oninput=e=>{
+    const id=e.target.dataset.ce;
+    S.cand.eixos[id]=sv(Number(e.target.value), S.cand.fonte,
+      S.cand.fonte==='user'?1:S.cand.fonte==='conversation'?.85:.78);
+    tocar(S.cand); rotula(); atualizarAlcance();});
+
+  $$('[data-fonte]').forEach(b=>b.onclick=()=>{
+    reprojetarFonte(b.dataset.fonte); salvar(); vTags();
+    toast('Origem agora: '+FONTE_ROT[b.dataset.fonte]+'.');
+  });
+
+  const cb=$('#confirmaBt');
+  if(cb) cb.onclick=async()=>{
+    cb.disabled=true; cb.innerHTML='<span class="spin"></span>Confirmando';
+    await espera(520); reprojetarFonte('user'); salvar(); vTags();
+    toast('Perfil confirmado. Suas recomendações passaram a publicáveis.');
+  };
+
+  $('#fimTags').onclick=async()=>{
+    const b=$('#fimTags'); b.disabled=true; b.innerHTML='<span class="spin"></span>Salvando perfil';
+    await espera(600); S.logado=true; salvar();
+    if(S.vaga) candidatar(S.vaga,true);
+    else { ir('home'); toast('Perfil pronto. Agora você vê sua aderência em cada vaga.'); }
+  };
+}
+function atualizarAlcance(){
+  const a=$('#lnAlc'); if(a) a.textContent=VAGAS.filter(v=>M(v).total>=60).length+' de '+VAGAS.length;
+  const p=$('#lnPub'); if(p) p.textContent=VAGAS.filter(v=>M(v).desfecho==='allow').length+' de '+VAGAS.length;
+  const c=$('#lnConf');
+  if(c) c.textContent=pc(confiancaDe([...S.cand.competencias.map(x=>x.nivel),
+    ...EIXO_IDS.map(id=>S.cand.eixos[id]), S.cand.uf, S.cand.modelos], POLITICA));
+}
+/* Redesenho cirúrgico: só os chips e as sugestões. Redesenhar a view
+   inteira a cada tag fazia o input perder o foco, que era bug de UX. */
+function repintarSkills(){
+  const tem=new Set(S.cand.competencias.map(c=>c.skillId));
+  const box=$('#boxSkills'), inp=$('#buscaSkill');
+  if(!box) return;
+  const foco = document.activeElement===inp, valor = inp ? inp.value : '';
+  box.innerHTML = chipsSkill() + '<input id="buscaSkill" placeholder="Buscar outra" '+
+    'aria-label="Buscar competência" autocomplete="off" value="'+esc(valor)+'">';
+  $('#sugSkill').innerHTML = SKILLS.filter(k=>!tem.has(k.id) &&
+      (!valor || k.r.toLowerCase().includes(valor.toLowerCase()))).slice(0,7)
+    .map(k=>'<button data-addk="'+k.id+'">+ '+esc(k.r)+'</button>').join('')
+    || '<span style="font-size:var(--xs);color:var(--i34)">Nada no catálogo com esse termo. '+
+       'Escreva e a curadoria avalia incluir.</span>';
+  const novo=$('#buscaSkill');
+  if(foco && novo){ novo.focus(); novo.setSelectionRange(valor.length,valor.length); }
+  tocar(S.cand); atualizarAlcance(); salvar();
+}
+
+/* ══ parte: partes/js/50-emp-cadastro.js ══ */
 /* ══════════════════ 20 · EMPRESA · PERFIL ══════════════════ */
 function vPerfil(){
   $('#v-perfil').innerHTML=
@@ -2405,7 +3172,7 @@ function renderEmpForm(){
     $('#pv3').onclick=()=>{S.empPasso=2;vPerfil();};
     $('#salvarE').onclick=async()=>{
       const b=$('#salvarE'); b.disabled=true; b.innerHTML='<span class="spin"></span>Salvando';
-      await espera(560); S.empSalvo=true; invalidarMatch(); salvar(); ir('evagas');
+      await espera(560); S.empSalvo=true; tocar(EMPRESAS.aurora); salvar(); ir('evagas');
       toast('Perfil salvo. Toda vaga sua já herda estes eixos.');
     };
     return;
@@ -2444,13 +3211,14 @@ function renderEmpForm(){
   $$('[data-c]').forEach(i=>{i.oninput=e=>{
     const id=e.target.dataset.c;
     EMPRESAS.aurora.eixos[id]=sv(Number(e.target.value),'company',1);
-    EMPRESAS.aurora.__v=(EMPRESAS.aurora.__v||0)+1;
-    invalidarMatch(); atualizar();};});
+    tocar(EMPRESAS.aurora);
+    atualizar();};});
   atualizar();
   $('#pvv').onclick=()=>{S.empPasso--;vPerfil();};
   $('#pnn').onclick=()=>{S.empPasso++;vPerfil();};
 }
 
+/* ══ parte: partes/js/51-emp-vagas.js ══ */
 /* ══════════════════ 21 · EMPRESA · VAGAS ══════════════════ */
 function vEvagas(){
   $('#v-evagas').innerHTML=
@@ -2501,6 +3269,21 @@ function vEvagas(){
   };
 }
 
+/* ══ parte: partes/js/52-emp-pipeline.js ══ */
+/* TEMPORÁRIO — sai na Etapa 3, quando PESSOAS e S.pipeline entrarem.
+   Lista chapada, sem vínculo com vaga e sem perfil que o motor consiga
+   avaliar: o fit aqui é um número escrito à mão, não calculado. */
+const CANDS_EMP = [
+  {ini:'M.S.', obj:'Coordenador de RH', et:4, match:94, conf:.93, at:'há 2 dias',
+   pt:'Montou ciclo de avaliação em duas empresas. Cultura casa em autonomia.'},
+  {ini:'R.A.', obj:'Coordenador de RH', et:3, match:88, conf:.81, at:'há 1 dia',
+   pt:'Generalista de RH em indústria. Busca mais autonomia, o que a vaga oferece.'},
+  {ini:'L.F.', obj:'Analista de RH Sênior', et:2, match:71, conf:.68, at:'há 4 dias',
+   pt:'Perfil mais operacional que a vaga pede. Cultura e contexto casam bem.'},
+  {ini:'C.P.', obj:'Coordenador de Gente', et:1, match:64, conf:.59, at:'há 6 dias',
+   pt:'Experiência em startup, sem operação de loja física.'},
+];
+
 /* ══════════════════ 22 · EMPRESA · CANDIDATURAS ══════════════════ */
 const gateDe = conf => conf < POLITICA.confianca.minima_para_publicar ? 'block'
   : conf < POLITICA.confianca.revisar_abaixo_de ? 'review' : 'allow';
@@ -2533,6 +3316,7 @@ function vEcand(){
   animaEixos();
 }
 
+/* ══ parte: partes/js/53-emp-dash.js ══ */
 /* ══════════════════ 23 · EMPRESA · DASHBOARD ══════════════════ */
 function vEdash(){
   const dados=[['mar',2],['abr',3],['mai',1],['jun',4],['jul',3],['ago',5]];
@@ -2586,6 +3370,7 @@ function kpi(l,n,d,sp){
     '<div class="d">'+d+'</div>'+(sp?spark(sp):'')+'</div>';
 }
 
+/* ══ parte: partes/js/70-acesso.js ══ */
 /* ══════════════════ 24 · ACESSO ══════════════════ */
 function renderDD(){
   $('#ddAcesso').innerHTML =
@@ -2694,147 +3479,7 @@ async function autenticar(via, perfil, btn){
   }
 }
 
-/* ══════════════════ 25 · ETIQUETAS E CONFIRMAÇÃO ══════════════════ */
-function chipsSkill(){
-  return S.cand.competencias.map(c=>
-    '<span class="tk">'+esc(skillNome(c.skillId))+
-    ' <button class="nvbt" data-niv="'+c.skillId+'" title="Nível" aria-label="Mudar nível de '+
-    esc(skillNome(c.skillId))+', agora '+NIVEIS[c.nivel.value-1]+'">'+NIVEIS[c.nivel.value-1]+'</button>'+
-    '<button data-rms="'+c.skillId+'" aria-label="Remover '+esc(skillNome(c.skillId))+'">'+I.x+
-    '</button></span>').join('');
-}
-
-function vTags(){
-  const tem = new Set(S.cand.competencias.map(c=>c.skillId));
-  const disp = SKILLS.filter(k=>!tem.has(k.id));
-  const n = S.cand.competencias.length;
-  const conf = confiancaDe([...S.cand.competencias.map(c=>c.nivel),
-    ...EIXO_IDS.map(id=>S.cand.eixos[id]), S.cand.uf, S.cand.modelos], POLITICA);
-  const alcance = VAGAS.filter(v=>M(v).total>=60).length;
-  const publicaveis = VAGAS.filter(v=>M(v).desfecho==='allow').length;
-
-  $('#v-tags').innerHTML=
-  '<h1 style="font-size:var(--xxl);max-width:21ch;margin-top:var(--s5)">O que fica indexado do seu perfil.</h1>'+
-  '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Competência aqui não é texto livre: '+
-  'você escolhe do mesmo catálogo que a empresa usa no anúncio. É o que permite comparar '+
-  'requisito com competência sem depender de palavra-chave no currículo.</p>'+
-
-  (S.cand.fonte!=='user'
-    ? '<div class="confirma"><span class="ic">'+I.al+'</span>'+
-      '<div style="flex:1;min-width:240px"><b>Seu perfil ainda é inferência</b>'+
-      '<p>Ele saiu da conversa, não da sua mão. Enquanto estiver assim, o portão de política '+
-      'marca suas recomendações como revisão humana. Confirme e elas passam a publicável.</p></div>'+
-      '<button class="btn" id="confirmaBt">Confirmar meu perfil</button></div>'
-    : '<div class="confirma" style="background:var(--ok-bg);border-color:var(--ok)">'+
-      '<span class="ic" style="background:var(--ok)">'+I.ok+'</span>'+
-      '<div style="flex:1;min-width:240px"><b>Perfil confirmado por você</b>'+
-      '<p>Confiança no topo da escala. As recomendações passam pelo portão como publicáveis.</p></div></div>')+
-
-  '<div class="split" style="margin-top:var(--s4)"><div class="corpo">'+
-    '<div class="grupoTag"><b>Suas competências</b>'+
-      '<p class="hint">Clique no nível para alternar entre básico, intermediário e avançado. '+
-      'Nível pesa no fit técnico.</p>'+
-      '<div class="tagin" id="boxSkills">'+chipsSkill()+
-        '<input id="buscaSkill" placeholder="'+(n?'Buscar outra':'Digite para buscar')+
-        '" aria-label="Buscar competência" autocomplete="off"></div>'+
-      '<div class="sugt" id="sugSkill">'+disp.slice(0,7).map(k=>
-        '<button data-addk="'+k.id+'">+ '+esc(k.r)+'</button>').join('')+'</div></div>'+
-
-    '<div class="grupoTag"><b>Origem dos seus dados</b>'+
-      '<p class="hint">O motor pondera confiança pela fonte. Troque aqui para ver o portão de '+
-      'política mudar de decisão em tempo real: é o mecanismo que impede a plataforma de tratar '+
-      'extração automática como fato.</p>'+
-      '<div class="opcoes">'+
-        [['user','Confirmado por mim'],['conversation','Extraído da conversa'],
-         ['document','Extraído do currículo']].map(([k,r])=>
-          '<button class="op'+(S.cand.fonte===k?' on':'')+'" data-fonte="'+k+'" '+
-          'aria-pressed="'+(S.cand.fonte===k)+'" style="'+
-          (S.cand.fonte===k?'border-color:var(--ac3);color:var(--ac1);background:var(--veu2)':'')+
-          '">'+r+'</button>').join('')+'</div>'+
-      '<p class="hint" style="margin-top:10px">Peso de cada fonte na política '+
-      POLITICA.policy_version+': confirmado 1.0, conversa 0.82, documento 0.7. '+
-      'Abaixo de '+POLITICA.confianca.minima_para_publicar+' a recomendação é bloqueada; '+
-      'abaixo de '+POLITICA.confianca.revisar_abaixo_de+' vai para revisão humana.</p></div>'+
-
-    '<div class="grupoTag"><b>Onde você rende melhor</b>'+
-      '<p class="hint">Os mesmos catorze eixos que a empresa responde, com a pergunta espelhada. '+
-      'É daqui que sai o fit cultural. Mostrando os de menor tolerância, que são os que mais '+
-      'mexem no resultado.</p>'+
-      EIXOS.filter(e=>e.tolerancia<=22).map(e=>
-        '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b><span id="cl-'+e.id+'"></span></div>'+
-        '<input type="range" min="0" max="100" value="'+S.cand.eixos[e.id].value+'" data-ce="'+e.id+'" '+
-        'aria-label="'+esc(e.nome)+'"><div class="polos"><span>'+esc(e.poloA)+'</span>'+
-        '<span>'+esc(e.poloB)+'</span></div></div>').join('')+'</div>'+
-    '<button class="btn" id="fimTags" style="margin-top:var(--s3)">Concluir meu perfil</button>'+
-
-  '</div><aside class="lateral"><div class="box">'+
-    '<h4>Efeito no seu alcance</h4>'+
-    '<div class="linha"><span>Competências no catálogo</span><b>'+n+'</b></div>'+
-    '<div class="linha"><span>Eixos respondidos</span><b>14 de 14</b></div>'+
-    '<div class="linha"><span>Confiança do perfil</span><b id="lnConf">'+pc(conf)+'</b></div>'+
-    '<div class="linha"><span>Vagas acima de 60%</span><b id="lnAlc">'+alcance+' de '+VAGAS.length+'</b></div>'+
-    '<div class="linha"><span>Recomendações publicáveis</span><b id="lnPub">'+publicaveis+' de '+VAGAS.length+'</b></div>'+
-    '<div style="margin-top:var(--s2)">'+provenienciaSelo(S.cand.fonte)+'</div>'+
-    '<p class="porque">Os números acima recalculam de verdade: rodam o mesmo motor que a vaga '+
-    'usa. Tire uma competência obrigatória e veja o alcance cair; troque a origem do dado e '+
-    'veja as publicáveis sumirem.</p></div></aside></div>';
-
-  const rotula=()=>EIXOS.filter(e=>e.tolerancia<=22).forEach(e=>{
-    const v=S.cand.eixos[e.id].value;
-    $('#cl-'+e.id).textContent = v<35?e.poloA:v>65?e.poloB:'equilibrado';});
-  rotula();
-
-  $$('[data-ce]').forEach(i=>i.oninput=e=>{
-    const id=e.target.dataset.ce;
-    S.cand.eixos[id]=sv(Number(e.target.value), S.cand.fonte,
-      S.cand.fonte==='user'?1:S.cand.fonte==='conversation'?.85:.78);
-    S.cand.v++; invalidarMatch(); rotula(); atualizarAlcance();});
-
-  $$('[data-fonte]').forEach(b=>b.onclick=()=>{
-    reprojetarFonte(b.dataset.fonte); salvar(); vTags();
-    toast('Origem agora: '+FONTE_ROT[b.dataset.fonte]+'.');
-  });
-
-  const cb=$('#confirmaBt');
-  if(cb) cb.onclick=async()=>{
-    cb.disabled=true; cb.innerHTML='<span class="spin"></span>Confirmando';
-    await espera(520); reprojetarFonte('user'); salvar(); vTags();
-    toast('Perfil confirmado. Suas recomendações passaram a publicáveis.');
-  };
-
-  $('#fimTags').onclick=async()=>{
-    const b=$('#fimTags'); b.disabled=true; b.innerHTML='<span class="spin"></span>Salvando perfil';
-    await espera(600); S.logado=true; invalidarMatch(); salvar();
-    if(S.vaga) candidatar(S.vaga,true);
-    else { ir('home'); toast('Perfil pronto. Agora você vê sua aderência em cada vaga.'); }
-  };
-}
-function atualizarAlcance(){
-  const a=$('#lnAlc'); if(a) a.textContent=VAGAS.filter(v=>M(v).total>=60).length+' de '+VAGAS.length;
-  const p=$('#lnPub'); if(p) p.textContent=VAGAS.filter(v=>M(v).desfecho==='allow').length+' de '+VAGAS.length;
-  const c=$('#lnConf');
-  if(c) c.textContent=pc(confiancaDe([...S.cand.competencias.map(x=>x.nivel),
-    ...EIXO_IDS.map(id=>S.cand.eixos[id]), S.cand.uf, S.cand.modelos], POLITICA));
-}
-/* Redesenho cirúrgico: só os chips e as sugestões. Redesenhar a view
-   inteira a cada tag fazia o input perder o foco, que era bug de UX. */
-function repintarSkills(){
-  const tem=new Set(S.cand.competencias.map(c=>c.skillId));
-  const box=$('#boxSkills'), inp=$('#buscaSkill');
-  if(!box) return;
-  const foco = document.activeElement===inp, valor = inp ? inp.value : '';
-  box.innerHTML = chipsSkill() + '<input id="buscaSkill" placeholder="Buscar outra" '+
-    'aria-label="Buscar competência" autocomplete="off" value="'+esc(valor)+'">';
-  $('#sugSkill').innerHTML = SKILLS.filter(k=>!tem.has(k.id) &&
-      (!valor || k.r.toLowerCase().includes(valor.toLowerCase()))).slice(0,7)
-    .map(k=>'<button data-addk="'+k.id+'">+ '+esc(k.r)+'</button>').join('')
-    || '<span style="font-size:var(--xs);color:var(--i34)">Nada no catálogo com esse termo. '+
-       'Escreva e a curadoria avalia incluir.</span>';
-  const novo=$('#buscaSkill');
-  if(foco && novo){ novo.focus(); novo.setSelectionRange(valor.length,valor.length); }
-  S.cand.v++; invalidarMatch(); atualizarAlcance(); salvar();
-}
-
+/* ══ parte: partes/js/80-paleta.js ══ */
 /* ══════════════════ 26 · PALETA DE COMANDOS ══════════════════ */
 let cmdAberta=false, cmdSel=0, cmdItens=[];
 
@@ -2907,44 +3552,7 @@ function executarCmd(i){
   fecharCmd(); setTimeout(()=>x.do(),60);
 }
 
-/* ══════════════════ 27 · DELEGAÇÃO DE EVENTOS ══════════════════
-   Um listener no documento resolve por data-attribute. Antes, cada render
-   reatava dezenas de onclick, o que virava churn de listener a cada tecla. */
-const ACOES = {
-  v:  el => ir('vaga', Number(el.dataset.v)),
-  sug: el => { S.q=el.dataset.sug; const q=$('#q'); if(q) q.value=S.q; renderVagas(); },
-  f:  el => { S.filtro=el.dataset.f;
-        $$('[data-f]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.f===S.filtro));
-        renderVagas(); },
-  cmp: el => {
-        const id=Number(el.dataset.cmp);
-        S.comparar = S.comparar.includes(id) ? S.comparar.filter(x=>x!==id)
-          : S.comparar.length>=3 ? (toast('O comparador aceita três vagas por vez.',I.al), S.comparar)
-          : [...S.comparar, id];
-        salvar(); renderVagas(); },
-  addk: el => { S.cand.competencias.push({skillId:el.dataset.addk,
-          nivel: sv(2, S.cand.fonte, S.cand.fonte==='user'?1:.8)}); repintarSkills(); },
-  rms:  el => { S.cand.competencias = S.cand.competencias.filter(c=>c.skillId!==el.dataset.rms);
-          repintarSkills(); },
-  niv:  el => { const it=S.cand.competencias.find(c=>c.skillId===el.dataset.niv);
-          if(it){ it.nivel = sv(it.nivel.value%3+1, S.cand.fonte,
-            S.cand.fonte==='user'?1:.8); repintarSkills(); } },
-  ver:  el => ir('vaga', Number(el.dataset.ver)),
-  trace: el => abrirTrace(Number(el.dataset.trace)),
-};
-document.addEventListener('click', e => {
-  const it=e.target.closest('.cmdk .it');
-  if(it){ executarCmd(Number(it.dataset.i)); return; }
-  for(const chave in ACOES){
-    const el = e.target.closest('[data-'+chave+']');
-    if(el && document.contains(el)){ ACOES[chave](el); return; }
-  }
-});
-document.addEventListener('input', e => {
-  if(e.target.id==='buscaSkill') repintarSkills();
-  if(e.target.id==='cmdIn'){ cmdSel=0; cmdItens=filtraCmd(e.target.value); renderCmd(); }
-});
-
+/* ══ parte: partes/js/90-nav.js ══ */
 /* ══════════════════ 28 · NAVEGAÇÃO ══════════════════ */
 const NAV={cand:[['home','Vagas'],['minhas','Minhas candidaturas'],['tags','Meu perfil']],
            emp:[['perfil','Perfil'],['evagas','Vagas'],['ecand','Candidaturas'],['edash','Dashboard']]};
@@ -3015,7 +3623,8 @@ function sair(){
   S.logado=false; S.contaEmp=false; S.conta=null; S.modo='cand';
   S.candidaturas=[]; S.comparar=[]; S.vaga=null;
   S.cand=candidatoNovo('conversation');
-  invalidarMatch(); salvar(); ir('home'); toast('Você saiu da conta.');
+  invalidarMatch();  // identidade trocada, não versionada: o cache inteiro sai
+  salvar(); ir('home'); toast('Você saiu da conta.');
 }
 
 function ir(v,arg){
@@ -3034,7 +3643,78 @@ function ir(v,arg){
   if(['vaga','triagem','tags','comparar'].includes(v)) $('#v-'+v).focus();
 }
 
+/* ══ parte: partes/js/98-eventos.js ══ */
+/* ══════════════════ 27 · DELEGAÇÃO DE EVENTOS ══════════════════
+   Um listener no documento resolve por data-attribute. Antes, cada render
+   reatava dezenas de onclick, o que virava churn de listener a cada tecla. */
+const ACOES = {
+  v:  el => ir('vaga', Number(el.dataset.v)),
+  sug: el => { S.q=el.dataset.sug; const q=$('#q'); if(q) q.value=S.q; renderVagas(); },
+  f:  el => { S.filtro=el.dataset.f;
+        $$('[data-f]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.f===S.filtro));
+        renderVagas(); },
+  cmp: el => {
+        const id=Number(el.dataset.cmp);
+        S.comparar = S.comparar.includes(id) ? S.comparar.filter(x=>x!==id)
+          : S.comparar.length>=3 ? (toast('O comparador aceita três vagas por vez.',I.al), S.comparar)
+          : [...S.comparar, id];
+        salvar(); renderVagas(); },
+  addk: el => { S.cand.competencias.push({skillId:el.dataset.addk,
+          nivel: sv(2, S.cand.fonte, S.cand.fonte==='user'?1:.8)}); repintarSkills(); },
+  rms:  el => { S.cand.competencias = S.cand.competencias.filter(c=>c.skillId!==el.dataset.rms);
+          repintarSkills(); },
+  niv:  el => { const it=S.cand.competencias.find(c=>c.skillId===el.dataset.niv);
+          if(it){ it.nivel = sv(it.nivel.value%3+1, S.cand.fonte,
+            S.cand.fonte==='user'?1:.8); repintarSkills(); } },
+  ver:  el => ir('vaga', Number(el.dataset.ver)),
+  trace: el => abrirTrace(Number(el.dataset.trace)),
+};
+document.addEventListener('click', e => {
+  const it=e.target.closest('.cmdk .it');
+  if(it){ executarCmd(Number(it.dataset.i)); return; }
+  for(const chave in ACOES){
+    const el = e.target.closest('[data-'+chave+']');
+    if(el && document.contains(el)){ ACOES[chave](el); return; }
+  }
+});
+document.addEventListener('input', e => {
+  if(e.target.id==='buscaSkill') repintarSkills();
+  if(e.target.id==='cmdIn'){ cmdSel=0; cmdItens=filtraCmd(e.target.value); renderCmd(); }
+});
+
+/* ══ parte: partes/js/99-boot.js ══ */
 /* ══════════════════ 29 · BOOT ══════════════════ */
+
+/* Invariantes de dados.
+   Todas cobrem a mesma classe de falha: dado incoerente que NÃO gera erro.
+   Uma área cujo `fam` não existe na política cai no `_padrao` em silêncio —
+   o número continua saindo, continua plausível, e está errado. Custa
+   milissegundos conferir no carregamento e economiza uma tarde de dúvida. */
+function conferirDados(){
+  const p = [];
+  const fam = POLITICA.pesos_por_familia;
+
+  AREAS.filter(a => !(a.fam in fam))
+    .forEach(a => p.push(`área "${a.n}" aponta família "${a.fam}", que não existe na política`));
+  CARGOS.filter(c => !(familiaDe(c) in fam))
+    .forEach(c => p.push(`cargo "${c.n}" resolve família "${familiaDe(c)}", inexistente`));
+  CARGOS.filter(c => c.sk.some(id => !SKILL[id]))
+    .forEach(c => p.push(`cargo "${c.n}" cita competência fora do catálogo`));
+  VAGAS.filter(v => !(v.familia in fam))
+    .forEach(v => p.push(`${v.vid} tem família "${v.familia}", inexistente`));
+  VAGAS.filter(v => CARGO[v.cargoId] && v.familia !== familiaDe(CARGO[v.cargoId]))
+    .forEach(v => p.push(`${v.vid} declara "${v.familia}" mas o cargo dá "${familiaDe(CARGO[v.cargoId])}"`));
+  VAGAS.flatMap(v => v.requisitos.map(r => [v, r]))
+    .filter(([, r]) => !SKILL[r.skillId] || ![1, 2, 3].includes(r.peso))
+    .forEach(([v, r]) => p.push(`${v.vid} tem requisito inválido (${r.skillId}, peso ${r.peso})`));
+
+  if(p.length){
+    console.error('[conectaria] dados incoerentes:\n  ' + p.join('\n  '));
+    toast(p.length + ' inconsistência(s) nos dados — veja o console.', I.al);
+  }
+  return p;
+}
+
 renderDD();
 $('#btAcesso').onclick=e=>{e.stopPropagation();S.ddAberto?fecharDD():abrirDD();};
 $('#btTema').onclick=alternarTema;
@@ -3070,8 +3750,10 @@ addEventListener('keydown',e=>{
   if(S.view==='vaga'||S.view==='triagem'||S.view==='comparar') ir('home');
 });
 
+conferirDados();
+
 const restaurou = restaurar();
-ir(restaurou && S.logado ? 'home' : 'home');
+ir('home');
 if(restaurou) setTimeout(()=>toast('Retomei de onde você parou neste navegador.'),700);
 </script>
 </body>

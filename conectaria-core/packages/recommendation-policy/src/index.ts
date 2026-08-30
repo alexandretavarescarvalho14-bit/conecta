@@ -104,7 +104,7 @@ export function listar(): string[] {
   return readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => f.replace('.json', ''));
 }
 
-export const POLITICA_ATUAL = 'policy-2026.09.0';
+export const POLITICA_ATUAL = 'policy-2026.10.0';
 
 export function pesosDe(p: Politica, familia: string): Pesos {
   return p.pesos_por_familia[familia] ?? p.pesos_por_familia._padrao;

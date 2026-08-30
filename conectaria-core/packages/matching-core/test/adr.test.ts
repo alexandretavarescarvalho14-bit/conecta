@@ -67,6 +67,52 @@ test('baseline · candidato canônico na vaga de RH', () => {
   assert.strictEqual(r.total, 84);
 });
 
+/**
+ * A suíte inteira roda contra POLITICA_ATUAL, então uma versão nova entra
+ * testada por construção. O que ela NÃO cobre sozinha é a pergunta que
+ * importa numa troca de versão: o baseline se mexeu?
+ *
+ * Este teste responde isso comparando as versões publicadas entre si. Uma
+ * política nova pode acrescentar família à vontade; no dia em que ela tocar
+ * num eixo, no decaimento ou nos pesos de "Gente", o ADR 001 muda de número
+ * e a mudança tem que ser deliberada, não descoberta em produção.
+ */
+test('baseline · sobrevive à troca de versão de política', () => {
+  const versoes = listar().sort();
+  assert.ok(versoes.length >= 2, 'precisa de duas versões para a comparação valer');
+
+  const notas = versoes.map((v) => {
+    const r = evaluate({ ...base, politica: carregar(v) });
+    return { v, tecnico: r.tecnico.nota, cultural: r.cultural.nota,
+      contexto: r.contexto.nota, total: r.total };
+  });
+
+  const referencia = { tecnico: 67, cultural: 93, contexto: 100, total: 84 };
+  for (const n of notas) {
+    assert.deepStrictEqual(
+      { tecnico: n.tecnico, cultural: n.cultural, contexto: n.contexto, total: n.total },
+      referencia,
+      `${n.v} move o baseline do ADR 001`,
+    );
+  }
+});
+
+/** Família nova entra sem passar por validar()? Não: mas o erro só aparece
+ *  quando alguém a usa. Este teste cobre todas as publicadas de uma vez. */
+test('política · toda versão publicada tem famílias coerentes', () => {
+  for (const v of listar()) {
+    const p = carregar(v);
+    assert.strictEqual(p.policy_version, v,
+      `${v}.json declara policy_version "${p.policy_version}"`);
+    assert.ok(p.taxonomy_version && p.feature_schema_version && p.explanation_version,
+      `${v} sem alguma das versões que o trace carrega`);
+    for (const [familia, w] of Object.entries(p.pesos_por_familia)) {
+      const soma = w.tecnico + w.cultural + w.contexto;
+      assert.ok(Math.abs(soma - 1) < 1e-9, `${v}: família "${familia}" soma ${soma}`);
+    }
+  }
+});
+
 test('baseline · empresa idêntica ao candidato dá fit cultural 100', () => {
   const espelho = { ...EMPRESA, eixos: CANDIDATO.eixos };
   assert.strictEqual(fitCultural({ ...base, empresa: espelho }).nota, 100);

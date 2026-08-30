@@ -1,0 +1,79 @@
+<div class="util">
+  <div class="utin">
+    <a href="#emp" id="supEmp">Suporte para Empresas <span aria-hidden="true">&rsaquo;</span></a>
+    <a href="#cand" id="supCand">Suporte para Candidatos <span aria-hidden="true">&rsaquo;</span></a>
+    <div class="uidir">
+      <button class="uic" id="btCmd" aria-label="Abrir busca de comandos">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <span class="hide">Buscar</span><kbd id="kbdCmd">Ctrl K</kbd>
+      </button>
+      <button class="uic" id="btTema" aria-label="Alternar tema claro e escuro">
+        <svg class="moon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></svg>
+        <svg class="sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2v2.6M12 19.4V22M2 12h2.6M19.4 12H22M4.9 4.9l1.9 1.9M17.2 17.2l1.9 1.9M19.1 4.9l-1.9 1.9M6.8 17.2l-1.9 1.9"/></svg>
+      </button>
+      <div class="acesso">
+        <button id="btAcesso" aria-expanded="false" aria-haspopup="true" aria-controls="ddAcesso">
+          Acessar plataforma
+          <svg class="cx" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dd" id="ddAcesso" role="menu" aria-label="Acessar plataforma"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<header class="topo" id="topo">
+  <div class="tin">
+__LOGO__
+    <nav class="tnav" id="tnav"></nav>
+    <div class="tdir" id="tdir"></div>
+  </div>
+</header>
+
+<main class="pg">
+  <section class="view on" id="v-home"></section>
+  <section class="view" id="v-vaga" tabindex="-1"></section>
+  <section class="view" id="v-triagem" tabindex="-1"></section>
+  <section class="view" id="v-minhas"></section>
+  <section class="view" id="v-perfil"></section>
+  <section class="view" id="v-evagas"></section>
+  <section class="view" id="v-ecand"></section>
+  <section class="view" id="v-edash"></section>
+  <section class="view" id="v-tags" tabindex="-1"></section>
+  <section class="view" id="v-comparar" tabindex="-1"></section>
+</main>
+
+<nav class="tabbar" id="tabbar" aria-label="Navegação principal"></nav>
+
+<aside class="drw" id="drw" role="dialog" aria-modal="false" aria-labelledby="drwTit" aria-hidden="true">
+  <header>
+    <h3 id="drwTit">Recommendation trace</h3>
+    <span class="pill n" id="drwId"></span>
+    <button class="btn g sm" id="drwX" style="margin-left:auto" aria-label="Fechar inspetor">Fechar</button>
+  </header>
+  <div class="body" id="drwBody"></div>
+</aside>
+
+<div class="cmdk" id="cmdk" role="dialog" aria-modal="true" aria-label="Buscar comandos" aria-hidden="true">
+  <div class="bx">
+    <div class="top">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="cmdIn" placeholder="Buscar vaga, tela ou ação" aria-label="Buscar"
+        autocomplete="off" role="combobox" aria-expanded="true" aria-controls="cmdLst">
+    </div>
+    <div class="lst" id="cmdLst" role="listbox" aria-label="Resultados"></div>
+    <div class="rod">
+      <span><kbd>↑↓</kbd>navegar</span><span><kbd>↵</kbd>abrir</span><span><kbd>esc</kbd>fechar</span>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTit"
+  aria-hidden="true"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
