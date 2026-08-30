@@ -1,0 +1,63 @@
+{
+  "policy_version": "policy-2026.09.0",
+  "taxonomy_version": "skills-2026.09",
+  "feature_schema_version": "features-2026.09.0",
+  "explanation_version": "expl-2026.09.0",
+  "notas": [
+    "Artefato versionado. Front-end, API, job offline e avaliacao historica leem daqui.",
+    "Mudar qualquer numero aqui exige nova versao e nova rodada contra o baseline."
+  ],
+  "eixos": [
+    { "id": "ritmo",      "grupo": "Cultura", "nome": "Ritmo",           "poloA": "Estável e previsível",   "poloB": "Acelerado e mutável",   "tolerancia": 22 },
+    { "id": "autonomia",  "grupo": "Cultura", "nome": "Autonomia",       "poloA": "Caminho já definido",    "poloB": "Cada um desenha",       "tolerancia": 15 },
+    { "id": "formal",     "grupo": "Cultura", "nome": "Formalidade",     "poloA": "Informal e direto",      "poloB": "Estruturado e formal",  "tolerancia": 26 },
+    { "id": "erro",       "grupo": "Cultura", "nome": "Erro",            "poloA": "Errar custa caro",       "poloB": "Testar e corrigir",     "tolerancia": 20 },
+    { "id": "decisao",    "grupo": "Cultura", "nome": "Decisão",         "poloA": "Centralizada",           "poloB": "Distribuída",           "tolerancia": 22 },
+    { "id": "colab",      "grupo": "Cultura", "nome": "Colaboração",     "poloA": "Trabalho individual",    "poloB": "Muito coletivo",        "tolerancia": 28 },
+    { "id": "previsib",   "grupo": "Rotina",  "nome": "Previsibilidade", "poloA": "Agenda estável",         "poloB": "Muda toda hora",        "tolerancia": 24 },
+    { "id": "presenca",   "grupo": "Rotina",  "nome": "Presença",        "poloA": "Presencial",             "poloB": "Remoto",                "tolerancia": 30 },
+    { "id": "interrup",   "grupo": "Rotina",  "nome": "Interrupção",     "poloA": "Foco longo protegido",   "poloB": "Muita interrupção",     "tolerancia": 26 },
+    { "id": "escopo",     "grupo": "Rotina",  "nome": "Escopo",          "poloA": "Estreito e profundo",    "poloB": "Largo e variado",       "tolerancia": 24 },
+    { "id": "senior",     "grupo": "Perfil",  "nome": "Senioridade",     "poloA": "Executa o definido",     "poloB": "Define o que executar", "tolerancia": 16 },
+    { "id": "espec",      "grupo": "Perfil",  "nome": "Especialização",  "poloA": "Especialista profundo",  "poloB": "Generalista versátil",  "tolerancia": 26 },
+    { "id": "dados",      "grupo": "Perfil",  "nome": "Decisão por",     "poloA": "Experiência e intuição", "poloB": "Dado e medição",        "tolerancia": 24 },
+    { "id": "relacional", "grupo": "Perfil",  "nome": "Contato externo", "poloA": "Pouco contato",          "poloB": "Muito contato",         "tolerancia": 28 }
+  ],
+  "pesos_por_familia": {
+    "Gente":      { "tecnico": 0.40, "cultural": 0.38, "contexto": 0.22 },
+    "Liderança":  { "tecnico": 0.32, "cultural": 0.46, "contexto": 0.22 },
+    "Tecnologia": { "tecnico": 0.58, "cultural": 0.22, "contexto": 0.20 },
+    "Marketing":  { "tecnico": 0.48, "cultural": 0.30, "contexto": 0.22 },
+    "Financeiro": { "tecnico": 0.52, "cultural": 0.26, "contexto": 0.22 },
+    "_padrao":    { "tecnico": 0.46, "cultural": 0.32, "contexto": 0.22 }
+  },
+  "requisito_obrigatorio": { "modo": "cap", "nota_maxima": 45 },
+  "cultural": {
+    "fator_decaimento": 2.6,
+    "_comentario": "Na distancia igual a tolerancia o eixo entrega ~62% do ponto. Chute calibrado; primeiro candidato a virar parametro aprendido."
+  },
+  "contexto": {
+    "localidade": { "compativel": 100, "incompativel": 25 },
+    "modelo":     { "compativel": 100, "incompativel": 35 },
+    "pretensao":  { "dentro": 100, "margem": 62, "fora": 20, "tolerancia_relativa": 0.15 }
+  },
+  "confianca": {
+    "minima_para_publicar": 0.65,
+    "revisar_abaixo_de": 0.78,
+    "peso_fonte": { "user": 1.0, "company": 1.0, "curator": 1.0, "conversation": 0.82, "document": 0.7 }
+  },
+  "features": {
+    "allowlist": [
+      "eixo.ritmo","eixo.autonomia","eixo.formal","eixo.erro","eixo.decisao","eixo.colab",
+      "eixo.previsib","eixo.presenca","eixo.interrup","eixo.escopo",
+      "eixo.senior","eixo.espec","eixo.dados","eixo.relacional",
+      "skill.nivel","contexto.uf","contexto.modelo","contexto.pretensao",
+      "vaga.familia","vaga.faixa"
+    ],
+    "denylist": [
+      "candidato.nome","candidato.foto","candidato.idade","candidato.genero",
+      "candidato.raca","candidato.etnia","candidato.estado_civil",
+      "candidato.cep_exato","candidato.instituicao"
+    ]
+  }
+}
