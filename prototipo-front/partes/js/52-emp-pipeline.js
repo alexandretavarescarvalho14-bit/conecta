@@ -36,10 +36,10 @@ function vEcand(){
     '<td style="max-width:250px;color:var(--i72)">'+esc(c.pt)+'</td>'+
     '<td><span class="pill '+(c.et>=3?'ac':'n')+'">'+esc(ETAPAS[c.et])+'</span></td></tr>';
   }).join('')+'</tbody></table></div></div>'+
-  '<p class="nota">A coluna "por quê" vem dos mesmos eixos que a pessoa vê do outro lado, e a '+
-  'coluna portão é a decisão da política, não uma opinião da tela. Quem está em <b>revisão '+
-  'humana</b> tem perfil ainda apoiado em inferência: o número aparece, mas a plataforma não '+
-  'trata como fato. Match sem explicação vira número que ninguém confia.</p>';
+  '<p class="nota">A coluna "por quê" vem dos mesmos eixos que a pessoa vê do outro lado. '+
+  'A coluna portão traz a decisão da política de publicação: quem aparece em <b>revisão '+
+  'humana</b> tem perfil que o próprio candidato ainda não confirmou, então o número existe '+
+  'mas a plataforma não o trata como fato verificado.</p>';
   $$('[data-c]').forEach(t=>t.onclick=()=>toast('Perfil completo e agenda de entrevista, em construção nesta versão.'));
   animaEixos();
 }

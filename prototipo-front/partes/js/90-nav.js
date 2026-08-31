@@ -69,8 +69,8 @@ addEventListener('resize', debounce(marcarRolaveis, 200), {passive:true});
 function estadoErro(tela, err){
   return '<div class="estado"><div class="ic erro">'+I.al+'</div>'+
     '<h3>Não consegui montar esta tela.</h3>'+
-    '<p>Alguma coisa quebrou no caminho. O que você já preencheu continua salvo — '+
-    'dá para tentar de novo ou seguir para outra tela.</p>'+
+    '<p>Alguma coisa quebrou no caminho. O que você já preencheu continua salvo, então dá '+
+    'para tentar de novo ou seguir para outra tela.</p>'+
     '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
       '<button class="btn" data-retentar="'+esc(tela)+'">Tentar de novo</button>'+
       '<button class="btn g" data-irhome="1">Ver vagas abertas</button></div>'+

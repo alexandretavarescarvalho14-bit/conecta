@@ -69,8 +69,8 @@ function renderModal(perfil){
   '</div>'+
   '<p class="mini">Protótipo: o acesso não autentica de verdade e nenhum dado sai do seu '+
   'navegador. '+(S.aba==='criar' && !emp
-    ? 'Ao criar a conta você monta seu perfil em poucos passos. É esse perfil, e não o PDF do '+
-      'currículo, que a plataforma usa para comparar você com cada vaga.'
+    ? 'Ao criar a conta você monta seu perfil em poucos passos. É ele que a plataforma usa '+
+      'para comparar você com cada vaga.'
     : emp ? 'Na versão real, o acesso da empresa é liberado pela curadoria em até 1 dia útil.'
     : '')+'</p>'+
   '<button class="btn g w" id="fechaM" style="margin-top:var(--s3)">Cancelar</button>';

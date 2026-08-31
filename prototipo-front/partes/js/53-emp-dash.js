@@ -39,9 +39,9 @@ function vEdash(){
      '<td style="width:130px"><span class="pill '+c+'">'+(c==='al'?'atenção':'saudável')+
      '</span></td></tr>').join('')+
     '</tbody></table></div></div>'+
-  '<p class="nota">O alerta menos óbvio e mais importante é o último da tabela do meio: '+
-  '<b>divergência entre score ativo e baseline</b>. É o que detecta regressão de modelo antes '+
-  'do usuário reclamar. Enquanto só o baseline determinístico roda, ele é zero por construção.</p>';
+  '<p class="nota">A linha de <b>divergência entre score ativo e baseline</b>, na tabela do '+
+  'meio, é a que detecta piora do modelo antes de alguém reclamar. Enquanto só o cálculo '+
+  'determinístico roda, ela fica em zero por construção.</p>';
   requestAnimationFrame(()=>$$('.col[data-h]').forEach((el,i)=>
     setTimeout(()=>{el.style.height=el.dataset.h+'%'},120+i*70)));
   animaEixos(); animaKpis();

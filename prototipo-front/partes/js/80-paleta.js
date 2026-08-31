@@ -18,7 +18,7 @@ function comandos(){
   if(S.logado){
     l.push({g:'Ações', t:'Comparar vagas selecionadas', s:S.comparar.length+' na seleção',
       ic:I.bal, do:()=>ir('comparar')});
-    VAGAS.forEach(v=>l.push({g:'Ações', t:'Ver trace · '+v.cargo, s:'artefato auditável da recomendação',
+    VAGAS.forEach(v=>l.push({g:'Ações', t:'Ver a conta · '+v.cargo, s:'como esta nota foi calculada',
       ic:I.doc, do:()=>{ir('vaga',v.id); setTimeout(()=>abrirTrace(v.id),300);}}));
   }
   l.push({g:'Ações', t:'Alternar tema claro e escuro', ic:I.esc, kb:'T', do:alternarTema});

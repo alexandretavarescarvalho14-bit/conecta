@@ -1179,7 +1179,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const BUILD = Object.freeze({partes:28, sha:"0ab987af127c", em:"2026-08-31"});
+const BUILD = Object.freeze({partes:28, sha:"c3ba990b6fdb", em:"2026-08-31"});
 /* ══ parte: partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
@@ -2794,8 +2794,8 @@ function vHome(){
     : '<section class="hero">'+malha()+
         '<span class="selo"><i></i>9.014 pessoas na comunidade</span>'+
         '<h1>A vaga certa encontra <em>quem você já é</em>.</h1>'+
-        '<p>Aqui seu perfil não é um currículo em PDF. É um mapa do que você sabe, de como você '+
-        'trabalha e de onde você quer chegar. As vagas chegam a partir disso.</p>'+
+        '<p>Seu perfil aqui é um mapa do que você sabe fazer, de como você trabalha e de '+
+        'onde quer chegar. As vagas chegam a partir dele.</p>'+
       '</section>';
 
   $('#v-home').innerHTML = hero +
@@ -2815,9 +2815,10 @@ function vHome(){
   '<div id="listaVagas"></div>'+
   '<div id="barraCmp"></div>'+
   '<p class="nota">Protótipo de avaliação da Conectaria. As vagas e as empresas são fictícias, '+
-  'e coerentes entre si. O percentual de aderência é calculado de verdade a partir dos '+
-  'requisitos da vaga, dos catorze eixos de ambiente e do seu contexto — cada vaga mostra a '+
-  'conta por dentro. Pagamento, login e integração com sistemas de RH não estão implementados.</p>';
+  'e coerentes entre si. O percentual de aderência é calculado de verdade, a partir dos '+
+  'requisitos da vaga, dos catorze eixos de ambiente e do seu contexto, e cada vaga mostra '+
+  'a conta por dentro. Pagamento, login e integração com sistemas de RH não estão '+
+  'implementados.</p>';
 
   const buscarDeb = debounce(()=>renderVagas(), 200);
   $('#q').oninput = e => { S.q=e.target.value; buscarDeb(); };
@@ -2921,7 +2922,7 @@ function renderBarraCmp(){
     (S.comparar.length===1?' vaga selecionada':' vagas selecionadas')+'</b>'+
     '<span style="font-size:var(--sm);color:var(--i62);flex:1;min-width:150px">'+
     (S.comparar.length<2?'Escolha mais uma para comparar lado a lado.'
-      :'Mesmo motor, mesma política, três dimensões lado a lado.')+'</span>'+
+      :'As duas passam pelo mesmo cálculo, com os pesos da família de cada cargo.')+'</span>'+
     '<button class="btn g sm" id="cmpLimpa">Limpar</button>'+
     '<button class="btn sm" id="cmpVer"'+(S.comparar.length<2?' disabled':'')+'>Comparar</button></div>';
   $('#cmpLimpa').onclick=()=>{S.comparar=[];salvar();renderVagas();};
@@ -2964,9 +2965,9 @@ function vVaga(id){
       'Por isso a mesma distância não pesa igual em todo lugar.</p>' : '')+
   '</div><aside class="lateral">'+
     (!S.logado
-      ? '<div class="gate"><h4>Sua aderência a esta vaga está bloqueada</h4>'+
-        '<p>Crie sua conta e monte seu perfil. A partir daí você vê, nas três dimensões e nos '+
-        'catorze eixos, o quanto esta vaga combina com você, e por quê.</p>'+
+      ? '<div class="gate"><h4>Sua aderência aparece depois do cadastro</h4>'+
+        '<p>Crie sua conta e monte seu perfil. Com ele pronto você vê, nas três dimensões e '+
+        'nos catorze eixos, o quanto esta vaga combina com você e por quê.</p>'+
         '<button class="btn w" id="gateBtn">Criar conta</button>'+
         '<button class="btn g w" id="gateEntrar" style="margin-top:8px">Já tenho conta</button></div>'
       : painelMatch(v))+
@@ -3034,7 +3035,7 @@ function painelMatch(v){
       evidencias([...m.tecnico.evidencias, ...m.cultural.evidencias, ...m.contexto.evidencias])+
     '</details>'+
     '<div style="display:flex;gap:8px;margin-top:var(--s2)">'+
-      '<button class="btn g sm w" id="verTrace">'+I.doc+'Ver o trace</button></div>'+
+      '<button class="btn g sm w" id="verTrace">'+I.doc+'Ver a conta por dentro</button></div>'+
     '<p class="porque" style="text-align:left">Os pesos mudam por família de cargo. Esta vaga é de '+
     '<b>'+esc(v.familia)+'</b>, então o técnico pesa '+pc(m.pesos.tecnico)+'. '+
     'Seus dados estão como '+esc(FONTE_ROT[S.cand.fonte])+'.</p></div>';
@@ -3081,7 +3082,8 @@ async function abrirTrace(vagaId){
       '<div class="hashbox">'+I.doc+'<span>'+esc(t.inputHash)+'</span></div>'+
       '<p style="font-size:var(--xs);color:var(--i52);margin-top:8px;line-height:1.6">'+
       'Deriva do JSON canônico da entrada mais as oito versões. Mesma entrada e mesmas versões '+
-      'produzem o mesmo hash: feche e abra de novo que ele não muda. Mexa num eixo e ele muda.'+
+      'produzem sempre o mesmo hash, então ele não muda se você fechar e abrir de novo, e '+
+      'muda assim que você mexe num eixo.'+
       '</p></div>'+
     '<div><h4 style="font-family:var(--d);font-size:var(--md);margin-bottom:9px">'+
       'As oito versões do pipeline</h4><dl class="vers">'+
@@ -3125,8 +3127,8 @@ function vComparar(){
   '<button class="volta" id="cmpV">'+I.volta+'Todas as vagas</button>'+
   '<h1 style="font-size:var(--xxl);max-width:22ch">Onde exatamente elas diferem para você.</h1>'+
   '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Mesma política, mesmas fórmulas, '+
-  'mesmos pesos por família de cargo. A diferença que aparece aqui é diferença real de '+
-  'aderência, não de critério.</p>'+
+  'mesmos pesos por família de cargo, então o que difere aqui é a sua aderência a cada '+
+  'uma delas.</p>'+
   '<div class="cmp">'+ms.map(({v,m})=>{
     const e=EMPRESAS[v.emp];
     const ganha = v.id===melhor.v.id;
@@ -3152,9 +3154,9 @@ function vComparar(){
                   ...m.contexto.evidencias.filter(x=>x.kind==='constraint')], 3)+
       '<button class="btn g sm" data-ver="'+v.id+'">Abrir a vaga</button></div>';
   }).join('')+'</div>'+
-  '<p class="nota">O comparador não recalcula nada de forma diferente: chama o mesmo '+
-  '<b>evaluate()</b> por vaga. Se dois números divergissem aqui e na página da vaga, seria bug '+
-  'de cache, não de critério, e é por isso que o memo é invalidado a cada mudança de perfil.</p>';
+  '<p class="nota">O comparador chama o mesmo cálculo que a página da vaga usa. Se um '+
+  'número divergisse entre as duas telas seria falha de cache, e é por isso que o resultado '+
+  'é recalculado a cada mudança no seu perfil.</p>';
 
   $('#cmpV').onclick=()=>ir('home');
   animaMed(); animaEixos();
@@ -3188,9 +3190,9 @@ function vTriagem(){
   S.passo=0; S.perfil={};
   $('#v-triagem').innerHTML=
   '<button class="volta" id="voltaT">'+I.volta+'Voltar</button>'+
-  '<h1 style="font-size:var(--xxl);max-width:19ch">Cinco perguntas, e seu perfil fica pronto para sempre.</h1>'+
-  '<p style="color:var(--i72);max-width:58ch;margin-top:10px">Não é formulário. Responda como '+
-  'você falaria, e acompanhe ao lado o perfil sendo montado. É esse perfil que faz as vagas '+
+  '<h1 style="font-size:var(--xxl);max-width:19ch">Cinco perguntas e seu perfil está montado.</h1>'+
+  '<p style="color:var(--i72);max-width:58ch;margin-top:10px">Responda como você falaria '+
+  'numa conversa, e acompanhe ao lado o perfil sendo montado. É ele que faz as vagas '+
   'chegarem até você depois.</p>'+
   '<div class="tri">'+
     '<div class="conversa"><div class="passos" id="passos">'+
@@ -3198,8 +3200,9 @@ function vTriagem(){
       '<div class="msgs" id="msgs"></div>'+
       '<div class="entrada" id="entrada"></div></div>'+
     '<aside class="schema"><h4>'+I.spark+'Seu perfil, estruturado</h4>'+
-      '<p class="sub">Cada resposta vira campo indexável com proveniência. Enquanto vem da '+
-      'conversa, é inferência: entra como <b>conversation</b>, não como fato confirmado.</p>'+
+      '<p class="sub">Cada resposta vira um campo que a busca consegue comparar, junto com a '+
+      'origem dela. Enquanto vier da conversa, fica marcada como algo que você ainda '+
+      'precisa confirmar.</p>'+
       '<div class="jf" id="jf">'+
         '<span class="k">perfil_candidato</span> <span class="p">{</span>'+
         ROTEIRO.map((r,i)=>'<span class="row pend" id="row'+i+'"><span class="k">'+
@@ -3267,9 +3270,9 @@ async function responder(txt){
   $$('#dots i').forEach((d,i)=>setTimeout(()=>d.classList.add('on'), i*28));
   $('#vetorTxt').textContent='6 de 6 dimensões prontas';
   $$('#passos i').forEach(el=>el.classList.add('on'));
-  msg('Pronto. Seu perfil está montado e já dá para comparar com qualquer vaga. Como saiu da '+
-      'conversa e não da sua mão, ele entra como <b>inferência</b>: o match aparece, mas '+
-      'marcado para revisão até você confirmar.','bot');
+  msg('Pronto, seu perfil está montado e já dá para comparar com qualquer vaga. Como ele '+
+      'saiu desta conversa, vale você revisar antes: a empresa recebe seu perfil completo '+
+      'depois que você confirmar.','bot');
   await espera(300);
   $('#entrada').innerHTML='<button class="btn w" id="fim">Revisar e confirmar meu perfil</button>';
   $('#fim').onclick=async ()=>{
@@ -3319,16 +3322,16 @@ function vMinhas(){
         'Sua candidatura entrou '+esc(c.quando)+'.</p>'+
         '<div style="margin-top:var(--s3);display:flex;gap:9px;flex-wrap:wrap">'+
         '<button class="btn g sm" data-ver="'+v.id+'">Ver a vaga</button>'+
-        '<button class="btn g sm" data-trace="'+v.id+'">'+I.doc+'Trace</button>'+
+        '<button class="btn g sm" data-trace="'+v.id+'">'+I.doc+'Ver a conta</button>'+
         '<button class="btn g sm" data-msg="'+v.id+'">Falar com a Conectaria</button></div>'+
       '</div>';
     }).join('')+'</div>'+
     '<div class="box" style="margin-top:var(--s3);display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap">'+
       '<span class="ic" style="width:42px;height:42px;border-radius:12px;background:var(--veu);'+
       'color:var(--ac2);display:grid;place-items:center">'+I.spark+'</span>'+
-      '<div style="flex:1;min-width:220px"><b style="font-family:var(--d)">Vagas sob demanda estão ativas</b>'+
-      '<p style="font-size:var(--sm);color:var(--i72)">Com seu perfil montado, avisamos por '+
-      'WhatsApp quando entrar vaga com match acima de 75% e portão em publicável.</p></div>'+
+      '<div style="flex:1;min-width:220px"><b style="font-family:var(--d)">Aviso de vaga nova está ligado</b>'+
+      '<p style="font-size:var(--sm);color:var(--i72)">Com o perfil montado, avisamos no '+
+      'WhatsApp quando entrar vaga com aderência acima de 75%.</p></div>'+
       '<button class="btn g sm" id="ajustar">Ajustar preferências</button></div>';
   $$('[data-msg]').forEach(b=>b.onclick=()=>toast('A Conectaria responde no WhatsApp em até 1 dia útil.'));
   $('#ajustar').onclick=()=>toast('Preferências de match e canal de aviso, em construção nesta versão.');
@@ -3357,25 +3360,26 @@ function vTags(){
 
   $('#v-tags').innerHTML=
   '<h1 style="font-size:var(--xxl);max-width:21ch;margin-top:var(--s5)">O que fica indexado do seu perfil.</h1>'+
-  '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Competência aqui não é texto livre: '+
-  'você escolhe do mesmo catálogo que a empresa usa no anúncio. É o que permite comparar '+
-  'requisito com competência sem depender de palavra-chave no currículo.</p>'+
+  '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Você escolhe as competências '+
+  'do mesmo catálogo que a empresa usa no anúncio. Assim dá para comparar o que a vaga '+
+  'pede com o que você sabe fazer, sem depender de palavra-chave no currículo.</p>'+
 
   (S.cand.fonte!=='user'
     ? '<div class="confirma"><span class="ic">'+I.al+'</span>'+
-      '<div style="flex:1;min-width:240px"><b>Seu perfil ainda é inferência</b>'+
-      '<p>Ele saiu da conversa, não da sua mão. Enquanto estiver assim, o portão de política '+
-      'marca suas recomendações como revisão humana. Confirme e elas passam a publicável.</p></div>'+
+      '<div style="flex:1;min-width:240px"><b>Falta você confirmar seu perfil</b>'+
+      '<p>Ele foi montado a partir da conversa. Enquanto você não revisar, a empresa recebe '+
+      'sua candidatura com a ressalva de que os dados ainda não passaram por você.</p></div>'+
       '<button class="btn" id="confirmaBt">Confirmar meu perfil</button></div>'
     : '<div class="confirma" style="background:var(--ok-bg);border-color:var(--ok)">'+
       '<span class="ic" style="background:var(--ok)">'+I.ok+'</span>'+
-      '<div style="flex:1;min-width:240px"><b>Perfil confirmado por você</b>'+
-      '<p>Confiança no topo da escala. As recomendações passam pelo portão como publicáveis.</p></div></div>')+
+      '<div style="flex:1;min-width:240px"><b>Perfil confirmado</b>'+
+      '<p>Suas candidaturas chegam completas para a empresa, com os dados que você mesmo '+
+      'revisou.</p></div></div>')+
 
   '<div class="split" style="margin-top:var(--s4)"><div class="corpo">'+
     '<div class="grupoTag"><b>Suas competências</b>'+
       '<p class="hint">Clique no nível para alternar entre básico, intermediário e avançado. '+
-      'Nível pesa no fit técnico.</p>'+
+      'O nível conta na aderência técnica.</p>'+
       '<div class="tagin" id="boxSkills">'+chipsSkill()+
         '<input id="buscaSkill" placeholder="'+(n?'Buscar outra':'Digite para buscar')+
         '" aria-label="Buscar competência" autocomplete="off"></div>'+
@@ -3383,9 +3387,9 @@ function vTags(){
         '<button data-addk="'+k.id+'">+ '+esc(k.r)+'</button>').join('')+'</div></div>'+
 
     '<div class="grupoTag"><b>Origem dos seus dados</b>'+
-      '<p class="hint">O motor pondera confiança pela fonte. Troque aqui para ver o portão de '+
-      'política mudar de decisão em tempo real: é o mecanismo que impede a plataforma de tratar '+
-      'extração automática como fato.</p>'+
+      '<p class="hint">Dado que você confirmou vale mais do que dado que a plataforma deduziu. '+
+      'Troque aqui para ver o efeito na hora: é o que impede a Conectaria de tratar uma '+
+      'suposição como se fosse fato.</p>'+
       '<div class="opcoes">'+
         [['user','Confirmado por mim'],['conversation','Extraído da conversa'],
          ['document','Extraído do currículo']].map(([k,r])=>
@@ -3393,14 +3397,15 @@ function vTags(){
           'aria-pressed="'+(S.cand.fonte===k)+'" style="'+
           (S.cand.fonte===k?'border-color:var(--ac3);color:var(--ac1);background:var(--veu2)':'')+
           '">'+r+'</button>').join('')+'</div>'+
-      '<p class="hint" style="margin-top:10px">Peso de cada fonte na política '+
-      POLITICA.policy_version+': confirmado 1.0, conversa 0.82, documento 0.7. '+
-      'Abaixo de '+POLITICA.confianca.minima_para_publicar+' a recomendação é bloqueada; '+
-      'abaixo de '+POLITICA.confianca.revisar_abaixo_de+' vai para revisão humana.</p></div>'+
+      '<p class="hint" style="margin-top:10px">O peso de cada origem: confirmado por você '+
+      'vale 1,0, extraído da conversa vale 0,82 e extraído de documento vale 0,7. Se a '+
+      'confiança fica abaixo de '+POLITICA.confianca.revisar_abaixo_de+', a empresa recebe '+
+      'sua candidatura com ressalva, e abaixo de '+POLITICA.confianca.minima_para_publicar+' '+
+      'a plataforma segura até você confirmar.</p></div>'+
 
     '<div class="grupoTag"><b>Onde você rende melhor</b>'+
       '<p class="hint">Os mesmos catorze eixos que a empresa responde, com a pergunta espelhada. '+
-      'É daqui que sai o fit cultural. Mostrando os de menor tolerância, que são os que mais '+
+      'É daqui que sai a aderência de ambiente. Mostrando os de menor tolerância, que são os que mais '+
       'mexem no resultado.</p>'+
       EIXOS.filter(e=>e.tolerancia<=22).map(e=>
         '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b><span id="cl-'+e.id+'"></span></div>'+
@@ -3441,7 +3446,7 @@ function vTags(){
   if(cb) cb.onclick=async()=>{
     cb.disabled=true; cb.innerHTML='<span class="spin"></span>Confirmando';
     await espera(520); reprojetarFonte('user'); salvar(); vTags();
-    toast('Perfil confirmado. Suas recomendações passaram a publicáveis.');
+    toast('Perfil confirmado. Suas candidaturas passam completas para a empresa.');
   };
 
   $('#fimTags').onclick=async()=>{
@@ -3503,8 +3508,8 @@ function renderEmpForm(){
         '<select id="ep"><option>201 a 1.000 pessoas</option><option>Até 50</option>'+
         '<option>51 a 200</option><option>Acima de 1.000</option></select></div></div>'+
       '<div class="fg"><label for="ed">Em uma frase, o que a empresa faz</label>'+
-        '<p class="hint">Essa frase vira embedding e entra na recuperação semântica. Seja '+
-        'concreto: o que vocês vendem e para quem.</p>'+
+        '<p class="hint">Essa frase entra na busca por semelhança. Seja concreto: o que vocês '+
+        'vendem e para quem.</p>'+
         '<textarea id="ed" rows="3">Rede de nove lojas de material de construção em Pernambuco, com 620 funcionários e foco em pequena reforma residencial.</textarea></div>'+
       '<button class="btn" id="p1" style="justify-self:start">Continuar</button></div>';
     $('#p1').onclick=()=>{S.empPasso=1;vPerfil();};
@@ -3513,8 +3518,9 @@ function renderEmpForm(){
   if(S.empPasso===3){
     el.innerHTML='<div class="form">'+
       '<div class="fg"><label for="sp">Sinais de que deu certo antes</label>'+
-        '<p class="hint">Texto livre, para o embedding. Complementa os eixos, não substitui: '+
-        'texto não é comparável ponto a ponto, eixo é.</p>'+
+        '<p class="hint">Texto livre, que entra na busca por semelhança. Ele complementa os '+
+        'eixos: o texto ajuda a encontrar gente parecida, e o eixo é o que permite medir '+
+        'a distância.</p>'+
         '<textarea id="sp" rows="3">Quem se dá bem aqui já trabalhou com operação espalhada em várias unidades e não trava quando o processo ainda não existe.</textarea></div>'+
       '<div class="fg"><label for="dn">Desalinhamentos conhecidos</label>'+
         '<p class="hint">O que costuma dar errado. Filtrar cedo economiza entrevista dos dois lados.</p>'+
@@ -3522,7 +3528,7 @@ function renderEmpForm(){
       '<div class="box" style="background:var(--veu2);border-color:var(--ac5)">'+
         '<b style="font-family:var(--d);font-size:var(--md)">O que NÃO fica aqui</b>'+
         '<p style="font-size:var(--sm);color:var(--i72);margin-top:7px">Competência de cargo '+
-        'não descreve a empresa, descreve a vaga. Ela é declarada no anúncio, com peso e '+
+        'descreve a vaga, e não a empresa. Ela é declarada no anúncio, com peso e '+
         'marcação de obrigatório, e toda vaga sua herda estes eixos sem repetir nada.</p>'+
         '<p style="font-size:var(--sm);color:var(--i72);margin-top:9px">Característica '+
         'protegida também não fica: nome, foto, idade, gênero, raça, estado civil, CEP exato e '+
@@ -3543,7 +3549,8 @@ function renderEmpForm(){
   el.innerHTML='<div class="form">'+
     '<p style="font-size:var(--sm);color:var(--i72)">Responda como a empresa <b>realmente é</b>, '+
     'não como gostaria de ser. O candidato responde exatamente estes eixos, na mesma escala, '+
-    'com a pergunta espelhada em "onde eu rendo". É isso que torna o fit cultural comparável.</p>'+
+    'com a pergunta virada para o lado dele, e é assim que dá para medir a distância entre '+
+    'os dois.</p>'+
     lista.map(e=>
       '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b>'+
       '<span id="lb-'+e.id+'"></span></div>'+
@@ -3668,10 +3675,10 @@ function vEcand(){
     '<td style="max-width:250px;color:var(--i72)">'+esc(c.pt)+'</td>'+
     '<td><span class="pill '+(c.et>=3?'ac':'n')+'">'+esc(ETAPAS[c.et])+'</span></td></tr>';
   }).join('')+'</tbody></table></div></div>'+
-  '<p class="nota">A coluna "por quê" vem dos mesmos eixos que a pessoa vê do outro lado, e a '+
-  'coluna portão é a decisão da política, não uma opinião da tela. Quem está em <b>revisão '+
-  'humana</b> tem perfil ainda apoiado em inferência: o número aparece, mas a plataforma não '+
-  'trata como fato. Match sem explicação vira número que ninguém confia.</p>';
+  '<p class="nota">A coluna "por quê" vem dos mesmos eixos que a pessoa vê do outro lado. '+
+  'A coluna portão traz a decisão da política de publicação: quem aparece em <b>revisão '+
+  'humana</b> tem perfil que o próprio candidato ainda não confirmou, então o número existe '+
+  'mas a plataforma não o trata como fato verificado.</p>';
   $$('[data-c]').forEach(t=>t.onclick=()=>toast('Perfil completo e agenda de entrevista, em construção nesta versão.'));
   animaEixos();
 }
@@ -3718,9 +3725,9 @@ function vEdash(){
      '<td style="width:130px"><span class="pill '+c+'">'+(c==='al'?'atenção':'saudável')+
      '</span></td></tr>').join('')+
     '</tbody></table></div></div>'+
-  '<p class="nota">O alerta menos óbvio e mais importante é o último da tabela do meio: '+
-  '<b>divergência entre score ativo e baseline</b>. É o que detecta regressão de modelo antes '+
-  'do usuário reclamar. Enquanto só o baseline determinístico roda, ele é zero por construção.</p>';
+  '<p class="nota">A linha de <b>divergência entre score ativo e baseline</b>, na tabela do '+
+  'meio, é a que detecta piora do modelo antes de alguém reclamar. Enquanto só o cálculo '+
+  'determinístico roda, ela fica em zero por construção.</p>';
   requestAnimationFrame(()=>$$('.col[data-h]').forEach((el,i)=>
     setTimeout(()=>{el.style.height=el.dataset.h+'%'},120+i*70)));
   animaEixos(); animaKpis();
@@ -3810,8 +3817,8 @@ function renderModal(perfil){
   '</div>'+
   '<p class="mini">Protótipo: o acesso não autentica de verdade e nenhum dado sai do seu '+
   'navegador. '+(S.aba==='criar' && !emp
-    ? 'Ao criar a conta você monta seu perfil em poucos passos. É esse perfil, e não o PDF do '+
-      'currículo, que a plataforma usa para comparar você com cada vaga.'
+    ? 'Ao criar a conta você monta seu perfil em poucos passos. É ele que a plataforma usa '+
+      'para comparar você com cada vaga.'
     : emp ? 'Na versão real, o acesso da empresa é liberado pela curadoria em até 1 dia útil.'
     : '')+'</p>'+
   '<button class="btn g w" id="fechaM" style="margin-top:var(--s3)">Cancelar</button>';
@@ -3868,7 +3875,7 @@ function comandos(){
   if(S.logado){
     l.push({g:'Ações', t:'Comparar vagas selecionadas', s:S.comparar.length+' na seleção',
       ic:I.bal, do:()=>ir('comparar')});
-    VAGAS.forEach(v=>l.push({g:'Ações', t:'Ver trace · '+v.cargo, s:'artefato auditável da recomendação',
+    VAGAS.forEach(v=>l.push({g:'Ações', t:'Ver a conta · '+v.cargo, s:'como esta nota foi calculada',
       ic:I.doc, do:()=>{ir('vaga',v.id); setTimeout(()=>abrirTrace(v.id),300);}}));
   }
   l.push({g:'Ações', t:'Alternar tema claro e escuro', ic:I.esc, kb:'T', do:alternarTema});
@@ -3992,8 +3999,8 @@ addEventListener('resize', debounce(marcarRolaveis, 200), {passive:true});
 function estadoErro(tela, err){
   return '<div class="estado"><div class="ic erro">'+I.al+'</div>'+
     '<h3>Não consegui montar esta tela.</h3>'+
-    '<p>Alguma coisa quebrou no caminho. O que você já preencheu continua salvo — '+
-    'dá para tentar de novo ou seguir para outra tela.</p>'+
+    '<p>Alguma coisa quebrou no caminho. O que você já preencheu continua salvo, então dá '+
+    'para tentar de novo ou seguir para outra tela.</p>'+
     '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
       '<button class="btn" data-retentar="'+esc(tela)+'">Tentar de novo</button>'+
       '<button class="btn g" data-irhome="1">Ver vagas abertas</button></div>'+
@@ -4145,7 +4152,7 @@ function conferirDados(){
 
   if(p.length){
     console.error('[conectaria] dados incoerentes:\n  ' + p.join('\n  '));
-    toast(p.length + ' inconsistência(s) nos dados — veja o console.', I.al);
+    toast(p.length + ' inconsistência(s) nos dados. Veja o console.', I.al);
   }
   return p;
 }

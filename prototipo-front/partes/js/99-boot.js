@@ -25,7 +25,7 @@ function conferirDados(){
 
   if(p.length){
     console.error('[conectaria] dados incoerentes:\n  ' + p.join('\n  '));
-    toast(p.length + ' inconsistência(s) nos dados — veja o console.', I.al);
+    toast(p.length + ' inconsistência(s) nos dados. Veja o console.', I.al);
   }
   return p;
 }

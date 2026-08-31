@@ -33,9 +33,9 @@ function vVaga(id){
       'Por isso a mesma distância não pesa igual em todo lugar.</p>' : '')+
   '</div><aside class="lateral">'+
     (!S.logado
-      ? '<div class="gate"><h4>Sua aderência a esta vaga está bloqueada</h4>'+
-        '<p>Crie sua conta e monte seu perfil. A partir daí você vê, nas três dimensões e nos '+
-        'catorze eixos, o quanto esta vaga combina com você, e por quê.</p>'+
+      ? '<div class="gate"><h4>Sua aderência aparece depois do cadastro</h4>'+
+        '<p>Crie sua conta e monte seu perfil. Com ele pronto você vê, nas três dimensões e '+
+        'nos catorze eixos, o quanto esta vaga combina com você e por quê.</p>'+
         '<button class="btn w" id="gateBtn">Criar conta</button>'+
         '<button class="btn g w" id="gateEntrar" style="margin-top:8px">Já tenho conta</button></div>'
       : painelMatch(v))+
@@ -103,7 +103,7 @@ function painelMatch(v){
       evidencias([...m.tecnico.evidencias, ...m.cultural.evidencias, ...m.contexto.evidencias])+
     '</details>'+
     '<div style="display:flex;gap:8px;margin-top:var(--s2)">'+
-      '<button class="btn g sm w" id="verTrace">'+I.doc+'Ver o trace</button></div>'+
+      '<button class="btn g sm w" id="verTrace">'+I.doc+'Ver a conta por dentro</button></div>'+
     '<p class="porque" style="text-align:left">Os pesos mudam por família de cargo. Esta vaga é de '+
     '<b>'+esc(v.familia)+'</b>, então o técnico pesa '+pc(m.pesos.tecnico)+'. '+
     'Seus dados estão como '+esc(FONTE_ROT[S.cand.fonte])+'.</p></div>';
@@ -150,7 +150,8 @@ async function abrirTrace(vagaId){
       '<div class="hashbox">'+I.doc+'<span>'+esc(t.inputHash)+'</span></div>'+
       '<p style="font-size:var(--xs);color:var(--i52);margin-top:8px;line-height:1.6">'+
       'Deriva do JSON canônico da entrada mais as oito versões. Mesma entrada e mesmas versões '+
-      'produzem o mesmo hash: feche e abra de novo que ele não muda. Mexa num eixo e ele muda.'+
+      'produzem sempre o mesmo hash, então ele não muda se você fechar e abrir de novo, e '+
+      'muda assim que você mexe num eixo.'+
       '</p></div>'+
     '<div><h4 style="font-family:var(--d);font-size:var(--md);margin-bottom:9px">'+
       'As oito versões do pipeline</h4><dl class="vers">'+
@@ -194,8 +195,8 @@ function vComparar(){
   '<button class="volta" id="cmpV">'+I.volta+'Todas as vagas</button>'+
   '<h1 style="font-size:var(--xxl);max-width:22ch">Onde exatamente elas diferem para você.</h1>'+
   '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Mesma política, mesmas fórmulas, '+
-  'mesmos pesos por família de cargo. A diferença que aparece aqui é diferença real de '+
-  'aderência, não de critério.</p>'+
+  'mesmos pesos por família de cargo, então o que difere aqui é a sua aderência a cada '+
+  'uma delas.</p>'+
   '<div class="cmp">'+ms.map(({v,m})=>{
     const e=EMPRESAS[v.emp];
     const ganha = v.id===melhor.v.id;
@@ -221,9 +222,9 @@ function vComparar(){
                   ...m.contexto.evidencias.filter(x=>x.kind==='constraint')], 3)+
       '<button class="btn g sm" data-ver="'+v.id+'">Abrir a vaga</button></div>';
   }).join('')+'</div>'+
-  '<p class="nota">O comparador não recalcula nada de forma diferente: chama o mesmo '+
-  '<b>evaluate()</b> por vaga. Se dois números divergissem aqui e na página da vaga, seria bug '+
-  'de cache, não de critério, e é por isso que o memo é invalidado a cada mudança de perfil.</p>';
+  '<p class="nota">O comparador chama o mesmo cálculo que a página da vaga usa. Se um '+
+  'número divergisse entre as duas telas seria falha de cache, e é por isso que o resultado '+
+  'é recalculado a cada mudança no seu perfil.</p>';
 
   $('#cmpV').onclick=()=>ir('home');
   animaMed(); animaEixos();

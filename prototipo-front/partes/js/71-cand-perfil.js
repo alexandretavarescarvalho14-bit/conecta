@@ -19,25 +19,26 @@ function vTags(){
 
   $('#v-tags').innerHTML=
   '<h1 style="font-size:var(--xxl);max-width:21ch;margin-top:var(--s5)">O que fica indexado do seu perfil.</h1>'+
-  '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Competência aqui não é texto livre: '+
-  'você escolhe do mesmo catálogo que a empresa usa no anúncio. É o que permite comparar '+
-  'requisito com competência sem depender de palavra-chave no currículo.</p>'+
+  '<p style="color:var(--i72);max-width:62ch;margin-top:10px">Você escolhe as competências '+
+  'do mesmo catálogo que a empresa usa no anúncio. Assim dá para comparar o que a vaga '+
+  'pede com o que você sabe fazer, sem depender de palavra-chave no currículo.</p>'+
 
   (S.cand.fonte!=='user'
     ? '<div class="confirma"><span class="ic">'+I.al+'</span>'+
-      '<div style="flex:1;min-width:240px"><b>Seu perfil ainda é inferência</b>'+
-      '<p>Ele saiu da conversa, não da sua mão. Enquanto estiver assim, o portão de política '+
-      'marca suas recomendações como revisão humana. Confirme e elas passam a publicável.</p></div>'+
+      '<div style="flex:1;min-width:240px"><b>Falta você confirmar seu perfil</b>'+
+      '<p>Ele foi montado a partir da conversa. Enquanto você não revisar, a empresa recebe '+
+      'sua candidatura com a ressalva de que os dados ainda não passaram por você.</p></div>'+
       '<button class="btn" id="confirmaBt">Confirmar meu perfil</button></div>'
     : '<div class="confirma" style="background:var(--ok-bg);border-color:var(--ok)">'+
       '<span class="ic" style="background:var(--ok)">'+I.ok+'</span>'+
-      '<div style="flex:1;min-width:240px"><b>Perfil confirmado por você</b>'+
-      '<p>Confiança no topo da escala. As recomendações passam pelo portão como publicáveis.</p></div></div>')+
+      '<div style="flex:1;min-width:240px"><b>Perfil confirmado</b>'+
+      '<p>Suas candidaturas chegam completas para a empresa, com os dados que você mesmo '+
+      'revisou.</p></div></div>')+
 
   '<div class="split" style="margin-top:var(--s4)"><div class="corpo">'+
     '<div class="grupoTag"><b>Suas competências</b>'+
       '<p class="hint">Clique no nível para alternar entre básico, intermediário e avançado. '+
-      'Nível pesa no fit técnico.</p>'+
+      'O nível conta na aderência técnica.</p>'+
       '<div class="tagin" id="boxSkills">'+chipsSkill()+
         '<input id="buscaSkill" placeholder="'+(n?'Buscar outra':'Digite para buscar')+
         '" aria-label="Buscar competência" autocomplete="off"></div>'+
@@ -45,9 +46,9 @@ function vTags(){
         '<button data-addk="'+k.id+'">+ '+esc(k.r)+'</button>').join('')+'</div></div>'+
 
     '<div class="grupoTag"><b>Origem dos seus dados</b>'+
-      '<p class="hint">O motor pondera confiança pela fonte. Troque aqui para ver o portão de '+
-      'política mudar de decisão em tempo real: é o mecanismo que impede a plataforma de tratar '+
-      'extração automática como fato.</p>'+
+      '<p class="hint">Dado que você confirmou vale mais do que dado que a plataforma deduziu. '+
+      'Troque aqui para ver o efeito na hora: é o que impede a Conectaria de tratar uma '+
+      'suposição como se fosse fato.</p>'+
       '<div class="opcoes">'+
         [['user','Confirmado por mim'],['conversation','Extraído da conversa'],
          ['document','Extraído do currículo']].map(([k,r])=>
@@ -55,14 +56,15 @@ function vTags(){
           'aria-pressed="'+(S.cand.fonte===k)+'" style="'+
           (S.cand.fonte===k?'border-color:var(--ac3);color:var(--ac1);background:var(--veu2)':'')+
           '">'+r+'</button>').join('')+'</div>'+
-      '<p class="hint" style="margin-top:10px">Peso de cada fonte na política '+
-      POLITICA.policy_version+': confirmado 1.0, conversa 0.82, documento 0.7. '+
-      'Abaixo de '+POLITICA.confianca.minima_para_publicar+' a recomendação é bloqueada; '+
-      'abaixo de '+POLITICA.confianca.revisar_abaixo_de+' vai para revisão humana.</p></div>'+
+      '<p class="hint" style="margin-top:10px">O peso de cada origem: confirmado por você '+
+      'vale 1,0, extraído da conversa vale 0,82 e extraído de documento vale 0,7. Se a '+
+      'confiança fica abaixo de '+POLITICA.confianca.revisar_abaixo_de+', a empresa recebe '+
+      'sua candidatura com ressalva, e abaixo de '+POLITICA.confianca.minima_para_publicar+' '+
+      'a plataforma segura até você confirmar.</p></div>'+
 
     '<div class="grupoTag"><b>Onde você rende melhor</b>'+
       '<p class="hint">Os mesmos catorze eixos que a empresa responde, com a pergunta espelhada. '+
-      'É daqui que sai o fit cultural. Mostrando os de menor tolerância, que são os que mais '+
+      'É daqui que sai a aderência de ambiente. Mostrando os de menor tolerância, que são os que mais '+
       'mexem no resultado.</p>'+
       EIXOS.filter(e=>e.tolerancia<=22).map(e=>
         '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b><span id="cl-'+e.id+'"></span></div>'+
@@ -103,7 +105,7 @@ function vTags(){
   if(cb) cb.onclick=async()=>{
     cb.disabled=true; cb.innerHTML='<span class="spin"></span>Confirmando';
     await espera(520); reprojetarFonte('user'); salvar(); vTags();
-    toast('Perfil confirmado. Suas recomendações passaram a publicáveis.');
+    toast('Perfil confirmado. Suas candidaturas passam completas para a empresa.');
   };
 
   $('#fimTags').onclick=async()=>{

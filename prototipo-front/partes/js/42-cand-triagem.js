@@ -25,9 +25,9 @@ function vTriagem(){
   S.passo=0; S.perfil={};
   $('#v-triagem').innerHTML=
   '<button class="volta" id="voltaT">'+I.volta+'Voltar</button>'+
-  '<h1 style="font-size:var(--xxl);max-width:19ch">Cinco perguntas, e seu perfil fica pronto para sempre.</h1>'+
-  '<p style="color:var(--i72);max-width:58ch;margin-top:10px">Não é formulário. Responda como '+
-  'você falaria, e acompanhe ao lado o perfil sendo montado. É esse perfil que faz as vagas '+
+  '<h1 style="font-size:var(--xxl);max-width:19ch">Cinco perguntas e seu perfil está montado.</h1>'+
+  '<p style="color:var(--i72);max-width:58ch;margin-top:10px">Responda como você falaria '+
+  'numa conversa, e acompanhe ao lado o perfil sendo montado. É ele que faz as vagas '+
   'chegarem até você depois.</p>'+
   '<div class="tri">'+
     '<div class="conversa"><div class="passos" id="passos">'+
@@ -35,8 +35,9 @@ function vTriagem(){
       '<div class="msgs" id="msgs"></div>'+
       '<div class="entrada" id="entrada"></div></div>'+
     '<aside class="schema"><h4>'+I.spark+'Seu perfil, estruturado</h4>'+
-      '<p class="sub">Cada resposta vira campo indexável com proveniência. Enquanto vem da '+
-      'conversa, é inferência: entra como <b>conversation</b>, não como fato confirmado.</p>'+
+      '<p class="sub">Cada resposta vira um campo que a busca consegue comparar, junto com a '+
+      'origem dela. Enquanto vier da conversa, fica marcada como algo que você ainda '+
+      'precisa confirmar.</p>'+
       '<div class="jf" id="jf">'+
         '<span class="k">perfil_candidato</span> <span class="p">{</span>'+
         ROTEIRO.map((r,i)=>'<span class="row pend" id="row'+i+'"><span class="k">'+
@@ -104,9 +105,9 @@ async function responder(txt){
   $$('#dots i').forEach((d,i)=>setTimeout(()=>d.classList.add('on'), i*28));
   $('#vetorTxt').textContent='6 de 6 dimensões prontas';
   $$('#passos i').forEach(el=>el.classList.add('on'));
-  msg('Pronto. Seu perfil está montado e já dá para comparar com qualquer vaga. Como saiu da '+
-      'conversa e não da sua mão, ele entra como <b>inferência</b>: o match aparece, mas '+
-      'marcado para revisão até você confirmar.','bot');
+  msg('Pronto, seu perfil está montado e já dá para comparar com qualquer vaga. Como ele '+
+      'saiu desta conversa, vale você revisar antes: a empresa recebe seu perfil completo '+
+      'depois que você confirmar.','bot');
   await espera(300);
   $('#entrada').innerHTML='<button class="btn w" id="fim">Revisar e confirmar meu perfil</button>';
   $('#fim').onclick=async ()=>{

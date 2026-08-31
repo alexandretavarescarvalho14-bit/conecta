@@ -23,8 +23,8 @@ function renderEmpForm(){
         '<select id="ep"><option>201 a 1.000 pessoas</option><option>Até 50</option>'+
         '<option>51 a 200</option><option>Acima de 1.000</option></select></div></div>'+
       '<div class="fg"><label for="ed">Em uma frase, o que a empresa faz</label>'+
-        '<p class="hint">Essa frase vira embedding e entra na recuperação semântica. Seja '+
-        'concreto: o que vocês vendem e para quem.</p>'+
+        '<p class="hint">Essa frase entra na busca por semelhança. Seja concreto: o que vocês '+
+        'vendem e para quem.</p>'+
         '<textarea id="ed" rows="3">Rede de nove lojas de material de construção em Pernambuco, com 620 funcionários e foco em pequena reforma residencial.</textarea></div>'+
       '<button class="btn" id="p1" style="justify-self:start">Continuar</button></div>';
     $('#p1').onclick=()=>{S.empPasso=1;vPerfil();};
@@ -33,8 +33,9 @@ function renderEmpForm(){
   if(S.empPasso===3){
     el.innerHTML='<div class="form">'+
       '<div class="fg"><label for="sp">Sinais de que deu certo antes</label>'+
-        '<p class="hint">Texto livre, para o embedding. Complementa os eixos, não substitui: '+
-        'texto não é comparável ponto a ponto, eixo é.</p>'+
+        '<p class="hint">Texto livre, que entra na busca por semelhança. Ele complementa os '+
+        'eixos: o texto ajuda a encontrar gente parecida, e o eixo é o que permite medir '+
+        'a distância.</p>'+
         '<textarea id="sp" rows="3">Quem se dá bem aqui já trabalhou com operação espalhada em várias unidades e não trava quando o processo ainda não existe.</textarea></div>'+
       '<div class="fg"><label for="dn">Desalinhamentos conhecidos</label>'+
         '<p class="hint">O que costuma dar errado. Filtrar cedo economiza entrevista dos dois lados.</p>'+
@@ -42,7 +43,7 @@ function renderEmpForm(){
       '<div class="box" style="background:var(--veu2);border-color:var(--ac5)">'+
         '<b style="font-family:var(--d);font-size:var(--md)">O que NÃO fica aqui</b>'+
         '<p style="font-size:var(--sm);color:var(--i72);margin-top:7px">Competência de cargo '+
-        'não descreve a empresa, descreve a vaga. Ela é declarada no anúncio, com peso e '+
+        'descreve a vaga, e não a empresa. Ela é declarada no anúncio, com peso e '+
         'marcação de obrigatório, e toda vaga sua herda estes eixos sem repetir nada.</p>'+
         '<p style="font-size:var(--sm);color:var(--i72);margin-top:9px">Característica '+
         'protegida também não fica: nome, foto, idade, gênero, raça, estado civil, CEP exato e '+
@@ -63,7 +64,8 @@ function renderEmpForm(){
   el.innerHTML='<div class="form">'+
     '<p style="font-size:var(--sm);color:var(--i72)">Responda como a empresa <b>realmente é</b>, '+
     'não como gostaria de ser. O candidato responde exatamente estes eixos, na mesma escala, '+
-    'com a pergunta espelhada em "onde eu rendo". É isso que torna o fit cultural comparável.</p>'+
+    'com a pergunta virada para o lado dele, e é assim que dá para medir a distância entre '+
+    'os dois.</p>'+
     lista.map(e=>
       '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b>'+
       '<span id="lb-'+e.id+'"></span></div>'+

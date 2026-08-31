@@ -25,16 +25,16 @@ function vMinhas(){
         'Sua candidatura entrou '+esc(c.quando)+'.</p>'+
         '<div style="margin-top:var(--s3);display:flex;gap:9px;flex-wrap:wrap">'+
         '<button class="btn g sm" data-ver="'+v.id+'">Ver a vaga</button>'+
-        '<button class="btn g sm" data-trace="'+v.id+'">'+I.doc+'Trace</button>'+
+        '<button class="btn g sm" data-trace="'+v.id+'">'+I.doc+'Ver a conta</button>'+
         '<button class="btn g sm" data-msg="'+v.id+'">Falar com a Conectaria</button></div>'+
       '</div>';
     }).join('')+'</div>'+
     '<div class="box" style="margin-top:var(--s3);display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap">'+
       '<span class="ic" style="width:42px;height:42px;border-radius:12px;background:var(--veu);'+
       'color:var(--ac2);display:grid;place-items:center">'+I.spark+'</span>'+
-      '<div style="flex:1;min-width:220px"><b style="font-family:var(--d)">Vagas sob demanda estão ativas</b>'+
-      '<p style="font-size:var(--sm);color:var(--i72)">Com seu perfil montado, avisamos por '+
-      'WhatsApp quando entrar vaga com match acima de 75% e portão em publicável.</p></div>'+
+      '<div style="flex:1;min-width:220px"><b style="font-family:var(--d)">Aviso de vaga nova está ligado</b>'+
+      '<p style="font-size:var(--sm);color:var(--i72)">Com o perfil montado, avisamos no '+
+      'WhatsApp quando entrar vaga com aderência acima de 75%.</p></div>'+
       '<button class="btn g sm" id="ajustar">Ajustar preferências</button></div>';
   $$('[data-msg]').forEach(b=>b.onclick=()=>toast('A Conectaria responde no WhatsApp em até 1 dia útil.'));
   $('#ajustar').onclick=()=>toast('Preferências de match e canal de aviso, em construção nesta versão.');

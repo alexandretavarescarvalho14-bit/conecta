@@ -143,8 +143,8 @@ function vHome(){
     : '<section class="hero">'+malha()+
         '<span class="selo"><i></i>9.014 pessoas na comunidade</span>'+
         '<h1>A vaga certa encontra <em>quem você já é</em>.</h1>'+
-        '<p>Aqui seu perfil não é um currículo em PDF. É um mapa do que você sabe, de como você '+
-        'trabalha e de onde você quer chegar. As vagas chegam a partir disso.</p>'+
+        '<p>Seu perfil aqui é um mapa do que você sabe fazer, de como você trabalha e de '+
+        'onde quer chegar. As vagas chegam a partir dele.</p>'+
       '</section>';
 
   $('#v-home').innerHTML = hero +
@@ -164,9 +164,10 @@ function vHome(){
   '<div id="listaVagas"></div>'+
   '<div id="barraCmp"></div>'+
   '<p class="nota">Protótipo de avaliação da Conectaria. As vagas e as empresas são fictícias, '+
-  'e coerentes entre si. O percentual de aderência é calculado de verdade a partir dos '+
-  'requisitos da vaga, dos catorze eixos de ambiente e do seu contexto — cada vaga mostra a '+
-  'conta por dentro. Pagamento, login e integração com sistemas de RH não estão implementados.</p>';
+  'e coerentes entre si. O percentual de aderência é calculado de verdade, a partir dos '+
+  'requisitos da vaga, dos catorze eixos de ambiente e do seu contexto, e cada vaga mostra '+
+  'a conta por dentro. Pagamento, login e integração com sistemas de RH não estão '+
+  'implementados.</p>';
 
   const buscarDeb = debounce(()=>renderVagas(), 200);
   $('#q').oninput = e => { S.q=e.target.value; buscarDeb(); };
@@ -270,7 +271,7 @@ function renderBarraCmp(){
     (S.comparar.length===1?' vaga selecionada':' vagas selecionadas')+'</b>'+
     '<span style="font-size:var(--sm);color:var(--i62);flex:1;min-width:150px">'+
     (S.comparar.length<2?'Escolha mais uma para comparar lado a lado.'
-      :'Mesmo motor, mesma política, três dimensões lado a lado.')+'</span>'+
+      :'As duas passam pelo mesmo cálculo, com os pesos da família de cada cargo.')+'</span>'+
     '<button class="btn g sm" id="cmpLimpa">Limpar</button>'+
     '<button class="btn sm" id="cmpVer"'+(S.comparar.length<2?' disabled':'')+'>Comparar</button></div>';
   $('#cmpLimpa').onclick=()=>{S.comparar=[];salvar();renderVagas();};
