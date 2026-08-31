@@ -59,6 +59,7 @@ addEventListener('keydown',e=>{
   }
   prenderFoco(e);
   if(e.key!=='Escape') return;
+  if($('.filtro.aberto')) return fecharPops();
   if($('#mbox').classList.contains('on')) return fecharAcesso();
   if($('#drw').classList.contains('on')) return fecharTrace();
   if(S.ddAberto) return fecharDD();

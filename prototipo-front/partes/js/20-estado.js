@@ -20,7 +20,8 @@ function candidatoNovo(fonte){
 }
 
 const S = {
-  view:'home', modo:'cand', q:'', local:'', filtro:'todas', vaga:null,
+  view:'home', modo:'cand', q:'', local:'', vaga:null,
+  filtros:{area:[], modelo:[], uf:[], emp:[]}, ordem:'match',
   logado:false, contaEmp:false, conta:null, passo:0, perfil:{}, candidaturas:[],
   ddAberto:false, aba:'criar',
   cand: candidatoNovo('conversation'),

@@ -64,6 +64,20 @@ function marcarRolaveis(){
 /* a largura muda com a rotação do aparelho, então revisa ao redimensionar */
 addEventListener('resize', debounce(marcarRolaveis, 200), {passive:true});
 
+/* Erro em linguagem de gente. O código fica num detalhe recolhido: quem
+   está usando não precisa dele, quem está depurando precisa. */
+function estadoErro(tela, err){
+  return '<div class="estado"><div class="ic erro">'+I.al+'</div>'+
+    '<h3>Não consegui montar esta tela.</h3>'+
+    '<p>Alguma coisa quebrou no caminho. O que você já preencheu continua salvo — '+
+    'dá para tentar de novo ou seguir para outra tela.</p>'+
+    '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
+      '<button class="btn" data-retentar="'+esc(tela)+'">Tentar de novo</button>'+
+      '<button class="btn g" data-irhome="1">Ver vagas abertas</button></div>'+
+    '<details class="errodet"><summary>Detalhe técnico</summary>'+
+      '<pre>'+esc(String((err && err.stack) || err))+'</pre></details></div>';
+}
+
 function sair(){
   S.logado=false; S.contaEmp=false; S.conta=null; S.modo='cand';
   S.candidaturas=[]; S.comparar=[]; S.vaga=null;
@@ -82,7 +96,15 @@ function ir(v,arg){
   S.view=v;
   $$('.view').forEach(x=>x.classList.remove('on'));
   $('#v-'+v).classList.add('on');
-  REND[v](arg);
+  // Antes, um erro em qualquer render entregava uma tela em branco sem
+  // explicação. Agora vira um estado legível, com saída e com o detalhe
+  // técnico recolhido para quem quiser ver.
+  try {
+    REND[v](arg);
+  } catch(err) {
+    console.error('[conectaria] falha ao montar a tela "'+v+'"', err);
+    $('#v-'+v).innerHTML = estadoErro(v, err);
+  }
   montarNav(); marcarRolaveis(); salvar();
   window.scrollTo({top:0,behavior:'instant'});
   if(['vaga','triagem','tags','comparar'].includes(v)) $('#v-'+v).focus();

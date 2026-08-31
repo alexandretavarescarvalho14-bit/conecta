@@ -12,13 +12,15 @@ function medidor(p, conf, grande){
   const est = p>=70 ? '' : p>=50 ? 'baixa' : 'blk';
   return '<span class="medw"><span class="med '+(grande?'g ':'')+est+'" data-p="'+p+'" data-c="'+
     conf.toFixed(4)+'" style="--circ:'+C_NOTA.toFixed(2)+';--circ2:'+C_CONF.toFixed(2)+'" '+
-    'role="img" aria-label="Match '+p+' de 100, confiança '+pc(conf)+'">'+
+    'title="Aderência '+p+' de 100. O arco interno é a confiança do dado: '+pc(conf)+'." '+
+    'role="img" aria-label="Aderência '+p+' de 100, confiança do dado '+pc(conf)+'">'+
     '<svg viewBox="0 0 100 100" aria-hidden="true">'+
       '<circle class="tr" cx="50" cy="50" r="'+R_NOTA+'"/>'+
       '<circle class="pr" cx="50" cy="50" r="'+R_NOTA+'"/>'+
       '<circle class="cf" cx="50" cy="50" r="'+R_CONF+'"/>'+
     '</svg><b data-n="'+p+'">0</b></span>'+
-    '<small>match · conf '+pc(conf)+'</small></span>';
+    '<small>'+(conf < POLITICA.confianca.revisar_abaixo_de ? 'match estimado' : 'match')+
+    '</small></span>';
 }
 
 function contar(el, alvo){
@@ -133,13 +135,36 @@ function spark(vals){
 }
 
 /* Revelação escalonada na rolagem. Um observador só, reaproveitado. */
+/* Revelação por rolagem.
+
+   O estado inicial é aplicado AQUI, por JS, e nunca no CSS. A diferença
+   não é estilística: com `opacity:0` no CSS, qualquer coisa que impeça o
+   observador de rodar — script quebrado, navegador antigo, aba que o
+   sistema congelou — entrega uma página em branco com o conteúdo todo
+   presente no DOM. Já vi acontecer nesta peça.
+
+   Por isso, além do observador, existe um prazo: passados 2,5s, o que
+   ainda estiver escondido aparece de qualquer jeito. Animação não pode
+   ser condição para o conteúdo existir. */
+function mostrar(el){
+  el.style.opacity = '';
+  el.style.transform = '';
+  el.classList.add('vis');
+}
 const io = ('IntersectionObserver' in window) ? new IntersectionObserver(ents=>{
   ents.forEach((en,i)=>{ if(en.isIntersecting){
-    setTimeout(()=>en.target.classList.add('vis'), i*60);
+    setTimeout(()=>mostrar(en.target), i*60);
     io.unobserve(en.target);
   }});
 },{rootMargin:'0px 0px -40px 0px'}) : null;
+
 function revelar(escopo){
-  if(!io){ $$('.rv',escopo).forEach(el=>el.classList.add('vis')); return; }
-  $$('.rv:not(.vis)',escopo).forEach(el=>io.observe(el));
+  const alvos = $$('.rv:not(.vis)', escopo);
+  if(!io || reduz()){ alvos.forEach(mostrar); return; }
+  alvos.forEach(el=>{
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(14px)';
+    io.observe(el);
+  });
+  setTimeout(()=>alvos.forEach(el=>{ if(!el.classList.contains('vis')) mostrar(el); }), 2500);
 }

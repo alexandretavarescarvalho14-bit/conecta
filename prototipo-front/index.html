@@ -34,7 +34,7 @@
   --papel:#F7FAFC; --card:#FFFFFF; --papel2:#EDF3F8; --papel3:#E3ECF3;
   --tinta:13,26,38;
 
-  --i92:rgba(var(--tinta),.92); --i72:rgba(var(--tinta),.72); --i52:rgba(var(--tinta),.52);
+  --i92:rgba(var(--tinta),.92); --i72:rgba(var(--tinta),.72); --i62:rgba(var(--tinta),.62);
   --i34:rgba(var(--tinta),.34); --i14:rgba(var(--tinta),.14); --i08:rgba(var(--tinta),.08);
   --i04:rgba(var(--tinta),.04);
 
@@ -65,7 +65,7 @@
 
   --d:'Outfit',system-ui,sans-serif; --f:'Inter',system-ui,sans-serif;
   --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
-  --xs:.7rem; --sm:.8125rem; --md:.9375rem; --lg:1.0625rem;
+  --xs:.75rem; --sm:.8125rem; --md:.9375rem; --lg:1.0625rem;
   --xl:1.35rem; --xxl:clamp(1.7rem,3vw,2.3rem); --hero:clamp(2.1rem,4.6vw,3.5rem);
 }
 
@@ -141,7 +141,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 }
 :root[data-theme="dark"] .logo img.w{filter:brightness(0) invert(1) opacity(.92)}
 .tnav{display:flex;gap:2px;margin-left:var(--s2)}
-.tnav button{font-size:var(--sm);color:var(--i52);padding:7px 12px;border-radius:var(--r3);
+.tnav button{font-size:var(--sm);color:var(--i62);padding:7px 12px;border-radius:var(--r3);
   transition:color .16s var(--e),background .16s var(--e);position:relative}
 @media(hover:hover){.tnav button:hover{color:var(--i92);background:var(--i04)}}
 .tnav button[aria-current=page]{color:var(--ac1);background:var(--veu);font-weight:600}
@@ -155,7 +155,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   border-radius:var(--r3);padding:6px 11px;color:inherit;font-size:var(--xs);font-weight:600;
   transition:background .16s var(--e)}
 @media(hover:hover){.uic:hover{background:rgba(255,255,255,.17)}}
-.uic kbd{font-family:var(--mono);font-size:.62rem;background:rgba(255,255,255,.16);
+.uic kbd{font-family:var(--mono);font-size:.75rem;background:rgba(255,255,255,.16);
   border-radius:4px;padding:2px 5px;letter-spacing:.02em}
 .uic .sun,.uic .moon{display:none}
 :root[data-theme="dark"] .uic .sun{display:block}
@@ -178,9 +178,11 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 @keyframes sobe{from{opacity:0;transform:translateY(12px)}}
 
 /* revelação escalonada por observador de rolagem */
-.rv{opacity:0;transform:translateY(14px);
-  transition:opacity .55s var(--e),transform .55s var(--e)}
-.rv.vis{opacity:1;transform:none}
+/* Sem estado escondido aqui de propósito. O `.rv` só descreve COMO a
+   revelação acontece; o estado inicial é aplicado por JS em revelar().
+   Se o observer não rodar, ou o script quebrar, o conteúdo fica visível
+   em vez de a página ficar em branco. */
+.rv{transition:opacity .55s var(--e),transform .55s var(--e)}
 
 /* ================= HERO ================= */
 .hero{position:relative;padding:var(--s5) 0 var(--s4);overflow:hidden}
@@ -205,9 +207,9 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .bfield+.bfield{border-left:1px solid var(--i08)}
 .bfield svg{color:var(--i34);flex:none}
 .bfield input,.bfield select{border:0;outline:0;background:none;width:100%;font-size:var(--md)}
-.bfield label{font-size:var(--xs);color:var(--i52);display:block;margin-bottom:-2px;font-weight:500}
+.bfield label{font-size:var(--xs);color:var(--i62);display:block;margin-bottom:-2px;font-weight:500}
 .sugere{display:flex;gap:7px;flex-wrap:wrap;margin-top:var(--s3);align-items:center}
-.sugere span{font-size:var(--xs);color:var(--i52)}
+.sugere span{font-size:var(--xs);color:var(--i62)}
 .sug{font-size:var(--xs);border:1px solid var(--i14);border-radius:var(--pill);padding:5px 12px;
   color:var(--i72);transition:border-color .16s var(--e),color .16s var(--e),
   background .16s var(--e),transform .13s var(--e)}
@@ -218,7 +220,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .barra{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin:var(--s5) 0 var(--s3);
   padding-bottom:var(--s2);border-bottom:1px solid var(--i08)}
 .barra h2{font-size:var(--xl)}
-.cont{font-size:var(--sm);color:var(--i52)}
+.cont{font-size:var(--sm);color:var(--i62)}
 .chips{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto;align-items:center}
 .chip{font-size:var(--sm);border:1px solid var(--i14);border-radius:var(--pill);padding:6px 13px;
   color:var(--i72);transition:border-color .16s var(--e),background .16s var(--e),
@@ -227,7 +229,61 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .chip:active{transform:scale(.96)}
 .chip[aria-pressed=true]{background:var(--ac1);border-color:var(--ac1);color:var(--sobre)}
 
-.vagas{display:grid;gap:var(--s2)}
+/* ---- hero compacto para quem já entrou ---- */
+.heroc{padding:var(--s5) 0 var(--s2)}
+.heroc h1{font-size:var(--xxl)}
+.heroc p{color:var(--i62);margin-top:6px;font-size:var(--md)}
+
+/* ---- barra de filtros ---- */
+.fbarra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:var(--s3)}
+.filtro{position:relative}
+.fbt{display:inline-flex;align-items:center;gap:7px;font-size:var(--sm);
+  border:1px solid var(--i14);border-radius:var(--pill);padding:8px 14px;color:var(--i92);
+  background:var(--card);white-space:nowrap;
+  transition:border-color .16s var(--e),background .16s var(--e),color .16s var(--e)}
+@media(hover:hover){.fbt:hover{border-color:var(--ac4)}}
+.fbt svg{color:var(--i34);transition:transform .22s var(--e)}
+.fbt.on{border-color:var(--ac3);color:var(--ac1);background:var(--veu2);font-weight:600}
+.fbt.on svg{color:var(--ac2)}
+.fbt i{font-style:normal;background:var(--ac1);color:var(--sobre);border-radius:var(--pill);
+  min-width:19px;height:19px;display:grid;place-items:center;font-size:.75rem;font-weight:700}
+.filtro.aberto .fbt{border-color:var(--ac3)}
+.filtro.aberto .fbt svg:last-child{transform:rotate(180deg)}
+.fordem{margin-left:auto}
+
+.fpop{position:absolute;top:calc(100% + 6px);left:0;z-index:28;min-width:230px;
+  background:var(--card);border:1px solid var(--i08);border-radius:var(--r2);
+  box-shadow:var(--sh2);padding:6px;
+  opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;visibility:hidden;
+  transition:opacity .2s var(--e),transform .2s var(--e),visibility .2s;
+  max-height:min(340px,60vh);overflow-y:auto}
+.filtro.aberto .fpop{opacity:1;transform:none;pointer-events:auto;visibility:visible}
+.fordem .fpop{left:auto;right:0}
+.fop{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r3);
+  font-size:var(--sm);cursor:pointer;transition:background .14s var(--e)}
+@media(hover:hover){.fop:hover{background:var(--veu2)}}
+.fop input{accent-color:var(--ac3);width:16px;height:16px;flex:none}
+.fop span{flex:1;min-width:0}
+.fop b{font-size:var(--xs);color:var(--i62);font-variant-numeric:tabular-nums}
+.fop.vazia{opacity:.45;cursor:not-allowed}
+.flimpa{width:100%;text-align:left;padding:9px 10px;border-radius:var(--r3);
+  font-size:var(--xs);color:var(--ac1);font-weight:600;border-top:1px solid var(--i08);
+  margin-top:4px}
+@media(hover:hover){.flimpa:hover{background:var(--veu2)}}
+
+.fchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:var(--s2)}
+.fchip{display:inline-flex;align-items:center;gap:7px;font-size:var(--xs);font-weight:600;
+  background:var(--veu);color:var(--ac1);border-radius:var(--pill);padding:5px 11px;
+  transition:background .16s var(--e)}
+@media(hover:hover){.fchip:hover{background:rgba(var(--ac-rgb),.22)}}
+.fchip span{opacity:.7;font-size:.85em}
+.fchip.zerar{background:transparent;color:var(--i62);text-decoration:underline;
+  text-underline-offset:2px}
+.cont{font-size:var(--sm);color:var(--i62);margin-top:var(--s2)}
+
+/* ---- lista em duas colunas: 31 cartões numa coluna só davam 5.500px ---- */
+.vagas{display:grid;gap:var(--s2);grid-template-columns:repeat(auto-fill,minmax(430px,1fr))}
+@media(max-width:980px){.vagas{grid-template-columns:1fr}}
 .vaga{background:var(--card);border:1px solid var(--i08);border-radius:var(--r);padding:var(--s3);
   display:grid;grid-template-columns:1fr auto;gap:var(--s3);align-items:center;width:100%;
   text-align:left;position:relative;overflow:hidden;
@@ -239,19 +295,41 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 @media(hover:hover){.vaga:hover{transform:translateY(-3px);box-shadow:var(--sh2);border-color:var(--ac5)}
   .vaga:hover::before{transform:scaleY(1)}}
 .vaga:active{transform:scale(.994)}
-.vaga h3{font-size:var(--lg);font-family:var(--d);letter-spacing:-.02em}
+.vaga{padding:var(--s2) 16px}
+.vaga h3{font-size:var(--lg);font-family:var(--d);letter-spacing:-.02em;margin:5px 0 7px}
+
+/* linha de topo do card: empresa à esquerda, cobertura empurrada à direita */
+.vtopo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vtopo b{font-size:var(--sm);font-weight:600;color:var(--i72)}
+.vsetor{font-size:var(--xs);color:var(--i62)}
+.vtopo .cob{margin-left:auto}
+
+/* A faixa salarial e o segundo criterio de decisao e vinha com o mesmo peso
+   de "ha 6 dias". Agora e a unica coisa em tinta cheia da linha. */
+.vmeta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:var(--sm);color:var(--i62)}
+.vmeta span{display:flex;align-items:center;gap:5px}
+.vmeta svg{color:var(--i34);flex:none}
+.vfaixa{color:var(--i92);font-weight:600}
 .vaga.sel{border-color:var(--ac3);box-shadow:0 0 0 1px var(--ac3)}
 .emp{display:flex;align-items:center;gap:9px;margin-bottom:7px;flex-wrap:wrap}
-.emplogo{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:var(--xs);
+.emplogo{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:.62rem;
   font-weight:700;color:#fff;flex:none}
 .emp b{font-size:var(--sm);font-weight:600;color:var(--i72)}
-.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:var(--sm);color:var(--i52);margin-top:9px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:var(--sm);color:var(--i62);margin-top:9px}
 .meta span{display:flex;align-items:center;gap:6px}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
 .tag{font-size:var(--xs);border:1px solid var(--i14);border-radius:var(--pill);padding:3px 10px;
   color:var(--i72)}
 .tag.hi{background:var(--veu);border-color:transparent;color:var(--ac1);font-weight:600}
-.tag.cob{background:var(--ok-bg);border-color:transparent;color:var(--ok-fg);font-weight:600}
+/* Cobertura: glifo alem da cor. Antes, "0 de 3" e "3 de 5" saiam no mesmo
+   verde de sucesso: o sinal mais rapido do card dizia o contrario do dado. */
+.tag.cob{border-color:transparent;font-weight:600;display:inline-flex;align-items:center;gap:5px;
+  white-space:nowrap}
+.tag.cob i{font-style:normal;font-size:.9em;line-height:1}
+.cob-tudo {background:var(--ok-bg); color:var(--ok-fg)}
+.cob-parte{background:var(--veu);   color:var(--ac1)}
+.cob-pouco{background:var(--i04);   color:var(--i62)}
+.cob-falta{background:var(--bl-bg); color:var(--bl-fg)}
 
 /* Link esticado: o card inteiro navega, mas o botão de comparar continua
    clicável por cima. Evita botão dentro de botão, que é HTML inválido. */
@@ -261,7 +339,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .vaga .vdir{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
   gap:9px;justify-self:end}
 .cmpbt{font-size:var(--xs);border:1px solid var(--i14);border-radius:var(--pill);padding:4px 11px;
-  color:var(--i52);white-space:nowrap;
+  color:var(--i62);white-space:nowrap;
   transition:border-color .16s var(--e),color .16s var(--e),background .16s var(--e)}
 @media(hover:hover){.cmpbt:hover{border-color:var(--ac4);color:var(--ac1)}}
 .cmpbt.on{background:var(--ac1);border-color:var(--ac1);color:var(--sobre);font-weight:600}
@@ -282,7 +360,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .med b{position:relative;z-index:1;font-size:var(--sm);font-weight:700;font-family:var(--d);
   font-variant-numeric:tabular-nums}
 .medw{display:flex;flex-direction:column;align-items:center;gap:5px}
-.medw small{font-size:var(--xs);color:var(--i52);letter-spacing:.04em}
+.medw small{font-size:var(--xs);color:var(--i62);letter-spacing:.04em}
 .med.g{width:104px;height:104px}
 .med.g b{font-size:1.6rem}
 
@@ -297,12 +375,12 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .gate p{font-size:var(--sm);color:var(--i72);margin-bottom:var(--s2)}
 
 /* ================= DETALHE ================= */
-.volta{display:inline-flex;align-items:center;gap:7px;font-size:var(--sm);color:var(--i52);
+.volta{display:inline-flex;align-items:center;gap:7px;font-size:var(--sm);color:var(--i62);
   padding:var(--s4) 0 var(--s3);transition:color .16s var(--e),gap .16s var(--e)}
 @media(hover:hover){.volta:hover{color:var(--ac1);gap:11px}}
 .split{display:grid;grid-template-columns:1fr 342px;gap:var(--s5);align-items:start}
 .corpo h1{font-size:var(--xxl);max-width:20ch}
-.corpo h4{font-size:var(--xs);letter-spacing:.12em;text-transform:uppercase;color:var(--i52);
+.corpo h4{font-size:var(--xs);letter-spacing:.12em;text-transform:uppercase;color:var(--i62);
   margin:var(--s4) 0 var(--s2);font-family:var(--f);font-weight:600}
 .corpo p{color:var(--i72);font-size:var(--md);margin-bottom:var(--s2);max-width:64ch}
 .corpo ul{list-style:none;max-width:64ch}
@@ -316,7 +394,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .linha{display:flex;justify-content:space-between;gap:12px;font-size:var(--sm);padding:8px 0;
   border-bottom:1px solid var(--i04)}
 .linha:last-child{border:0}
-.linha span{color:var(--i52)} .linha b{font-weight:600;text-align:right}
+.linha span{color:var(--i62)} .linha b{font-weight:600;text-align:right}
 
 /* ---- dimensões com barra e confiança ---- */
 .eixos{display:grid;gap:11px;margin-top:var(--s2)}
@@ -326,7 +404,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .eixo .t i{display:block;height:100%;border-radius:3px;background:var(--ac3);width:0;
   transition:width .8s var(--e)}
 .eixo .v{text-align:right;font-weight:700;color:var(--i72);font-variant-numeric:tabular-nums}
-.porque{font-size:var(--xs);color:var(--i52);line-height:1.65;margin-top:var(--s2);
+.porque{font-size:var(--xs);color:var(--i62);line-height:1.65;margin-top:var(--s2);
   padding-top:var(--s2);border-top:1px solid var(--i04)}
 
 /* ---- barra de confiança fina, sob a nota ---- */
@@ -344,7 +422,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .ev .ei{width:17px;height:17px;border-radius:50%;flex:none;display:grid;place-items:center;
   margin-top:1px;color:var(--sobre);font-size:10px;font-weight:700}
 .ev p{font-size:var(--sm);color:var(--i92);line-height:1.5}
-.ev code{display:block;font-family:var(--mono);font-size:.62rem;color:var(--i34);margin-top:3px;
+.ev code{display:block;font-family:var(--mono);font-size:.75rem;color:var(--i62);margin-top:3px;
   letter-spacing:.02em}
 .ev.strength{border-left-color:var(--ok);background:var(--ok-bg)}
 .ev.strength .ei{background:var(--ok)}
@@ -369,7 +447,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   background:var(--i34);border-radius:1px}
 
 /* ================= PROVENIÊNCIA ================= */
-.prov{display:inline-flex;align-items:center;gap:6px;font-size:var(--xs);color:var(--i52);
+.prov{display:inline-flex;align-items:center;gap:6px;font-size:var(--xs);color:var(--i62);
   border:1px solid var(--i08);border-radius:var(--pill);padding:3px 10px}
 .prov i{width:6px;height:6px;border-radius:50%;flex:none}
 .prov.user i,.prov.company i,.prov.curator i{background:var(--ok)}
@@ -384,13 +462,13 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .radar .polC{fill:rgba(var(--ac-rgb),.20);stroke:var(--ac3);stroke-width:2;stroke-linejoin:round;
   transition:d .8s var(--e)}
 .radar .polE{fill:none;stroke:var(--ac1);stroke-width:2;stroke-dasharray:4 3;stroke-linejoin:round}
-.radar .lbl{font-size:7.5px;fill:var(--i52);font-family:var(--f);font-weight:500}
+.radar .lbl{font-size:8.6px;fill:var(--i62);font-family:var(--f);font-weight:500}
 .radar .hit{fill:transparent;cursor:pointer}
 .radar .hit:hover+.dotp,.radar .dotp.on{r:3.4}
 .radar .dotp{fill:var(--ac3);r:2;transition:r .2s var(--e)}
 .radar .dotp.fora{fill:var(--al)}
 .radarleg{display:flex;gap:var(--s3);justify-content:center;flex-wrap:wrap;
-  font-size:var(--xs);color:var(--i52);margin-top:var(--s1)}
+  font-size:var(--xs);color:var(--i62);margin-top:var(--s1)}
 .radarleg span{display:flex;align-items:center;gap:6px}
 .radarleg i{width:14px;height:2px;border-radius:1px;background:var(--ac3)}
 .radarleg i.e{background:var(--ac1);height:0;border-top:2px dashed var(--ac1)}
@@ -475,7 +553,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   box-shadow:var(--sh)}
 .cdtop{display:flex;gap:var(--s3);align-items:flex-start;flex-wrap:wrap}
 .trilha{display:flex;align-items:center;margin-top:var(--s3);gap:0}
-.et{flex:1;text-align:center;position:relative;font-size:var(--xs);color:var(--i34)}
+.et{flex:1;text-align:center;position:relative;font-size:var(--xs);color:var(--i62)}
 .et i{width:13px;height:13px;border-radius:50%;background:var(--i08);display:block;margin:0 auto 7px;
   border:2px solid var(--papel);box-shadow:0 0 0 1px var(--i14);transition:all .5s var(--e)}
 .et::before{content:"";position:absolute;top:6px;left:-50%;width:100%;height:2px;background:var(--i08);
@@ -486,13 +564,13 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .et.now i{background:var(--card);box-shadow:0 0 0 2px var(--ac3),0 0 0 6px var(--veu)}
 .et.done,.et.now{color:var(--i72);font-weight:600}
 .trilhaw{position:relative;z-index:0}
-.expect{font-size:var(--xs);color:var(--i52);margin-top:var(--s2);display:flex;align-items:center;gap:7px}
+.expect{font-size:var(--xs);color:var(--i62);margin-top:var(--s2);display:flex;align-items:center;gap:7px}
 
 /* ================= EMPRESA ================= */
 .wiz{display:flex;gap:var(--s2);margin:var(--s4) 0 var(--s3);flex-wrap:wrap}
-.wz{display:flex;align-items:center;gap:9px;font-size:var(--sm);color:var(--i34);
+.wz{display:flex;align-items:center;gap:9px;font-size:var(--sm);color:var(--i62);
   border:1px solid var(--i08);border-radius:var(--pill);padding:7px 15px;background:var(--card)}
-.wz b{width:19px;height:19px;border-radius:50%;background:var(--i08);color:var(--i52);
+.wz b{width:19px;height:19px;border-radius:50%;background:var(--i08);color:var(--i62);
   display:grid;place-items:center;font-size:var(--xs);font-weight:700}
 .wz.on{color:var(--ac1);border-color:var(--ac4);background:var(--veu2)}
 .wz.on b{background:var(--ac3);color:#fff}
@@ -501,7 +579,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 
 .form{display:grid;gap:var(--s3);max-width:660px}
 .fg label{display:block;font-size:var(--sm);font-weight:600;margin-bottom:6px}
-.fg .hint{font-size:var(--xs);color:var(--i52);margin-bottom:8px;line-height:1.6}
+.fg .hint{font-size:var(--xs);color:var(--i62);margin-bottom:8px;line-height:1.6}
 .fg input,.fg select,.fg textarea{width:100%;border:1px solid var(--i14);border-radius:var(--r2);
   padding:11px 13px;font-size:var(--md);outline:0;background:var(--card);
   transition:border-color .16s var(--e);font-family:var(--f)}
@@ -510,7 +588,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 
 .slider{display:grid;gap:7px;padding:var(--s3) 0;border-bottom:1px solid var(--i04)}
 .slider .top{display:flex;justify-content:space-between;font-size:var(--sm);gap:12px}
-.slider .top b{font-weight:600} .slider .top span{color:var(--i52);font-size:var(--xs);text-align:right}
+.slider .top b{font-weight:600} .slider .top span{color:var(--i62);font-size:var(--xs);text-align:right}
 .slider input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;
   border-radius:3px;background:linear-gradient(90deg,var(--ac5),var(--ac3));outline:0}
 .slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
@@ -519,16 +597,16 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .slider input[type=range]::-webkit-slider-thumb:active{transform:scale(1.18);cursor:grabbing}
 .slider input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
   background:var(--card);border:3px solid var(--ac2);cursor:grab}
-.polos{display:flex;justify-content:space-between;font-size:var(--xs);color:var(--i34);gap:12px}
+.polos{display:flex;justify-content:space-between;font-size:var(--xs);color:var(--i62);gap:12px}
 
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:var(--s2);
   margin-top:var(--s3)}
 .kpi{background:var(--card);border:1px solid var(--i08);border-radius:var(--r);padding:var(--s3);
   box-shadow:var(--sh)}
-.kpi .l{font-size:var(--xs);letter-spacing:.06em;text-transform:uppercase;color:var(--i52)}
+.kpi .l{font-size:var(--xs);letter-spacing:.06em;text-transform:uppercase;color:var(--i62)}
 .kpi .n{font-family:var(--d);font-size:1.9rem;font-weight:700;letter-spacing:-.03em;margin-top:5px;
   font-variant-numeric:tabular-nums;line-height:1}
-.kpi .d{font-size:var(--xs);color:var(--i52);margin-top:6px}
+.kpi .d{font-size:var(--xs);color:var(--i62);margin-top:6px}
 .kpi .d b{color:var(--ok)} .kpi .d b.dn{color:var(--al)}
 .kpi .spark{margin-top:10px;display:block;width:100%;height:26px;overflow:visible}
 .kpi .spark path{fill:none;stroke:var(--ac3);stroke-width:1.8;stroke-linecap:round;
@@ -539,7 +617,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .tabw{overflow-x:auto}
 .tab{width:100%;border-collapse:collapse;font-size:var(--sm);min-width:560px}
 .tab th{text-align:left;font-size:var(--xs);letter-spacing:.06em;text-transform:uppercase;
-  color:var(--i52);font-weight:600;padding:10px var(--s3);background:var(--papel2);white-space:nowrap}
+  color:var(--i62);font-weight:600;padding:10px var(--s3);background:var(--papel2);white-space:nowrap}
 .tab td{padding:14px var(--s3);border-bottom:1px solid var(--i04)}
 .tab tbody tr{cursor:pointer;transition:background .15s var(--e)}
 @media(hover:hover){.tab tbody tr:hover{background:var(--veu2)}}
@@ -555,7 +633,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .pill.al{background:var(--al-bg);color:var(--al-fg)}
 .pill.bl{background:var(--bl-bg);color:var(--bl-fg)}
 .pill.ac{background:var(--veu);color:var(--ac1)}
-.pill.n{background:var(--i04);color:var(--i52)}
+.pill.n{background:var(--i04);color:var(--i62)}
 .pill i{width:6px;height:6px;border-radius:50%;background:currentColor}
 
 /* ---- gráfico ---- */
@@ -568,7 +646,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .gb .col:hover::after{content:attr(data-v);position:absolute;top:-24px;left:50%;
   transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-fg);font-size:var(--xs);
   padding:4px 8px;border-radius:4px;white-space:nowrap;z-index:2}
-.gb small{font-size:var(--xs);color:var(--i52)}
+.gb small{font-size:var(--xs);color:var(--i62)}
 
 /* ================= COMPARADOR ================= */
 .cmp{display:grid;gap:var(--s2);grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
@@ -600,7 +678,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .drw pre .k{color:#7FD4F5} .drw pre .v{color:#F2C879} .drw pre .b{color:#9DE8B4}
 .drw pre .p{color:rgba(255,255,255,.34)}
 .vers{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:var(--xs)}
-.vers dt{color:var(--i52);padding:6px 0;border-bottom:1px solid var(--i04)}
+.vers dt{color:var(--i62);padding:6px 0;border-bottom:1px solid var(--i04)}
 .vers dd{font-family:var(--mono);text-align:right;padding:6px 0;border-bottom:1px solid var(--i04);
   color:var(--i92)}
 .hashbox{display:flex;align-items:center;gap:10px;background:var(--papel2);border-radius:var(--r2);
@@ -628,12 +706,12 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   display:grid;place-items:center;flex:none}
 .cmdk .it[aria-selected=true] .ic{background:var(--card);color:var(--ac1)}
 .cmdk .it b{font-size:var(--sm);font-weight:600;display:block}
-.cmdk .it small{font-size:var(--xs);color:var(--i52);display:block}
-.cmdk .it .kb{margin-left:auto;font-family:var(--mono);font-size:.62rem;color:var(--i34);
+.cmdk .it small{font-size:var(--xs);color:var(--i62);display:block}
+.cmdk .it .kb{margin-left:auto;font-family:var(--mono);font-size:.75rem;color:var(--i62);
   border:1px solid var(--i14);border-radius:4px;padding:2px 6px;flex:none}
-.cmdk .gh{font-size:var(--xs);color:var(--i34);text-transform:uppercase;letter-spacing:.07em;
+.cmdk .gh{font-size:var(--xs);color:var(--i62);text-transform:uppercase;letter-spacing:.07em;
   padding:11px 12px 5px;font-weight:600}
-.cmdk .vazio{padding:var(--s4) var(--s3);text-align:center;font-size:var(--sm);color:var(--i52)}
+.cmdk .vazio{padding:var(--s4) var(--s3);text-align:center;font-size:var(--sm);color:var(--i62)}
 .cmdk .rod{border-top:1px solid var(--i08);padding:9px var(--s3);display:flex;gap:var(--s3);
   font-size:var(--xs);color:var(--i34);flex-wrap:wrap}
 .cmdk .rod kbd{font-family:var(--mono);border:1px solid var(--i14);border-radius:4px;
@@ -643,6 +721,12 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .estado{text-align:center;padding:var(--s6) var(--s3);max-width:46ch;margin:0 auto}
 .estado .ic{width:52px;height:52px;border-radius:16px;background:var(--veu);color:var(--ac2);
   display:grid;place-items:center;margin:0 auto var(--s3)}
+.estado .ic.erro{background:var(--bl-bg);color:var(--bl)}
+.errodet{margin-top:var(--s3);text-align:left}
+.errodet summary{font-size:var(--xs);color:var(--i62);cursor:pointer}
+.errodet pre{margin-top:9px;background:var(--papel2);border:1px solid var(--i08);
+  border-radius:var(--r3);padding:11px;font-family:var(--mono);font-size:.75rem;
+  line-height:1.6;overflow-x:auto;white-space:pre-wrap;color:var(--i72)}
 .estado h3{font-size:var(--xl);margin-bottom:9px}
 .estado p{color:var(--i72);font-size:var(--sm);margin-bottom:var(--s3)}
 .sk{background:var(--card);border:1px solid var(--i08);border-radius:var(--r);padding:var(--s3);
@@ -653,7 +737,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   background:linear-gradient(90deg,transparent,rgba(var(--ac-rgb),.09),transparent);
   transform:translateX(-100%);animation:varre 1.5s var(--e) infinite}
 @keyframes varre{to{transform:translateX(100%)}}
-.nota{font-size:var(--xs);color:var(--i52);line-height:1.7;margin-top:var(--s5);padding-top:var(--s3);
+.nota{font-size:var(--xs);color:var(--i62);line-height:1.7;margin-top:var(--s5);padding-top:var(--s3);
   border-top:1px solid var(--i08);max-width:72ch}
 
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120px);
@@ -687,7 +771,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 @media(hover:hover){.dd button:hover{background:var(--veu2)}}
 .dd button .ic{width:32px;height:32px;border-radius:9px;background:var(--veu);color:var(--ac2);
   display:grid;place-items:center;flex:none}
-.dd button small{display:block;font-weight:400;color:var(--i52);font-size:var(--xs);margin-top:1px}
+.dd button small{display:block;font-weight:400;color:var(--i62);font-size:var(--xs);margin-top:1px}
 .dd button .ch{margin-left:auto;color:var(--i34)}
 .dd hr{border:0;border-top:1px solid var(--i08);margin:6px 4px}
 
@@ -706,7 +790,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .mbox .sub{font-size:var(--sm);color:var(--i72);margin-bottom:var(--s3)}
 .tabs{display:flex;background:var(--i04);border-radius:var(--r2);padding:3px;margin-bottom:var(--s3)}
 .tabs button{flex:1;padding:9px;border-radius:var(--r3);font-size:var(--sm);font-weight:600;
-  color:var(--i52);transition:background .2s var(--e),color .2s var(--e)}
+  color:var(--i62);transition:background .2s var(--e),color .2s var(--e)}
 .tabs button[aria-selected=true]{background:var(--card);color:var(--ac1);box-shadow:var(--sh)}
 .oauth{display:grid;gap:9px}
 .ob{display:flex;align-items:center;justify-content:center;gap:11px;border:1px solid var(--i14);
@@ -718,7 +802,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 @media(hover:hover){.ob.li:hover{background:#08528F;border-color:#08528F}}
 .ou{display:flex;align-items:center;gap:12px;color:var(--i34);font-size:var(--xs);margin:var(--s3) 0}
 .ou::before,.ou::after{content:"";flex:1;height:1px;background:var(--i08)}
-.mini{font-size:var(--xs);color:var(--i52);line-height:1.65;margin-top:var(--s3)}
+.mini{font-size:var(--xs);color:var(--i62);line-height:1.65;margin-top:var(--s3)}
 
 /* ======= tags ======= */
 .tagin{border:1px solid var(--i14);border-radius:var(--r2);padding:9px;background:var(--card);
@@ -736,13 +820,13 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 @media(hover:hover){.tk button:hover{background:rgba(var(--ac-rgb),.22)}}
 .sugt{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .sugt button{font-size:var(--xs);border:1px dashed var(--i14);border-radius:var(--pill);
-  padding:5px 11px;color:var(--i52);transition:border-color .16s var(--e),color .16s var(--e),
+  padding:5px 11px;color:var(--i62);transition:border-color .16s var(--e),color .16s var(--e),
   border-style .16s var(--e),transform .13s var(--e)}
 @media(hover:hover){.sugt button:hover{border-style:solid;border-color:var(--ac4);color:var(--ac1)}}
 .sugt button:active{transform:scale(.95)}
 .grupoTag{padding:var(--s3) 0;border-bottom:1px solid var(--i04)}
 .grupoTag>b{font-size:var(--sm);display:block;margin-bottom:4px}
-.grupoTag>.hint{font-size:var(--xs);color:var(--i52);margin-bottom:9px;line-height:1.6}
+.grupoTag>.hint{font-size:var(--xs);color:var(--i62);margin-bottom:9px;line-height:1.6}
 
 /* ======= aviso de perfil no painel da vaga =======
    Mesma informação que o portão dá à empresa, dita como ação de quem lê:
@@ -870,7 +954,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   }
   .tabbar button{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    padding:6px 3px;border-radius:var(--r3);color:var(--i52);
+    padding:6px 3px;border-radius:var(--r3);color:var(--i62);
     font-size:.63rem;font-weight:600;line-height:1.15;min-height:48px;text-align:center;
     transition:color .16s var(--e),background .16s var(--e);
   }
@@ -911,6 +995,10 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 }
 
 @media(max-width:620px){
+  .fbarra{position:relative}
+  .filtro{position:static}
+  .fpop,.fordem .fpop{left:0;right:0;min-width:0;top:calc(100% + 6px)}
+  .fordem{margin-left:0}
   .hero{padding:var(--s4) 0 var(--s3)}
   .hero p{font-size:var(--md)}
   .buscador{margin-top:var(--s3);gap:2px}
@@ -940,8 +1028,8 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
   .vers{grid-template-columns:1fr auto}
   .drw>header{padding:var(--s2) 14px}
   .drw .body{padding:14px}
-  .drw pre{padding:14px;font-size:.66rem}
-  .hashbox{font-size:.66rem}
+  .drw pre{padding:14px;font-size:.75rem}
+  .hashbox{font-size:.75rem}
 
   /* diálogo vira folha de baixo: alcança melhor com o polegar e sobra
      espaço quando o teclado virtual abre */
@@ -1091,7 +1179,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const BUILD = Object.freeze({partes:28, sha:"bea64d433c85", em:"2026-08-30"});
+const BUILD = Object.freeze({partes:28, sha:"0ab987af127c", em:"2026-08-31"});
 /* ══ parte: partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
@@ -2243,7 +2331,8 @@ function candidatoNovo(fonte){
 }
 
 const S = {
-  view:'home', modo:'cand', q:'', local:'', filtro:'todas', vaga:null,
+  view:'home', modo:'cand', q:'', local:'', vaga:null,
+  filtros:{area:[], modelo:[], uf:[], emp:[]}, ordem:'match',
   logado:false, contaEmp:false, conta:null, passo:0, perfil:{}, candidaturas:[],
   ddAberto:false, aba:'criar',
   cand: candidatoNovo('conversation'),
@@ -2402,13 +2491,15 @@ function medidor(p, conf, grande){
   const est = p>=70 ? '' : p>=50 ? 'baixa' : 'blk';
   return '<span class="medw"><span class="med '+(grande?'g ':'')+est+'" data-p="'+p+'" data-c="'+
     conf.toFixed(4)+'" style="--circ:'+C_NOTA.toFixed(2)+';--circ2:'+C_CONF.toFixed(2)+'" '+
-    'role="img" aria-label="Match '+p+' de 100, confiança '+pc(conf)+'">'+
+    'title="Aderência '+p+' de 100. O arco interno é a confiança do dado: '+pc(conf)+'." '+
+    'role="img" aria-label="Aderência '+p+' de 100, confiança do dado '+pc(conf)+'">'+
     '<svg viewBox="0 0 100 100" aria-hidden="true">'+
       '<circle class="tr" cx="50" cy="50" r="'+R_NOTA+'"/>'+
       '<circle class="pr" cx="50" cy="50" r="'+R_NOTA+'"/>'+
       '<circle class="cf" cx="50" cy="50" r="'+R_CONF+'"/>'+
     '</svg><b data-n="'+p+'">0</b></span>'+
-    '<small>match · conf '+pc(conf)+'</small></span>';
+    '<small>'+(conf < POLITICA.confianca.revisar_abaixo_de ? 'match estimado' : 'match')+
+    '</small></span>';
 }
 
 function contar(el, alvo){
@@ -2523,67 +2614,212 @@ function spark(vals){
 }
 
 /* Revelação escalonada na rolagem. Um observador só, reaproveitado. */
+/* Revelação por rolagem.
+
+   O estado inicial é aplicado AQUI, por JS, e nunca no CSS. A diferença
+   não é estilística: com `opacity:0` no CSS, qualquer coisa que impeça o
+   observador de rodar — script quebrado, navegador antigo, aba que o
+   sistema congelou — entrega uma página em branco com o conteúdo todo
+   presente no DOM. Já vi acontecer nesta peça.
+
+   Por isso, além do observador, existe um prazo: passados 2,5s, o que
+   ainda estiver escondido aparece de qualquer jeito. Animação não pode
+   ser condição para o conteúdo existir. */
+function mostrar(el){
+  el.style.opacity = '';
+  el.style.transform = '';
+  el.classList.add('vis');
+}
 const io = ('IntersectionObserver' in window) ? new IntersectionObserver(ents=>{
   ents.forEach((en,i)=>{ if(en.isIntersecting){
-    setTimeout(()=>en.target.classList.add('vis'), i*60);
+    setTimeout(()=>mostrar(en.target), i*60);
     io.unobserve(en.target);
   }});
 },{rootMargin:'0px 0px -40px 0px'}) : null;
+
 function revelar(escopo){
-  if(!io){ $$('.rv',escopo).forEach(el=>el.classList.add('vis')); return; }
-  $$('.rv:not(.vis)',escopo).forEach(el=>io.observe(el));
+  const alvos = $$('.rv:not(.vis)', escopo);
+  if(!io || reduz()){ alvos.forEach(mostrar); return; }
+  alvos.forEach(el=>{
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(14px)';
+    io.observe(el);
+  });
+  setTimeout(()=>alvos.forEach(el=>{ if(!el.classList.contains('vis')) mostrar(el); }), 2500);
 }
 
 /* ══ parte: partes/js/40-cand-busca.js ══ */
-/* ══════════════════ 14 · HOME ══════════════════ */
+/* ══════════════════ 14 · BUSCA DE VAGAS ══════════════════
+
+   Com 4 vagas uma lista simples bastava. Com 31 em 8 áreas, não: o
+   candidato de RH via 31 cartões dos quais 4 eram dele, e só achava os
+   certos porque a ordenação por match resolvia por acidente. Ele não
+   tinha controle nenhum.
+
+   Daí a barra de filtros. Duas decisões que valem registro:
+
+   1. A contagem de cada opção respeita os OUTROS filtros ativos. Se você
+      já filtrou por Recife, "Tecnologia (2)" quer dizer duas vagas de
+      tecnologia EM RECIFE. Contagem que ignora o resto leva a beco: a
+      pessoa clica num número e recebe lista vazia.
+
+   2. O vazio diz qual filtro esvaziou e oferece tirar aquele, não limpar
+      tudo. "Nenhum resultado" sem culpado obriga a desfazer no escuro.  */
+
+const ORDENS = [
+  {id:'match',    rot:'Melhor match',     soLogado:true,  cmp:(a,b)=>M(b).total-M(a).total},
+  {id:'recentes', rot:'Mais recentes',    soLogado:false, cmp:(a,b)=>a.dias-b.dias},
+  {id:'faixa',    rot:'Maior faixa',      soLogado:false, cmp:(a,b)=>b.faixaMax-a.faixaMax},
+  {id:'concorr',  rot:'Menos concorrida', soLogado:false, cmp:(a,b)=>a.cand-b.cand},
+];
+
+const FILTROS = [
+  {id:'area',   rot:'Área',    campo:v=>v.area,   ops:()=>AREAS.map(a=>({v:a.id, r:a.n}))},
+  {id:'modelo', rot:'Modelo',  campo:v=>v.modelo, ops:()=>[
+    {v:'presencial',r:'Presencial'},{v:'hibrido',r:'Híbrido'},{v:'remoto',r:'Remoto'}]},
+  {id:'uf',     rot:'Local',   campo:v=>v.uf,     ops:()=>
+    [...new Set(VAGAS.map(v=>v.uf))].sort().map(u=>({v:u, r:u==='BR'?'Remoto, Brasil':u}))},
+  {id:'emp',    rot:'Empresa', campo:v=>v.emp,    ops:()=>Object.entries(EMPRESAS)
+    .map(([k,e])=>({v:k, r:e.n}))},
+];
+const FILTRO = Object.fromEntries(FILTROS.map(f=>[f.id,f]));
+
+const passaBusca = v => {
+  const q=S.q.trim().toLowerCase(), l=S.local.trim().toLowerCase();
+  const okQ = !q || (v.cargo+' '+EMPRESAS[v.emp].n+' '+v.tags.join(' ')+' '+
+    (AREA[v.area]?AREA[v.area].n:'')).toLowerCase().includes(q);
+  const okL = !l || v.local.toLowerCase().includes(l);
+  return okQ && okL;
+};
+const passaFiltro = (v,fid) => {
+  const sel = S.filtros[fid];
+  return !sel.length || sel.includes(FILTRO[fid].campo(v));
+};
+
 function filtrar(){
-  const q=S.q.trim().toLowerCase(), l=S.local;
-  return VAGAS.filter(v=>{
-    const okF = S.filtro==='todas' || v.modelo===S.filtro
-      || (S.filtro==='match' && S.logado && M(v).total>=70);
-    const okL = !l || v.local.toLowerCase().includes(l.toLowerCase());
-    const okQ = !q || (v.cargo+' '+EMPRESAS[v.emp].n+' '+v.tags.join(' ')).toLowerCase().includes(q);
-    return okF&&okL&&okQ;
-  }).sort((a,b)=> S.logado ? M(b).total-M(a).total : a.dias-b.dias);
+  const r = VAGAS.filter(v => passaBusca(v) && FILTROS.every(f=>passaFiltro(v,f.id)));
+  const ordem = ORDENS.find(o=>o.id===S.ordem) || ORDENS[1];
+  return [...r].sort(ordem.cmp);
 }
 
-function vHome(){
-  const chips = [['todas','Todas'],['match','Melhor match'],
-                 ['remoto','Remoto'],['hibrido','Híbrido'],['presencial','Presencial']]
-    .filter(([k])=> S.logado || k!=='match');
+/* Contagem de cada opção considerando os demais filtros já aplicados. */
+function contarOpcoes(fid){
+  const base = VAGAS.filter(v => passaBusca(v) &&
+    FILTROS.filter(f=>f.id!==fid).every(f=>passaFiltro(v,f.id)));
+  const c={};
+  base.forEach(v=>{ const k=FILTRO[fid].campo(v); c[k]=(c[k]||0)+1; });
+  return c;
+}
 
-  $('#v-home').innerHTML =
-  '<section class="hero">'+malha()+
-    '<span class="selo"><i></i>9.014 pessoas na comunidade</span>'+
-    '<h1>A vaga certa encontra <em>quem você já é</em>.</h1>'+
-    '<p>Aqui seu perfil não é um currículo em PDF. É um mapa do que você sabe, de como você '+
-    'trabalha e de onde você quer chegar. As vagas chegam a partir disso.</p>'+
-    '<div class="buscador">'+
-      '<div class="bfield">'+I.lupa+'<div style="flex:1;min-width:0">'+
-        '<label for="q">Cargo, área ou tecnologia</label>'+
-        '<input id="q" type="search" placeholder="Coordenador de RH" value="'+esc(S.q)+'"></div></div>'+
-      '<div class="bfield">'+I.pin+'<div style="flex:1;min-width:0">'+
-        '<label for="loc">Onde</label>'+
-        '<input id="loc" type="search" placeholder="Recife, remoto..." value="'+esc(S.local)+'"></div></div>'+
-      '<button class="btn" id="buscar" style="flex:0 0 auto">Buscar</button>'+
-    '</div>'+
-    '<div class="sugere"><span>Buscas frequentes:</span>'+
-      ['Coordenador de RH','Marketing','Remoto','Financeiro'].map(s=>
-        '<button class="sug" data-sug="'+esc(s)+'">'+esc(s)+'</button>').join('')+'</div>'+
-  '</section>'+
-  '<div class="barra"><h2>Vagas abertas</h2><p class="cont" id="cont"></p>'+
-    '<div class="chips">'+chips.map(([k,r])=>
-      '<button class="chip" data-f="'+k+'" aria-pressed="'+(S.filtro===k)+'">'+r+'</button>').join('')+
-    '</div></div>'+
+const filtrosAtivos = () => FILTROS.flatMap(f =>
+  S.filtros[f.id].map(v => ({fid:f.id, v, rot:(f.ops().find(o=>o.v===v)||{r:v}).r})));
+
+/* Cobertura de requisitos. O que importa não é só quantos, é se algum
+   obrigatório ficou de fora — por isso o nível não é uma fração simples. */
+function coberturaDe(v){
+  const tem = new Set(S.cand.competencias.map(c=>c.skillId));
+  const total = v.requisitos.length;
+  const cobertos = v.requisitos.filter(r=>tem.has(r.skillId)).length;
+  const obrigFalta = v.requisitos.filter(r=>r.obrigatorio && !tem.has(r.skillId)).length;
+  const nivel = obrigFalta ? 'falta'
+    : cobertos===total ? 'tudo'
+    : cobertos >= Math.ceil(total/2) ? 'parte' : 'pouco';
+  return {total, cobertos, obrigFalta, nivel};
+}
+/* glifo além da cor: cor sozinha não pode carregar a informação */
+const IC_COB = {tudo:'✓', parte:'◕', pouco:'○', falta:'!'};
+
+/* ── barra de filtros ── */
+function popover(f){
+  const sel = S.filtros[f.id], cont = contarOpcoes(f.id);
+  return '<div class="filtro" data-pop="'+f.id+'">'+
+    '<button class="fbt'+(sel.length?' on':'')+'" aria-expanded="false" aria-haspopup="true">'+
+      esc(f.rot)+(sel.length?'<i>'+sel.length+'</i>':'')+
+      '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+      'stroke-width="2.6" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'+
+    '<div class="fpop" role="group" aria-label="'+esc(f.rot)+'">'+
+      f.ops().map(o=>{
+        const n = cont[o.v]||0;
+        return '<label class="fop'+(n?'':' vazia')+'">'+
+          '<input type="checkbox" data-fop="'+f.id+'" value="'+esc(o.v)+'"'+
+          (sel.includes(o.v)?' checked':'')+(n?'':' disabled')+'>'+
+          '<span>'+esc(o.r)+'</span><b>'+n+'</b></label>';
+      }).join('')+
+      (sel.length?'<button class="flimpa" data-flimpa="'+f.id+'">Limpar '+
+        esc(f.rot).toLowerCase()+'</button>':'')+
+    '</div></div>';
+}
+
+function barraFiltros(){
+  const ordens = ORDENS.filter(o=>!o.soLogado || S.logado);
+  const atual = ordens.find(o=>o.id===S.ordem) || ordens[0];
+  return '<div class="fbarra">'+
+    FILTROS.map(popover).join('')+
+    '<div class="filtro fordem" data-pop="ordem">'+
+      '<button class="fbt" aria-expanded="false" aria-haspopup="true">'+
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+        'stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
+        '<path d="M4 7h16M6 12h12M9 17h6"/></svg>'+esc(atual.rot)+
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+        'stroke-width="2.6" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'+
+      '<div class="fpop" role="group" aria-label="Ordenar">'+
+        ordens.map(o=>'<label class="fop"><input type="radio" name="ordem" data-ford="'+o.id+'"'+
+          (o.id===atual.id?' checked':'')+'><span>'+esc(o.rot)+'</span></label>').join('')+
+      '</div></div>'+
+  '</div>';
+}
+
+function chipsAtivos(){
+  const at = filtrosAtivos();
+  if(!at.length && !S.q && !S.local) return '';
+  return '<div class="fchips">'+
+    (S.q ? '<button class="fchip" data-limpaq="1">busca: '+esc(S.q)+
+      ' <span aria-hidden="true">×</span></button>' : '')+
+    (S.local ? '<button class="fchip" data-limpal="1">onde: '+esc(S.local)+
+      ' <span aria-hidden="true">×</span></button>' : '')+
+    at.map(a=>'<button class="fchip" data-tira="'+a.fid+'|'+esc(a.v)+'">'+esc(a.rot)+
+      ' <span aria-hidden="true">×</span></button>').join('')+
+    '<button class="fchip zerar" data-zerar="1">limpar tudo</button></div>';
+}
+
+/* ── tela ── */
+function vHome(){
+  // Quem já entrou não precisa da promessa inteira de novo a cada visita:
+  // o discurso é para quem chega, e vira pedágio para quem volta.
+  const hero = S.logado
+    ? '<section class="heroc">'+
+        '<h1>Vagas abertas</h1>'+
+        '<p>'+VAGAS.length+' publicadas, ordenadas pelo seu perfil. Use os filtros para recortar.</p>'+
+      '</section>'
+    : '<section class="hero">'+malha()+
+        '<span class="selo"><i></i>9.014 pessoas na comunidade</span>'+
+        '<h1>A vaga certa encontra <em>quem você já é</em>.</h1>'+
+        '<p>Aqui seu perfil não é um currículo em PDF. É um mapa do que você sabe, de como você '+
+        'trabalha e de onde você quer chegar. As vagas chegam a partir disso.</p>'+
+      '</section>';
+
+  $('#v-home').innerHTML = hero +
+  '<div class="buscador">'+
+    '<div class="bfield">'+I.lupa+'<div style="flex:1;min-width:0">'+
+      '<label for="q">Cargo, área ou empresa</label>'+
+      '<input id="q" type="search" placeholder="Coordenador de RH" value="'+esc(S.q)+'"></div></div>'+
+    '<div class="bfield">'+I.pin+'<div style="flex:1;min-width:0">'+
+      '<label for="loc">Onde</label>'+
+      '<input id="loc" type="search" placeholder="Recife, remoto..." value="'+esc(S.local)+'"></div></div>'+
+    '<button class="btn" id="buscar" style="flex:0 0 auto">Buscar</button>'+
+  '</div>'+
+  (S.logado?'':'<div class="sugere"><span>Buscas frequentes:</span>'+
+    ['Coordenador de RH','Marketing','Remoto','Financeiro'].map(s=>
+      '<button class="sug" data-sug="'+esc(s)+'">'+esc(s)+'</button>').join('')+'</div>')+
+  '<div id="filtrosBox"></div>'+
   '<div id="listaVagas"></div>'+
   '<div id="barraCmp"></div>'+
-  '<p class="nota">Protótipo de avaliação da Conectaria. Dados fictícios e coerentes entre si. '+
-  'O match roda o mesmo motor determinístico de <b>packages/matching-core</b>, com a política '+
-  '<b>'+POLITICA.policy_version+'</b>: 14 eixos com tolerância própria, confiança ponderada '+
-  'pela origem do dado e trace auditável em cada recomendação. Pagamento, login real e '+
-  'integração com ATS externo não estão implementados.</p>';
+  '<p class="nota">Protótipo de avaliação da Conectaria. As vagas e as empresas são fictícias, '+
+  'e coerentes entre si. O percentual de aderência é calculado de verdade a partir dos '+
+  'requisitos da vaga, dos catorze eixos de ambiente e do seu contexto — cada vaga mostra a '+
+  'conta por dentro. Pagamento, login e integração com sistemas de RH não estão implementados.</p>';
 
-  const buscarDeb = debounce(()=>renderVagas(), 180);
+  const buscarDeb = debounce(()=>renderVagas(), 200);
   $('#q').oninput = e => { S.q=e.target.value; buscarDeb(); };
   $('#loc').oninput = e => { S.local=e.target.value; buscarDeb(); };
   $('#buscar').onclick = () => { renderVagas(); $('#listaVagas').scrollIntoView({block:'start'}); };
@@ -2591,57 +2827,51 @@ function vHome(){
 }
 
 async function renderVagas(primeira){
-  const el=$('#listaVagas'), ct=$('#cont');
+  const el=$('#listaVagas');
+  $('#filtrosBox').innerHTML = barraFiltros() + chipsAtivos() +
+    '<p class="cont" id="cont" aria-live="polite"></p>';
+  const ct=$('#cont');
+
   if(primeira){
     ct.textContent='buscando vagas';
-    el.innerHTML='<div class="vagas">'+Array.from({length:3},()=>
+    el.innerHTML='<div class="vagas">'+Array.from({length:4},()=>
       '<div class="sk"><i style="width:38%"></i><i style="width:62%;height:9px"></i>'+
       '<i style="width:26%;height:9px"></i></div>').join('')+'</div>';
-    await espera(560);
+    await espera(520);
   }
-  const r=filtrar();
-  // o número conta em vez de trocar: com 31 vagas e filtros combinados, ver
-  // a contagem se mover é o retorno de que o filtro pegou
+
+  const r = filtrar();
+  const ordem = ORDENS.find(o=>o.id===S.ordem) || ORDENS[1];
   ct.innerHTML = '<b class="tnum" data-n="'+r.length+'">0</b>' +
     (r.length===1?' vaga':' vagas') +
-    (S.filtro!=='todas'||S.q||S.local ? ' com esse filtro'
-      : S.logado ? ', ordenadas pelo seu match' : ', mais recentes primeiro');
+    (filtrosAtivos().length||S.q||S.local ? ' com esse recorte' : '') +
+    ' · ' + esc(ordem.rot.toLowerCase());
   contar($('b',ct), r.length);
 
-  if(!r.length){
-    el.innerHTML='<div class="estado"><div class="ic">'+I.vazio+'</div>'+
-      '<h3>Nenhuma vaga com esse recorte.</h3>'+
-      '<p>São '+VAGAS.length+' vagas abertas no total. Você pode limpar os filtros, ou cadastrar '+
-      'seu perfil '+
-      'para receber por WhatsApp assim que entrar uma que combine com seu objetivo.</p>'+
-      '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
-      '<button class="btn g" id="limpa">Limpar filtros</button>'+
-      '<button class="btn" id="avisa">Quero receber vagas sob demanda</button></div></div>';
-    $('#limpa').onclick=()=>{S.filtro='todas';S.q='';S.local='';vHome();};
-    $('#avisa').onclick=()=>abrirAcesso('cand','criar');
-    renderBarraCmp();
-    return;
-  }
+  if(!r.length){ el.innerHTML = vazioBusca(); renderBarraCmp(); return; }
+
+  // Uma passada de cálculo por render. Antes, filtrar() e o card pediam
+  // M(v) cada um, o que com 31 vagas e debounce de tecla vira trabalho à toa.
+  const fits = new Map(r.map(v=>[v.id, S.logado ? M(v) : null]));
 
   el.innerHTML='<div class="vagas">'+r.map(v=>{
-    const e=EMPRESAS[v.emp];
-    const m = S.logado ? M(v) : null;
-    const naCmp = S.comparar.includes(v.id);
-    const cobertos = S.logado
-      ? v.requisitos.filter(rq=>S.cand.competencias.some(c=>c.skillId===rq.skillId)).length : 0;
+    const e=EMPRESAS[v.emp], m=fits.get(v.id), naCmp=S.comparar.includes(v.id);
+    const c = S.logado ? coberturaDe(v) : null;
     return '<article class="vaga rv'+(naCmp?' sel':'')+'">'+
       '<button class="stretch" data-v="'+v.id+'" aria-label="Abrir vaga '+esc(v.cargo)+
         ' em '+esc(e.n)+'"></button>'+
       '<div class="conteudo">'+
-        '<div class="emp">'+logo(v.emp)+'<b>'+esc(e.n)+'</b>'+
-          '<span class="tag">'+esc(e.s.split('·')[0].trim())+'</span></div>'+
+        '<div class="vtopo">'+logo(v.emp)+
+          '<b>'+esc(e.n)+'</b><span class="vsetor">'+esc(e.s.split('·')[0].trim())+'</span>'+
+          (c ? '<span class="tag cob cob-'+c.nivel+'"><i aria-hidden="true">'+IC_COB[c.nivel]+
+               '</i>'+c.cobertos+' de '+c.total+(c.obrigFalta?' · falta obrigatório':'')+'</span>' : '')+
+        '</div>'+
         '<h3>'+esc(v.cargo)+'</h3>'+
-        '<div class="meta"><span>'+I.pin+esc(v.local)+'</span><span>'+esc(v.faixa)+'</span>'+
-          '<span>'+(v.dias===1?'publicada ontem':'há '+v.dias+' dias')+'</span>'+
-          '<span>'+v.cand+' candidaturas</span></div>'+
-        '<div class="tags">'+
-          (m ? '<span class="tag cob">'+cobertos+' de '+v.requisitos.length+' requisitos</span>' : '')+
-          v.tags.map((t,i)=>'<span class="tag'+(i===0?' hi':'')+'">'+esc(t)+'</span>').join('')+
+        '<div class="vmeta">'+
+          '<span>'+I.pin+esc(v.local)+'</span>'+
+          '<span class="vfaixa">'+esc(v.faixa)+'</span>'+
+          '<span>'+(v.dias===1?'ontem':'há '+v.dias+' dias')+'</span>'+
+          '<span>'+v.cand+' candidaturas</span>'+
         '</div>'+
       '</div>'+
       '<div class="vdir">'+ medidor(m?m.total:0, m?m.confidence:0) +
@@ -2653,13 +2883,43 @@ async function renderVagas(primeira){
   animaMed(); revelar($('#listaVagas')); renderBarraCmp();
 }
 
+/* Vazio por filtro aponta o culpado: testa tirar um filtro por vez e diz
+   qual deles, sozinho, devolveria resultado. */
+function vazioBusca(){
+  const at = filtrosAtivos();
+  const culpados = [];
+  for(const f of FILTROS){
+    if(!S.filtros[f.id].length) continue;
+    const semEste = VAGAS.filter(v => passaBusca(v) &&
+      FILTROS.filter(x=>x.id!==f.id).every(x=>passaFiltro(v,x.id)));
+    if(semEste.length) culpados.push({fid:f.id, rot:f.rot, n:semEste.length});
+  }
+  culpados.sort((a,b)=>b.n-a.n);
+
+  const dica = culpados.length
+    ? '<p>Sem o filtro de <b>'+esc(culpados[0].rot.toLowerCase())+'</b>, '+
+      culpados[0].n+(culpados[0].n===1?' vaga aparece':' vagas aparecem')+'.</p>'+
+      '<button class="btn" data-tirafiltro="'+culpados[0].fid+'">Tirar o filtro de '+
+      esc(culpados[0].rot.toLowerCase())+'</button>'
+    : (S.q||S.local
+        ? '<p>Nenhuma vaga combina com esse texto. Termo mais curto costuma achar mais.</p>'+
+          '<button class="btn" data-zerar="1">Limpar a busca</button>'
+        : '<p>Não há vagas abertas no momento.</p>');
+
+  return '<div class="estado"><div class="ic">'+I.vazio+'</div>'+
+    '<h3>Nenhuma vaga com esse recorte.</h3>'+
+    '<p>São '+VAGAS.length+' vagas abertas no total'+
+    (at.length? ', e '+at.length+(at.length===1?' filtro ativo':' filtros ativos'):'')+'.</p>'+
+    dica+'</div>';
+}
+
 function renderBarraCmp(){
   const el=$('#barraCmp'); if(!el) return;
   if(!S.comparar.length){ el.innerHTML=''; return; }
   el.innerHTML='<div class="cmpbar">'+I.bal+
     '<b style="font-family:var(--d);font-size:var(--md)">'+S.comparar.length+
     (S.comparar.length===1?' vaga selecionada':' vagas selecionadas')+'</b>'+
-    '<span style="font-size:var(--sm);color:var(--i52);flex:1;min-width:150px">'+
+    '<span style="font-size:var(--sm);color:var(--i62);flex:1;min-width:150px">'+
     (S.comparar.length<2?'Escolha mais uma para comparar lado a lado.'
       :'Mesmo motor, mesma política, três dimensões lado a lado.')+'</span>'+
     '<button class="btn g sm" id="cmpLimpa">Limpar</button>'+
@@ -3727,6 +3987,20 @@ function marcarRolaveis(){
 /* a largura muda com a rotação do aparelho, então revisa ao redimensionar */
 addEventListener('resize', debounce(marcarRolaveis, 200), {passive:true});
 
+/* Erro em linguagem de gente. O código fica num detalhe recolhido: quem
+   está usando não precisa dele, quem está depurando precisa. */
+function estadoErro(tela, err){
+  return '<div class="estado"><div class="ic erro">'+I.al+'</div>'+
+    '<h3>Não consegui montar esta tela.</h3>'+
+    '<p>Alguma coisa quebrou no caminho. O que você já preencheu continua salvo — '+
+    'dá para tentar de novo ou seguir para outra tela.</p>'+
+    '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
+      '<button class="btn" data-retentar="'+esc(tela)+'">Tentar de novo</button>'+
+      '<button class="btn g" data-irhome="1">Ver vagas abertas</button></div>'+
+    '<details class="errodet"><summary>Detalhe técnico</summary>'+
+      '<pre>'+esc(String((err && err.stack) || err))+'</pre></details></div>';
+}
+
 function sair(){
   S.logado=false; S.contaEmp=false; S.conta=null; S.modo='cand';
   S.candidaturas=[]; S.comparar=[]; S.vaga=null;
@@ -3745,7 +4019,15 @@ function ir(v,arg){
   S.view=v;
   $$('.view').forEach(x=>x.classList.remove('on'));
   $('#v-'+v).classList.add('on');
-  REND[v](arg);
+  // Antes, um erro em qualquer render entregava uma tela em branco sem
+  // explicação. Agora vira um estado legível, com saída e com o detalhe
+  // técnico recolhido para quem quiser ver.
+  try {
+    REND[v](arg);
+  } catch(err) {
+    console.error('[conectaria] falha ao montar a tela "'+v+'"', err);
+    $('#v-'+v).innerHTML = estadoErro(v, err);
+  }
   montarNav(); marcarRolaveis(); salvar();
   window.scrollTo({top:0,behavior:'instant'});
   if(['vaga','triagem','tags','comparar'].includes(v)) $('#v-'+v).focus();
@@ -3758,9 +4040,14 @@ function ir(v,arg){
 const ACOES = {
   v:  el => ir('vaga', Number(el.dataset.v)),
   sug: el => { S.q=el.dataset.sug; const q=$('#q'); if(q) q.value=S.q; renderVagas(); },
-  f:  el => { S.filtro=el.dataset.f;
-        $$('[data-f]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.f===S.filtro));
-        renderVagas(); },
+  tira: el => { const [fid,v]=el.dataset.tira.split('|');
+        S.filtros[fid]=S.filtros[fid].filter(x=>x!==v); renderVagas(); },
+  flimpa: el => { S.filtros[el.dataset.flimpa]=[]; renderVagas(); },
+  tirafiltro: el => { S.filtros[el.dataset.tirafiltro]=[]; renderVagas(); },
+  zerar: () => { FILTROS.forEach(f=>S.filtros[f.id]=[]); S.q=''; S.local='';
+        const q=$('#q'), l=$('#loc'); if(q) q.value=''; if(l) l.value=''; renderVagas(); },
+  limpaq: () => { S.q=''; const q=$('#q'); if(q) q.value=''; renderVagas(); },
+  limpal: () => { S.local=''; const l=$('#loc'); if(l) l.value=''; renderVagas(); },
   cmp: el => {
         const id=Number(el.dataset.cmp);
         S.comparar = S.comparar.includes(id) ? S.comparar.filter(x=>x!==id)
@@ -3777,8 +4064,30 @@ const ACOES = {
   ver:  el => ir('vaga', Number(el.dataset.ver)),
   trace: el => abrirTrace(Number(el.dataset.trace)),
   irtags: () => ir('tags'),
+  retentar: el => ir(el.dataset.retentar),
+  irhome: () => ir('home'),
 };
+/* Popovers de filtro: um aberto por vez, fecha ao clicar fora e no Esc.
+   O clique dentro do painel não fecha, senão marcar duas caixas obrigaria
+   a reabrir a cada vez. */
+function fecharPops(exceto){
+  $$('.filtro.aberto').forEach(f=>{
+    if(f===exceto) return;
+    f.classList.remove('aberto');
+    const b=$('.fbt',f); if(b) b.setAttribute('aria-expanded','false');
+  });
+}
 document.addEventListener('click', e => {
+  const bt = e.target.closest('.fbt');
+  if(bt){
+    const f = bt.closest('.filtro'), abrindo = !f.classList.contains('aberto');
+    fecharPops(f);
+    f.classList.toggle('aberto', abrindo);
+    bt.setAttribute('aria-expanded', String(abrindo));
+    return;
+  }
+  if(!e.target.closest('.fpop')) fecharPops();
+
   const it=e.target.closest('.cmdk .it');
   if(it){ executarCmd(Number(it.dataset.i)); return; }
   for(const chave in ACOES){
@@ -3786,6 +4095,23 @@ document.addEventListener('click', e => {
     if(el && document.contains(el)){ ACOES[chave](el); return; }
   }
 });
+document.addEventListener('change', e => {
+  const fop = e.target.closest('[data-fop]');
+  if(fop){
+    const fid = fop.dataset.fop, v = fop.value;
+    S.filtros[fid] = fop.checked
+      ? [...S.filtros[fid], v]
+      : S.filtros[fid].filter(x=>x!==v);
+    // reabre o mesmo painel depois do render, para dar para marcar várias
+    renderVagas();
+    const f = $('[data-pop="'+fid+'"]');
+    if(f){ f.classList.add('aberto'); $('.fbt',f).setAttribute('aria-expanded','true'); }
+    return;
+  }
+  const ford = e.target.closest('[data-ford]');
+  if(ford){ S.ordem = ford.dataset.ford; fecharPops(); renderVagas(); }
+});
+
 document.addEventListener('input', e => {
   if(e.target.id==='buscaSkill') repintarSkills();
   if(e.target.id==='cmdIn'){ cmdSel=0; cmdItens=filtraCmd(e.target.value); renderCmd(); }
@@ -3853,6 +4179,7 @@ addEventListener('keydown',e=>{
   }
   prenderFoco(e);
   if(e.key!=='Escape') return;
+  if($('.filtro.aberto')) return fecharPops();
   if($('#mbox').classList.contains('on')) return fecharAcesso();
   if($('#drw').classList.contains('on')) return fecharTrace();
   if(S.ddAberto) return fecharDD();
