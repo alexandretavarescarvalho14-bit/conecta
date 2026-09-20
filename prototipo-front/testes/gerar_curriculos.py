@@ -49,42 +49,12 @@ with zipfile.ZipFile('curriculos/cv.docx', 'w', zipfile.ZIP_DEFLATED) as z:
     z.writestr('_rels/.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
     z.writestr('word/document.xml', doc)
 
-# PDF simples com FlateDecode e fonte padrão: o caso que a leitura cobre
-BS = chr(92)
-def pdfesc(t): return t.replace(BS, BS + BS).replace('(', BS + '(').replace(')', BS + ')')
-ops = ['BT', '/F1 10 Tf', '40 800 Td', '12 TL']
-for l in cv.split('\n'):
-    l2 = l.encode('latin1', 'replace').decode('latin1')
-    ops.append('(%s) Tj T*' % pdfesc(l2))
-ops.append('ET')
-conteudo = '\n'.join(ops).encode('latin1')
-comp = zlib.compress(conteudo)
-
-def montar_pdf(objs, nome):
-    out = bytearray(b'%PDF-1.4\n'); offs = []
-    for i, o in enumerate(objs, 1):
-        offs.append(len(out)); out += b'%d 0 obj\n' % i + o + b'\nendobj\n'
-    xref = len(out)
-    out += b'xref\n0 %d\n0000000000 65535 f \n' % (len(objs) + 1)
-    for o in offs: out += b'%010d 00000 n \n' % o
-    out += b'trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n' % (len(objs) + 1, xref)
-    io.open(nome, 'wb').write(bytes(out))
-
-base = [b'<< /Type /Catalog /Pages 2 0 R >>',
-        b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>']
-montar_pdf(base + [
-    b'<< /Length %d /Filter /FlateDecode >>\nstream\n' % len(comp) + comp + b'\nendstream',
-    b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'],
-    'curriculos/cv.pdf')
-
-# PDF ilegível: glifos Identity-H em vez de texto. Tem que FALHAR com honestidade.
-glifos = b'BT /F1 10 Tf 40 800 Td <0044004500460047> Tj <00480049004a> Tj ET'
-comp2 = zlib.compress(glifos)
-montar_pdf(base + [
-    b'<< /Length %d /Filter /FlateDecode >>\nstream\n' % len(comp2) + comp2 + b'\nendstream',
-    b'<< /Type /Font /Subtype /Type0 /BaseFont /ABCDEF+Calibri /Encoding /Identity-H >>'],
-    'curriculos/cv-ilegivel.pdf')
+# cv.pdf: mantido só para exercitar a RECUSA por formato (PDF não é
+# aceito nesta versão, ver 16-extracao.js). Não precisa ser um PDF
+# elaborado: qualquer coisa com cabeçalho %PDF serve, porque o motor
+# recusa pela extensão antes de tentar ler o conteúdo.
+io.open('curriculos/cv.pdf', 'wb').write(
+    b'%PDF-1.4\n% arquivo minimo, so para testar a recusa por formato\n')
 
 # um arquivo que não é currículo
 io.open('curriculos/foto.png', 'wb').write(b'\x89PNG\r\n\x1a\n' + b'\x00' * 200)

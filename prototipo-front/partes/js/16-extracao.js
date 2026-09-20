@@ -8,22 +8,29 @@
 
    Nada aqui usa biblioteca externa: o Artifact precisa abrir sem rede.
    TXT e MD são texto. DOCX é um zip com XML dentro, e o navegador
-   descompacta deflate nativamente. PDF é tentativa: funciona para
-   arquivo simples e falha com honestidade quando a fonte tem codificação
-   própria, que é comum em currículo exportado do Word.                */
+   descompacta deflate nativamente.
+
+   PDF foi testado e tirado do fluxo aceito: a leitura funciona só para
+   fonte padrão, e a maioria dos currículos reais exportados do Word ou
+   do Canva usa fonte embutida com codificação própria, que sai como
+   lixo. Em vez de aceitar o formato e falhar silenciosamente para boa
+   parte de quem usa, a extração recusa PDF de saída e orienta para
+   DOCX, que lê com precisão. O código de leitura de PDF continua
+   abaixo, sem uso: fica pronto para o dia em que uma extração de
+   verdade (servidor, OCR) o tornar confiável de novo.                 */
 
 class ErroExtracao extends Error {
   constructor(msg, motivo){ super(msg); this.motivo = motivo; }
 }
 
 const FORMATOS = {
-  'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
   'text/plain': 'txt', 'text/markdown': 'md', 'text/x-markdown': 'md',
 };
+/* PDF fica fora de propósito: ver a nota de leitura acima. */
 function formatoDe(arquivo){
   const ext = (arquivo.name.split('.').pop() || '').toLowerCase();
-  if(['pdf','docx','txt','md'].includes(ext)) return ext;
+  if(['docx','txt','md'].includes(ext)) return ext;
   return FORMATOS[arquivo.type] || null;
 }
 const LIMITE_BYTES = 8 * 1024 * 1024;
@@ -155,14 +162,20 @@ function textoLegivel(t){
 
 async function lerArquivo(arquivo){
   const fmt = formatoDe(arquivo);
-  if(!fmt) throw new ErroExtracao('Aceito PDF, DOCX, TXT ou MD. Este arquivo é outra coisa.', 'formato');
+  if(!fmt){
+    const ext = (arquivo.name.split('.').pop() || '').toLowerCase();
+    if(ext === 'pdf') throw new ErroExtracao(
+      'PDF não é aceito nesta versão: a leitura falha na maioria dos currículos exportados ' +
+      'com fonte própria. Exporte como DOCX (Word: Salvar como → Word) e envie de novo.',
+      'formato');
+    throw new ErroExtracao('Aceito DOCX, TXT ou MD. Este arquivo é outra coisa.', 'formato');
+  }
   if(arquivo.size > LIMITE_BYTES) throw new ErroExtracao('O arquivo passa de 8 MB. Currículo costuma ter bem menos que isso.', 'tamanho');
   if(arquivo.size === 0) throw new ErroExtracao('O arquivo está vazio.', 'vazio');
   const buf = await arquivo.arrayBuffer();
   let texto;
   if(fmt === 'txt' || fmt === 'md') texto = utf8(new Uint8Array(buf));
-  else if(fmt === 'docx') texto = await lerDocx(buf);
-  else texto = await lerPdf(buf);
+  else texto = await lerDocx(buf);
   if(!textoLegivel(texto)) throw new ErroExtracao('Abri o arquivo, mas não achei texto suficiente para montar um perfil.', 'vazio');
   return {texto, formato: fmt};
 }

@@ -87,8 +87,8 @@ function onbNovo(via){
     falha:null,                     // {msg, motivo} quando EXTRACTION_FAILED
     sug:null,                       // resultado de interpretar()
     rev:null,                       // o que a pessoa está revisando
-    subpasso:'blocos',              // dentro de PROFILE_IN_REVIEW: 'blocos' | 'prefs'
-    visivel:{area:true, resumo:true, competencias:true, contexto:true, ambiente:true},
+    subpasso:'blocos',              // dentro de PROFILE_IN_REVIEW: 'blocos' | 'avisos' | 'consentimentos'
+    visivel:{area:true, resumo:true, competencias:true, contexto:true},
     consent:{termos:false, compartilhar:false, retencao:false, avisos:true, em:null},
     iniciadoEm:agora, atualizadoEm:agora,
     historico:[{estado:'ACCOUNT_CREATED', em:agora}],

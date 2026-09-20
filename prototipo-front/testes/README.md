@@ -1,15 +1,15 @@
 # Currículos de teste
 
-Seis arquivos para exercitar a importação de currículo do protótipo.
-O mesmo currículo fictício em quatro formatos que a extração lê, mais
-dois casos que têm de falhar com honestidade.
+Cinco arquivos para exercitar a importação de currículo do protótipo.
 
 | arquivo | o que testa |
 |---|---|
 | cv.txt, cv.md | leitura direta de texto |
 | cv.docx | zip com XML, descompactado no navegador |
-| cv.pdf | PDF com fonte padrão e FlateDecode |
-| cv-ilegivel.pdf | PDF com fonte de codificação própria: deve falhar e oferecer colar o texto |
+| cv.pdf | PDF não é aceito nesta versão: deve recusar com a mensagem orientando exportar como DOCX, antes mesmo de tentar ler o conteúdo |
 | foto.png | formato não aceito: deve recusar antes de abrir |
+
+O mesmo currículo fictício está em TXT, MD e DOCX, para conferir que os
+três produzem o mesmo perfil sugerido.
 
 Regenerar: `python gerar_curriculos.py` de dentro desta pasta.

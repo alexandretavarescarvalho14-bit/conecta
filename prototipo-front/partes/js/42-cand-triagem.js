@@ -30,9 +30,9 @@ function vTriagem(){
 
 /* ── progresso ── */
 function stepper(o){
-  const atual = ONB_PASSOS.findIndex(p => p.estados.includes(o.estado)
-    || (p.id === 'prefs' && o.estado === 'PROFILE_IN_REVIEW' && o.subpasso === 'prefs'));
-  const idx = o.estado === 'PROFILE_IN_REVIEW' && o.subpasso === 'prefs' ? 3 : Math.max(0, atual);
+  const emPrefs = o.estado === 'PROFILE_IN_REVIEW' && (o.subpasso === 'avisos' || o.subpasso === 'consentimentos');
+  const atual = ONB_PASSOS.findIndex(p => p.estados.includes(o.estado) || (p.id === 'prefs' && emPrefs));
+  const idx = emPrefs ? 3 : Math.max(0, atual);
   return '<ol class="stp" aria-label="Etapas do cadastro">' + ONB_PASSOS.map((p, i) =>
     '<li class="' + (i < idx ? 'ok' : i === idx ? 'on' : '') + '"><i></i><span>' + p.rot + '</span></li>'
   ).join('') + '</ol>';
@@ -73,7 +73,7 @@ function telaEscolha(o){
         '<b>Importar meu currículo</b>' +
         '<p>Envie seu currículo e nós organizaremos as informações para você revisar. Nada ' +
         'será publicado antes da sua confirmação.</p>' +
-        '<span class="fmt">PDF · DOCX · TXT · MD</span>' +
+        '<span class="fmt">DOCX · TXT · MD</span>' +
       '</button>' +
       '<button class="cx" data-onb="fonte" data-fonte="manual">' +
         '<span class="ic">' + I.pes + '</span>' +
@@ -91,10 +91,10 @@ function telaUpload(o){
   return '<div class="onbg"><div class="onbm">' +
     '<button class="volta" data-onb="voltarEscolha">' + I.volta + 'Outro caminho</button>' +
     '<h1>Envie seu currículo</h1>' +
-    '<p class="lead">Aceito PDF, DOCX, TXT e MD. O arquivo fica só no seu navegador: nesta ' +
+    '<p class="lead">Aceito DOCX, TXT e MD. O arquivo fica só no seu navegador: nesta ' +
     'versão, nada sai daqui.</p>' +
     '<label class="drop" id="drop">' +
-      '<input type="file" id="arq" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document">' +
+      '<input type="file" id="arq" accept=".docx,.txt,.md,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document">' +
       '<span class="ic">' + I.doc + '</span>' +
       '<b>Arraste o arquivo aqui ou clique para escolher</b>' +
       '<span>até 8 MB</span>' +
@@ -130,7 +130,7 @@ function telaFalha(o){
   const f = o.falha || {msg:'Não consegui ler o arquivo.', motivo:'formato'};
   const saidas = {
     ilegivel: 'Cole o texto do currículo, ou exporte em DOCX que a leitura é mais confiável.',
-    formato:  'Confira se o arquivo é PDF, DOCX, TXT ou MD.',
+    formato:  'Confira se o arquivo é DOCX, TXT ou MD. PDF não é aceito nesta versão.',
     tamanho:  'Um currículo raramente passa de 1 MB. Vale conferir se o arquivo certo foi escolhido.',
     vazio:    'Se o currículo é uma imagem escaneada, o texto não está acessível. Cole o conteúdo, ou preencha à mão.',
   };
@@ -168,8 +168,6 @@ function telaEncontrado(o){
       achado('Resumo', s.resumo ? 'encontrei um parágrafo' : 'não encontrei', !!s.resumo) +
       achado('Texto lido', s.palavras + ' palavras', true) +
     '</div>' +
-    '<p class="mini">Os 14 eixos de ambiente de trabalho não saem de currículo nenhum. Esses eu ' +
-    'pergunto a você na revisão.</p>' +
     '<button class="btn" data-onb="revisar">Revisar meu perfil</button>' +
   '</div>' + lateral(o) + '</div>';
 }
@@ -177,7 +175,8 @@ const achado = (r, v, ok) => '<div class="ach' + (ok ? '' : ' nao') + '"><span>'
 
 /* ── 6 · revisão por blocos ── */
 function telaRevisao(o){
-  if(o.subpasso === 'prefs') return telaPrefs(o);
+  if(o.subpasso === 'avisos') return telaAvisos(o);
+  if(o.subpasso === 'consentimentos') return telaConsentimentos(o);
   const r = o.rev;
   const pend = o.estado === 'PROFILE_INCOMPLETE' ? pendenciasDaRevisao(r) : [];
   const deDoc = o.fonte === 'import';
@@ -214,11 +213,6 @@ function telaRevisao(o){
       '<p class="hint" style="margin-top:10px">Modelos que você aceita:</p>' +
       '<div class="checks">' + ['presencial', 'hibrido', 'remoto'].map(m =>
         '<label class="check"><input type="checkbox" data-modelo="' + m + '"' + (r.modelos.includes(m) ? ' checked' : '') + '> ' + ROT_MODELO_ONB[m] + '</label>').join('') + '</div>') +
-
-    bloco('ambiente', 'Onde você rende melhor', o,
-      '<p class="hint">Isso não está em currículo nenhum, só você sabe. Responda como você é hoje, ' +
-      'não como acha que a vaga quer. A empresa responde os mesmos eixos, e o encaixe é a distância entre os dois.</p>' +
-      slidersEixos(r)) +
 
     '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:var(--s3)">' +
       '<button class="btn" data-onb="paraPrefs">Continuar</button>' +
@@ -266,31 +260,66 @@ function slidersEixos(r){
 }
 const rotuloEixo = (e, v) => v < 35 ? e.poloA : v > 65 ? e.poloB : 'equilibrado';
 
-/* ── 7 · preferências e consentimentos ── */
-function telaPrefs(o){
-  const c = o.consent, r = o.rev;
-  const nConf = r.competencias.filter(x => x.ok).length;
-  const vis = Object.entries(o.visivel).filter(([, v]) => v).map(([k]) => ({area:'área e cargos', competencias:'competências', resumo:'sobre você', contexto:'onde e como trabalha', ambiente:'ambiente'}[k])).filter(Boolean);
+/* ── 7 · preferências e consentimentos ──
+   Duas páginas curtas em vez de uma tela longa: avisos primeiro (rápido,
+   sem risco), autorização de dado depois (a parte que exige leitura). A
+   pessoa nunca decide as duas coisas na mesma rolagem. */
+const PAG_PREFS = {avisos: 1, consentimentos: 2};
+function paginaPrefs(subpasso, titulo){
+  return '<div class="pgprefs"><span>Página ' + PAG_PREFS[subpasso] + ' de 2</span><b>' + titulo + '</b></div>';
+}
+
+function telaAvisos(o){
+  const c = o.consent;
   return '<div class="onbg"><div class="onbm">' +
     '<button class="volta" data-onb="voltarBlocos">' + I.volta + 'Voltar à revisão</button>' +
-    '<h1>Preferências e consentimentos</h1>' +
-    '<p class="lead">Última etapa. Aqui você diz como quer ser avisado e autoriza o que a ' +
-    'Conectaria pode fazer com o seu perfil.</p>' +
+    paginaPrefs('avisos', 'Como avisar você') +
+    '<h1>Quer que a gente te avise?</h1>' +
+    '<p class="lead">Isso é sobre notificação, não sobre dado. A próxima página é a que autoriza ' +
+    'o uso do seu perfil.</p>' +
+    '<section class="blk">' +
+      '<label class="check"><input type="checkbox" data-cons="avisos"' + (c.avisos ? ' checked' : '') + '>' +
+      '<span>Avisar no WhatsApp ou e-mail quando entrar uma vaga com aderência acima de 75% ' +
+      'com o meu perfil</span></label>' +
+      '<p class="hint" style="margin-top:10px">Dá para desligar quando quiser, na tela do seu perfil.</p>' +
+    '</section>' +
+    '<button class="btn" data-onb="paraConsentimentos">Continuar</button>' +
+  '</div>' + lateral(o) + '</div>';
+}
 
-    '<section class="blk"><header><h3>Avisos</h3></header>' +
-      '<label class="check"><input type="checkbox" data-cons="avisos"' + (c.avisos ? ' checked' : '') + '> Me avise por WhatsApp ou e-mail quando entrar vaga com aderência acima de 75%</label>' +
+function telaConsentimentos(o){
+  const c = o.consent, r = o.rev;
+  const nConf = r.competencias.filter(x => x.ok).length;
+  const vis = Object.entries(o.visivel).filter(([, v]) => v).map(([k]) => ({area:'área e cargos', competencias:'competências', resumo:'sobre você', contexto:'onde e como trabalha'}[k])).filter(Boolean);
+  return '<div class="onbg"><div class="onbm">' +
+    '<button class="volta" data-onb="voltarAvisos">' + I.volta + 'Voltar</button>' +
+    paginaPrefs('consentimentos', 'Autorização de dado') +
+    '<h1>O que você está autorizando</h1>' +
+    '<p class="lead">Três autorizações, uma por vez. As duas primeiras são exigidas para o ' +
+    'perfil funcionar; a terceira é opcional e você decide.</p>' +
+
+    '<section class="blk">' +
+      consentimento('termos', c.termos,
+        'Li os termos de uso e a política de privacidade da Conectaria, e concordo com eles.',
+        'necessário') +
+      consentimento('compartilhar', c.compartilhar,
+        'Autorizo enviar meu perfil confirmado para as empresas das vagas em que eu me ' +
+        'candidatar. Só vão os blocos que eu marquei como visíveis na revisão, o resto fica ' +
+        'só comigo.',
+        'necessário') +
+      consentimento('retencao', c.retencao,
+        'Autorizo guardar meu perfil por 12 meses depois da minha última atividade, para eu ' +
+        'não ter que montar tudo de novo se eu voltar. Posso revogar essa autorização a ' +
+        'qualquer momento, na tela do meu perfil, sem precisar justificar.',
+        'opcional') +
     '</section>' +
 
-    '<section class="blk"><header><h3>Consentimentos</h3></header>' +
-      '<p class="hint">A lei de proteção de dados exige que você saiba, antes de aceitar, o que é ' +
-      'feito com o seu dado. Os dois primeiros são necessários para o perfil funcionar.</p>' +
-      consentimento('termos', c.termos, 'Li e concordo com os termos de uso e a política de privacidade.', 'necessário') +
-      consentimento('compartilhar', c.compartilhar, 'Autorizo compartilhar meu perfil confirmado com as empresas das vagas em que eu me candidatar. Só os blocos marcados como visíveis vão.', 'necessário') +
-      consentimento('retencao', c.retencao, 'Autorizo manter meu perfil por 12 meses após minha última atividade, para eu não precisar refazer. Posso revogar quando quiser.', 'opcional') +
-      '<p class="mini" style="margin-top:12px">Você tem direito a pedir revisão de qualquer recomendação feita ' +
-      'automaticamente sobre você, e a saber os critérios. Cada recomendação da Conectaria guarda ' +
-      'o motivo por escrito: é o botão <b>ver o trace</b> em cada vaga.</p>' +
-    '</section>' +
+    '<div class="lgpdInfo">' + I.al +
+      '<p>Você pode pedir para ver, corrigir ou apagar seu perfil quando quiser, e pode pedir ' +
+      'revisão humana de qualquer recomendação automática feita sobre você. Cada recomendação ' +
+      'da Conectaria já vem com o motivo por escrito: é o botão <b>ver o trace</b>, em toda ' +
+      'vaga.</p>' +
+    '</div>' +
 
     '<section class="blk resumoFinal"><header><h3>O que vai ser confirmado</h3></header>' +
       '<div class="linha"><span>Área</span><b>' + (r.areaId ? esc(AREA[r.areaId].n) : 'sem área') + '</b></div>' +
@@ -362,7 +391,7 @@ function lateral(o){
     '<h4>' + I.spark + ' Seu perfil até agora</h4>' +
     '<div class="linha"><span>Origem</span><b>' + (o.fonte === 'import' ? 'currículo' : o.fonte === 'manual' ? 'preenchido' : 'a definir') + '</b></div>' +
     (r ? '<div class="linha"><span>Competências</span><b id="lnComp">' + nConf + (nDoc ? ' <small>(' + nDoc + ' do currículo)</small>' : '') + '</b></div>' : '') +
-    (r ? '<div class="linha"><span>Blocos visíveis</span><b id="lnVis">' + vis + ' de 5</b></div>' : '') +
+    (r ? '<div class="linha"><span>Blocos visíveis</span><b id="lnVis">' + vis + ' de ' + Object.keys(o.visivel).length + '</b></div>' : '') +
     (conf !== null ? '<div class="linha"><span>Confiança estimada</span><b id="lnConfOnb">' + pc(conf) + '</b></div>' : '') +
     '<p class="porque">' + (o.estado === 'PROFILE_CONFIRMED' || o.estado === 'MATCHING_READY'
       ? 'Tudo que você confirmou vale com peso total. O que a empresa vê é só o que você marcou como visível.'
@@ -414,7 +443,7 @@ function ligarTela(o){
     $$('[data-vis]', raiz).forEach(cb => cb.onchange = () => {
       o.visivel[cb.dataset.vis] = cb.checked;
       cb.nextElementSibling.textContent = cb.checked ? 'visível para empresas' : 'só você vê';
-      const lv = $('#lnVis'); if(lv) lv.textContent = Object.values(o.visivel).filter(Boolean).length + ' de 5';
+      const lv = $('#lnVis'); if(lv) lv.textContent = Object.values(o.visivel).filter(Boolean).length + ' de ' + Object.keys(o.visivel).length;
       salvar();
     });
     $$('[data-cons]', raiz).forEach(cb => cb.onchange = () => {
@@ -483,8 +512,10 @@ async function acaoOnb(acao, btn){
     case 'paraPrefs': {
       const pend = pendenciasDaRevisao(o.rev);
       if(pend.length){ onbIr('PROFILE_INCOMPLETE'); vTriagem(); scrollTo({top: 0, behavior: 'smooth'}); return; }
-      o.subpasso = 'prefs'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
+      o.subpasso = 'avisos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
     }
+    case 'paraConsentimentos': o.subpasso = 'consentimentos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
+    case 'voltarAvisos': o.subpasso = 'avisos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
     case 'voltarBlocos': o.subpasso = 'blocos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
     case 'confirmar': {
       if(!(o.consent.termos && o.consent.compartilhar)) return;

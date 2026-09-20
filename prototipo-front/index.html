@@ -1193,6 +1193,14 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 @media(max-width:560px){.cmp{grid-template-columns:auto 1fr}.cmp .nvbt{grid-column:2}.cmp .prov{grid-column:2;justify-self:start}}
 
 /* consentimentos */
+/* Base de checkbox com rótulo. Nunca existia display aqui — cada label
+   ficava inline por padrão do navegador, e com texto curto (um modelo de
+   trabalho, uma palavra) isso passava despercebido. Com texto longo (os
+   consentimentos de LGPD), o rótulo de um item continuava fluindo direto
+   no fim da linha do item anterior. */
+.check{display:flex;align-items:center;gap:8px;cursor:pointer}
+.check input{flex:none;accent-color:var(--ac1);width:16px;height:16px}
+.checks{display:flex;flex-wrap:wrap;gap:8px 18px}
 .check.cons{align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--i04);font-size:var(--sm);line-height:1.55}
 .check.cons:last-of-type{border:0}
 .check.cons input{margin-top:3px;flex:none}
@@ -1200,6 +1208,19 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .check.cons em.necessário{background:var(--al-bg);color:var(--al-fg)}
 .check.cons em.opcional{background:var(--i04);color:var(--i62)}
 .resumoFinal .linha b{max-width:60%;font-weight:500;font-size:var(--xs)}
+
+/* paginação das preferências: avisos e consentimentos são duas telas
+   curtas, não uma rolagem longa. O indicador é o que deixa claro que
+   falta uma página, não que a tela ficou incompleta. */
+.pgprefs{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.pgprefs span{font-size:var(--xs);font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ac1);background:var(--veu);border-radius:var(--pill);padding:3px 10px}
+.pgprefs b{font-size:var(--sm);color:var(--i62);font-weight:500}
+
+.lgpdInfo{display:flex;gap:10px;align-items:flex-start;background:var(--papel2);
+  border:1px solid var(--i08);border-radius:var(--r2);padding:12px 14px;margin:var(--s2) 0 var(--s3)}
+.lgpdInfo svg{flex:none;margin-top:2px;color:var(--ac2)}
+.lgpdInfo p{font-size:var(--xs);color:var(--i72);line-height:1.6;margin:0}
 
 /* faixa de retomada na home */
 .retoma{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--veu);border:1px solid var(--ac5);border-radius:var(--r);padding:12px 16px;margin:var(--s3) 0 0}
@@ -1305,7 +1326,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const BUILD = Object.freeze({partes:29, sha:"781326a77ae9", em:"2026-09-20"});
+const BUILD = Object.freeze({partes:29, sha:"6475a2990203", em:"2026-09-20"});
 /* ══ parte: partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
@@ -2445,22 +2466,29 @@ const ETAPAS = ['Enviada','Triagem','Entrevista Conectaria','Entrevista empresa'
 
    Nada aqui usa biblioteca externa: o Artifact precisa abrir sem rede.
    TXT e MD são texto. DOCX é um zip com XML dentro, e o navegador
-   descompacta deflate nativamente. PDF é tentativa: funciona para
-   arquivo simples e falha com honestidade quando a fonte tem codificação
-   própria, que é comum em currículo exportado do Word.                */
+   descompacta deflate nativamente.
+
+   PDF foi testado e tirado do fluxo aceito: a leitura funciona só para
+   fonte padrão, e a maioria dos currículos reais exportados do Word ou
+   do Canva usa fonte embutida com codificação própria, que sai como
+   lixo. Em vez de aceitar o formato e falhar silenciosamente para boa
+   parte de quem usa, a extração recusa PDF de saída e orienta para
+   DOCX, que lê com precisão. O código de leitura de PDF continua
+   abaixo, sem uso: fica pronto para o dia em que uma extração de
+   verdade (servidor, OCR) o tornar confiável de novo.                 */
 
 class ErroExtracao extends Error {
   constructor(msg, motivo){ super(msg); this.motivo = motivo; }
 }
 
 const FORMATOS = {
-  'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
   'text/plain': 'txt', 'text/markdown': 'md', 'text/x-markdown': 'md',
 };
+/* PDF fica fora de propósito: ver a nota de leitura acima. */
 function formatoDe(arquivo){
   const ext = (arquivo.name.split('.').pop() || '').toLowerCase();
-  if(['pdf','docx','txt','md'].includes(ext)) return ext;
+  if(['docx','txt','md'].includes(ext)) return ext;
   return FORMATOS[arquivo.type] || null;
 }
 const LIMITE_BYTES = 8 * 1024 * 1024;
@@ -2592,14 +2620,20 @@ function textoLegivel(t){
 
 async function lerArquivo(arquivo){
   const fmt = formatoDe(arquivo);
-  if(!fmt) throw new ErroExtracao('Aceito PDF, DOCX, TXT ou MD. Este arquivo é outra coisa.', 'formato');
+  if(!fmt){
+    const ext = (arquivo.name.split('.').pop() || '').toLowerCase();
+    if(ext === 'pdf') throw new ErroExtracao(
+      'PDF não é aceito nesta versão: a leitura falha na maioria dos currículos exportados ' +
+      'com fonte própria. Exporte como DOCX (Word: Salvar como → Word) e envie de novo.',
+      'formato');
+    throw new ErroExtracao('Aceito DOCX, TXT ou MD. Este arquivo é outra coisa.', 'formato');
+  }
   if(arquivo.size > LIMITE_BYTES) throw new ErroExtracao('O arquivo passa de 8 MB. Currículo costuma ter bem menos que isso.', 'tamanho');
   if(arquivo.size === 0) throw new ErroExtracao('O arquivo está vazio.', 'vazio');
   const buf = await arquivo.arrayBuffer();
   let texto;
   if(fmt === 'txt' || fmt === 'md') texto = utf8(new Uint8Array(buf));
-  else if(fmt === 'docx') texto = await lerDocx(buf);
-  else texto = await lerPdf(buf);
+  else texto = await lerDocx(buf);
   if(!textoLegivel(texto)) throw new ErroExtracao('Abri o arquivo, mas não achei texto suficiente para montar um perfil.', 'vazio');
   return {texto, formato: fmt};
 }
@@ -2894,8 +2928,8 @@ function onbNovo(via){
     falha:null,                     // {msg, motivo} quando EXTRACTION_FAILED
     sug:null,                       // resultado de interpretar()
     rev:null,                       // o que a pessoa está revisando
-    subpasso:'blocos',              // dentro de PROFILE_IN_REVIEW: 'blocos' | 'prefs'
-    visivel:{area:true, resumo:true, competencias:true, contexto:true, ambiente:true},
+    subpasso:'blocos',              // dentro de PROFILE_IN_REVIEW: 'blocos' | 'avisos' | 'consentimentos'
+    visivel:{area:true, resumo:true, competencias:true, contexto:true},
     consent:{termos:false, compartilhar:false, retencao:false, avisos:true, em:null},
     iniciadoEm:agora, atualizadoEm:agora,
     historico:[{estado:'ACCOUNT_CREATED', em:agora}],
@@ -3822,9 +3856,9 @@ function vTriagem(){
 
 /* ── progresso ── */
 function stepper(o){
-  const atual = ONB_PASSOS.findIndex(p => p.estados.includes(o.estado)
-    || (p.id === 'prefs' && o.estado === 'PROFILE_IN_REVIEW' && o.subpasso === 'prefs'));
-  const idx = o.estado === 'PROFILE_IN_REVIEW' && o.subpasso === 'prefs' ? 3 : Math.max(0, atual);
+  const emPrefs = o.estado === 'PROFILE_IN_REVIEW' && (o.subpasso === 'avisos' || o.subpasso === 'consentimentos');
+  const atual = ONB_PASSOS.findIndex(p => p.estados.includes(o.estado) || (p.id === 'prefs' && emPrefs));
+  const idx = emPrefs ? 3 : Math.max(0, atual);
   return '<ol class="stp" aria-label="Etapas do cadastro">' + ONB_PASSOS.map((p, i) =>
     '<li class="' + (i < idx ? 'ok' : i === idx ? 'on' : '') + '"><i></i><span>' + p.rot + '</span></li>'
   ).join('') + '</ol>';
@@ -3865,7 +3899,7 @@ function telaEscolha(o){
         '<b>Importar meu currículo</b>' +
         '<p>Envie seu currículo e nós organizaremos as informações para você revisar. Nada ' +
         'será publicado antes da sua confirmação.</p>' +
-        '<span class="fmt">PDF · DOCX · TXT · MD</span>' +
+        '<span class="fmt">DOCX · TXT · MD</span>' +
       '</button>' +
       '<button class="cx" data-onb="fonte" data-fonte="manual">' +
         '<span class="ic">' + I.pes + '</span>' +
@@ -3883,10 +3917,10 @@ function telaUpload(o){
   return '<div class="onbg"><div class="onbm">' +
     '<button class="volta" data-onb="voltarEscolha">' + I.volta + 'Outro caminho</button>' +
     '<h1>Envie seu currículo</h1>' +
-    '<p class="lead">Aceito PDF, DOCX, TXT e MD. O arquivo fica só no seu navegador: nesta ' +
+    '<p class="lead">Aceito DOCX, TXT e MD. O arquivo fica só no seu navegador: nesta ' +
     'versão, nada sai daqui.</p>' +
     '<label class="drop" id="drop">' +
-      '<input type="file" id="arq" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document">' +
+      '<input type="file" id="arq" accept=".docx,.txt,.md,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document">' +
       '<span class="ic">' + I.doc + '</span>' +
       '<b>Arraste o arquivo aqui ou clique para escolher</b>' +
       '<span>até 8 MB</span>' +
@@ -3922,7 +3956,7 @@ function telaFalha(o){
   const f = o.falha || {msg:'Não consegui ler o arquivo.', motivo:'formato'};
   const saidas = {
     ilegivel: 'Cole o texto do currículo, ou exporte em DOCX que a leitura é mais confiável.',
-    formato:  'Confira se o arquivo é PDF, DOCX, TXT ou MD.',
+    formato:  'Confira se o arquivo é DOCX, TXT ou MD. PDF não é aceito nesta versão.',
     tamanho:  'Um currículo raramente passa de 1 MB. Vale conferir se o arquivo certo foi escolhido.',
     vazio:    'Se o currículo é uma imagem escaneada, o texto não está acessível. Cole o conteúdo, ou preencha à mão.',
   };
@@ -3960,8 +3994,6 @@ function telaEncontrado(o){
       achado('Resumo', s.resumo ? 'encontrei um parágrafo' : 'não encontrei', !!s.resumo) +
       achado('Texto lido', s.palavras + ' palavras', true) +
     '</div>' +
-    '<p class="mini">Os 14 eixos de ambiente de trabalho não saem de currículo nenhum. Esses eu ' +
-    'pergunto a você na revisão.</p>' +
     '<button class="btn" data-onb="revisar">Revisar meu perfil</button>' +
   '</div>' + lateral(o) + '</div>';
 }
@@ -3969,7 +4001,8 @@ const achado = (r, v, ok) => '<div class="ach' + (ok ? '' : ' nao') + '"><span>'
 
 /* ── 6 · revisão por blocos ── */
 function telaRevisao(o){
-  if(o.subpasso === 'prefs') return telaPrefs(o);
+  if(o.subpasso === 'avisos') return telaAvisos(o);
+  if(o.subpasso === 'consentimentos') return telaConsentimentos(o);
   const r = o.rev;
   const pend = o.estado === 'PROFILE_INCOMPLETE' ? pendenciasDaRevisao(r) : [];
   const deDoc = o.fonte === 'import';
@@ -4006,11 +4039,6 @@ function telaRevisao(o){
       '<p class="hint" style="margin-top:10px">Modelos que você aceita:</p>' +
       '<div class="checks">' + ['presencial', 'hibrido', 'remoto'].map(m =>
         '<label class="check"><input type="checkbox" data-modelo="' + m + '"' + (r.modelos.includes(m) ? ' checked' : '') + '> ' + ROT_MODELO_ONB[m] + '</label>').join('') + '</div>') +
-
-    bloco('ambiente', 'Onde você rende melhor', o,
-      '<p class="hint">Isso não está em currículo nenhum, só você sabe. Responda como você é hoje, ' +
-      'não como acha que a vaga quer. A empresa responde os mesmos eixos, e o encaixe é a distância entre os dois.</p>' +
-      slidersEixos(r)) +
 
     '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:var(--s3)">' +
       '<button class="btn" data-onb="paraPrefs">Continuar</button>' +
@@ -4058,31 +4086,66 @@ function slidersEixos(r){
 }
 const rotuloEixo = (e, v) => v < 35 ? e.poloA : v > 65 ? e.poloB : 'equilibrado';
 
-/* ── 7 · preferências e consentimentos ── */
-function telaPrefs(o){
-  const c = o.consent, r = o.rev;
-  const nConf = r.competencias.filter(x => x.ok).length;
-  const vis = Object.entries(o.visivel).filter(([, v]) => v).map(([k]) => ({area:'área e cargos', competencias:'competências', resumo:'sobre você', contexto:'onde e como trabalha', ambiente:'ambiente'}[k])).filter(Boolean);
+/* ── 7 · preferências e consentimentos ──
+   Duas páginas curtas em vez de uma tela longa: avisos primeiro (rápido,
+   sem risco), autorização de dado depois (a parte que exige leitura). A
+   pessoa nunca decide as duas coisas na mesma rolagem. */
+const PAG_PREFS = {avisos: 1, consentimentos: 2};
+function paginaPrefs(subpasso, titulo){
+  return '<div class="pgprefs"><span>Página ' + PAG_PREFS[subpasso] + ' de 2</span><b>' + titulo + '</b></div>';
+}
+
+function telaAvisos(o){
+  const c = o.consent;
   return '<div class="onbg"><div class="onbm">' +
     '<button class="volta" data-onb="voltarBlocos">' + I.volta + 'Voltar à revisão</button>' +
-    '<h1>Preferências e consentimentos</h1>' +
-    '<p class="lead">Última etapa. Aqui você diz como quer ser avisado e autoriza o que a ' +
-    'Conectaria pode fazer com o seu perfil.</p>' +
+    paginaPrefs('avisos', 'Como avisar você') +
+    '<h1>Quer que a gente te avise?</h1>' +
+    '<p class="lead">Isso é sobre notificação, não sobre dado. A próxima página é a que autoriza ' +
+    'o uso do seu perfil.</p>' +
+    '<section class="blk">' +
+      '<label class="check"><input type="checkbox" data-cons="avisos"' + (c.avisos ? ' checked' : '') + '>' +
+      '<span>Avisar no WhatsApp ou e-mail quando entrar uma vaga com aderência acima de 75% ' +
+      'com o meu perfil</span></label>' +
+      '<p class="hint" style="margin-top:10px">Dá para desligar quando quiser, na tela do seu perfil.</p>' +
+    '</section>' +
+    '<button class="btn" data-onb="paraConsentimentos">Continuar</button>' +
+  '</div>' + lateral(o) + '</div>';
+}
 
-    '<section class="blk"><header><h3>Avisos</h3></header>' +
-      '<label class="check"><input type="checkbox" data-cons="avisos"' + (c.avisos ? ' checked' : '') + '> Me avise por WhatsApp ou e-mail quando entrar vaga com aderência acima de 75%</label>' +
+function telaConsentimentos(o){
+  const c = o.consent, r = o.rev;
+  const nConf = r.competencias.filter(x => x.ok).length;
+  const vis = Object.entries(o.visivel).filter(([, v]) => v).map(([k]) => ({area:'área e cargos', competencias:'competências', resumo:'sobre você', contexto:'onde e como trabalha'}[k])).filter(Boolean);
+  return '<div class="onbg"><div class="onbm">' +
+    '<button class="volta" data-onb="voltarAvisos">' + I.volta + 'Voltar</button>' +
+    paginaPrefs('consentimentos', 'Autorização de dado') +
+    '<h1>O que você está autorizando</h1>' +
+    '<p class="lead">Três autorizações, uma por vez. As duas primeiras são exigidas para o ' +
+    'perfil funcionar; a terceira é opcional e você decide.</p>' +
+
+    '<section class="blk">' +
+      consentimento('termos', c.termos,
+        'Li os termos de uso e a política de privacidade da Conectaria, e concordo com eles.',
+        'necessário') +
+      consentimento('compartilhar', c.compartilhar,
+        'Autorizo enviar meu perfil confirmado para as empresas das vagas em que eu me ' +
+        'candidatar. Só vão os blocos que eu marquei como visíveis na revisão, o resto fica ' +
+        'só comigo.',
+        'necessário') +
+      consentimento('retencao', c.retencao,
+        'Autorizo guardar meu perfil por 12 meses depois da minha última atividade, para eu ' +
+        'não ter que montar tudo de novo se eu voltar. Posso revogar essa autorização a ' +
+        'qualquer momento, na tela do meu perfil, sem precisar justificar.',
+        'opcional') +
     '</section>' +
 
-    '<section class="blk"><header><h3>Consentimentos</h3></header>' +
-      '<p class="hint">A lei de proteção de dados exige que você saiba, antes de aceitar, o que é ' +
-      'feito com o seu dado. Os dois primeiros são necessários para o perfil funcionar.</p>' +
-      consentimento('termos', c.termos, 'Li e concordo com os termos de uso e a política de privacidade.', 'necessário') +
-      consentimento('compartilhar', c.compartilhar, 'Autorizo compartilhar meu perfil confirmado com as empresas das vagas em que eu me candidatar. Só os blocos marcados como visíveis vão.', 'necessário') +
-      consentimento('retencao', c.retencao, 'Autorizo manter meu perfil por 12 meses após minha última atividade, para eu não precisar refazer. Posso revogar quando quiser.', 'opcional') +
-      '<p class="mini" style="margin-top:12px">Você tem direito a pedir revisão de qualquer recomendação feita ' +
-      'automaticamente sobre você, e a saber os critérios. Cada recomendação da Conectaria guarda ' +
-      'o motivo por escrito: é o botão <b>ver o trace</b> em cada vaga.</p>' +
-    '</section>' +
+    '<div class="lgpdInfo">' + I.al +
+      '<p>Você pode pedir para ver, corrigir ou apagar seu perfil quando quiser, e pode pedir ' +
+      'revisão humana de qualquer recomendação automática feita sobre você. Cada recomendação ' +
+      'da Conectaria já vem com o motivo por escrito: é o botão <b>ver o trace</b>, em toda ' +
+      'vaga.</p>' +
+    '</div>' +
 
     '<section class="blk resumoFinal"><header><h3>O que vai ser confirmado</h3></header>' +
       '<div class="linha"><span>Área</span><b>' + (r.areaId ? esc(AREA[r.areaId].n) : 'sem área') + '</b></div>' +
@@ -4154,7 +4217,7 @@ function lateral(o){
     '<h4>' + I.spark + ' Seu perfil até agora</h4>' +
     '<div class="linha"><span>Origem</span><b>' + (o.fonte === 'import' ? 'currículo' : o.fonte === 'manual' ? 'preenchido' : 'a definir') + '</b></div>' +
     (r ? '<div class="linha"><span>Competências</span><b id="lnComp">' + nConf + (nDoc ? ' <small>(' + nDoc + ' do currículo)</small>' : '') + '</b></div>' : '') +
-    (r ? '<div class="linha"><span>Blocos visíveis</span><b id="lnVis">' + vis + ' de 5</b></div>' : '') +
+    (r ? '<div class="linha"><span>Blocos visíveis</span><b id="lnVis">' + vis + ' de ' + Object.keys(o.visivel).length + '</b></div>' : '') +
     (conf !== null ? '<div class="linha"><span>Confiança estimada</span><b id="lnConfOnb">' + pc(conf) + '</b></div>' : '') +
     '<p class="porque">' + (o.estado === 'PROFILE_CONFIRMED' || o.estado === 'MATCHING_READY'
       ? 'Tudo que você confirmou vale com peso total. O que a empresa vê é só o que você marcou como visível.'
@@ -4206,7 +4269,7 @@ function ligarTela(o){
     $$('[data-vis]', raiz).forEach(cb => cb.onchange = () => {
       o.visivel[cb.dataset.vis] = cb.checked;
       cb.nextElementSibling.textContent = cb.checked ? 'visível para empresas' : 'só você vê';
-      const lv = $('#lnVis'); if(lv) lv.textContent = Object.values(o.visivel).filter(Boolean).length + ' de 5';
+      const lv = $('#lnVis'); if(lv) lv.textContent = Object.values(o.visivel).filter(Boolean).length + ' de ' + Object.keys(o.visivel).length;
       salvar();
     });
     $$('[data-cons]', raiz).forEach(cb => cb.onchange = () => {
@@ -4275,8 +4338,10 @@ async function acaoOnb(acao, btn){
     case 'paraPrefs': {
       const pend = pendenciasDaRevisao(o.rev);
       if(pend.length){ onbIr('PROFILE_INCOMPLETE'); vTriagem(); scrollTo({top: 0, behavior: 'smooth'}); return; }
-      o.subpasso = 'prefs'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
+      o.subpasso = 'avisos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
     }
+    case 'paraConsentimentos': o.subpasso = 'consentimentos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
+    case 'voltarAvisos': o.subpasso = 'avisos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
     case 'voltarBlocos': o.subpasso = 'blocos'; onbIr('PROFILE_IN_REVIEW'); vTriagem(); break;
     case 'confirmar': {
       if(!(o.consent.termos && o.consent.compartilhar)) return;
@@ -4530,14 +4595,27 @@ function repintarSkills(){
 }
 
 /* ══ parte: partes/js/50-emp-cadastro.js ══ */
-/* ══════════════════ 20 · EMPRESA · PERFIL ══════════════════ */
+/* ══════════════════ 20 · EMPRESA · PERFIL ══════════════════
+
+   O cadastro tinha quatro passos: Dados, Cultura, Rotina e perfil,
+   Contexto. Os dois do meio pediam os 14 eixos culturais — a mesma
+   régua que o candidato responderia do outro lado. Para a primeira
+   versão, isso saiu da interface: pede tempo demais para o valor que
+   entrega agora, sem gente suficiente usando os dois lados para a
+   distância entre eixos significar algo.
+
+   O motor continua calculando o fit cultural por baixo — os eixos da
+   empresa ficam no valor com que ela nasce nos dados de exemplo, e os
+   do candidato ficam no padrão neutro (ver revisaoVazia() em
+   20-estado.js). Reativar é só devolver os dois passos aqui e o bloco
+   'ambiente' na revisão do candidato: o dado já tem lugar certo. */
 function vPerfil(){
   $('#v-perfil').innerHTML=
   '<div class="barra" style="margin-top:var(--s5)"><h2>Perfil da empresa</h2>'+
     '<p class="cont">Grupo Aurora</p></div>'+
   '<p style="color:var(--i72);max-width:62ch;font-size:var(--md)">Quanto mais preciso esse perfil, '+
   'melhor o match. Cada campo aqui vira dimensão comparável com o perfil de cada pessoa da base.</p>'+
-  '<div class="wiz">'+['Dados','Cultura','Rotina e perfil','Contexto'].map((n,i)=>
+  '<div class="wiz">'+['Dados','Sinais'].map((n,i)=>
     '<span class="wz '+(i===S.empPasso?'on':i<S.empPasso?'ok':'')+'"><b>'+
     (i<S.empPasso?'✓':i+1)+'</b>'+n+'</span>').join('')+'</div>'+
   '<div id="empForm"></div>';
@@ -4562,74 +4640,31 @@ function renderEmpForm(){
     $('#p1').onclick=()=>{S.empPasso=1;vPerfil();};
     return;
   }
-  if(S.empPasso===3){
-    el.innerHTML='<div class="form">'+
-      '<div class="fg"><label for="sp">Sinais de que deu certo antes</label>'+
-        '<p class="hint">Texto livre, que entra na busca por semelhança. Ele complementa os '+
-        'eixos: o texto ajuda a encontrar gente parecida, e o eixo é o que permite medir '+
-        'a distância.</p>'+
-        '<textarea id="sp" rows="3">Quem se dá bem aqui já trabalhou com operação espalhada em várias unidades e não trava quando o processo ainda não existe.</textarea></div>'+
-      '<div class="fg"><label for="dn">Desalinhamentos conhecidos</label>'+
-        '<p class="hint">O que costuma dar errado. Filtrar cedo economiza entrevista dos dois lados.</p>'+
-        '<textarea id="dn" rows="2">Perfil só corporativo, sem chão de loja, costuma se frustrar nos primeiros meses.</textarea></div>'+
-      '<div class="box" style="background:var(--veu2);border-color:var(--ac5)">'+
-        '<b style="font-family:var(--d);font-size:var(--md)">O que NÃO fica aqui</b>'+
-        '<p style="font-size:var(--sm);color:var(--i72);margin-top:7px">Competência de cargo '+
-        'descreve a vaga, e não a empresa. Ela é declarada no anúncio, com peso e '+
-        'marcação de obrigatório, e toda vaga sua herda estes eixos sem repetir nada.</p>'+
-        '<p style="font-size:var(--sm);color:var(--i72);margin-top:9px">Característica '+
-        'protegida também não fica: nome, foto, idade, gênero, raça, estado civil, CEP exato e '+
-        'instituição estão na denylist da política e a projeção de features recusa na emissão.</p></div>'+
-      '<div style="display:flex;gap:9px"><button class="btn g" id="pv3">Voltar</button>'+
-      '<button class="btn" id="salvarE">Salvar perfil da empresa</button></div></div>';
-    $('#pv3').onclick=()=>{S.empPasso=2;vPerfil();};
-    $('#salvarE').onclick=async()=>{
-      const b=$('#salvarE'); b.disabled=true; b.innerHTML='<span class="spin"></span>Salvando';
-      await espera(560); S.empSalvo=true; tocar(EMPRESAS.aurora); salvar(); ir('evagas');
-      toast('Perfil salvo. Toda vaga sua já herda estes eixos.');
-    };
-    return;
-  }
 
-  const grupo = S.empPasso===1 ? ['Cultura'] : ['Rotina','Perfil'];
-  const lista = EIXOS.filter(e=>grupo.includes(e.grupo));
   el.innerHTML='<div class="form">'+
-    '<p style="font-size:var(--sm);color:var(--i72)">Responda como a empresa <b>realmente é</b>, '+
-    'não como gostaria de ser. O candidato responde exatamente estes eixos, na mesma escala, '+
-    'com a pergunta virada para o lado dele, e é assim que dá para medir a distância entre '+
-    'os dois.</p>'+
-    lista.map(e=>
-      '<div class="slider"><div class="top"><b>'+esc(e.nome)+'</b>'+
-      '<span id="lb-'+e.id+'"></span></div>'+
-      '<input type="range" min="0" max="100" value="'+EMPRESAS.aurora.eixos[e.id].value+'" '+
-      'data-c="'+e.id+'" aria-label="'+esc(e.nome)+', de '+esc(e.poloA)+' a '+esc(e.poloB)+'">'+
-      '<div class="polos"><span>'+esc(e.poloA)+'</span><span>'+esc(e.poloB)+'</span></div>'+
-      '<p style="font-size:var(--xs);color:var(--i34);margin-top:2px">tolerância deste eixo: '+
-      e.tolerancia+' pontos</p></div>').join('')+
+    '<div class="fg"><label for="sp">Sinais de que deu certo antes</label>'+
+      '<p class="hint">Texto livre, que entra na busca por semelhança. Descreva o perfil de '+
+      'quem já rendeu bem por aqui.</p>'+
+      '<textarea id="sp" rows="3">Quem se dá bem aqui já trabalhou com operação espalhada em várias unidades e não trava quando o processo ainda não existe.</textarea></div>'+
+    '<div class="fg"><label for="dn">Desalinhamentos conhecidos</label>'+
+      '<p class="hint">O que costuma dar errado. Filtrar cedo economiza entrevista dos dois lados.</p>'+
+      '<textarea id="dn" rows="2">Perfil só corporativo, sem chão de loja, costuma se frustrar nos primeiros meses.</textarea></div>'+
     '<div class="box" style="background:var(--veu2);border-color:var(--ac5)">'+
-      '<b style="font-family:var(--d);font-size:var(--md)">Como isso é lido</b>'+
-      '<p style="font-size:var(--sm);color:var(--i72);margin-top:7px" id="leitura"></p></div>'+
-    '<div style="display:flex;gap:9px">'+
-      '<button class="btn g" id="pvv">Voltar</button>'+
-      '<button class="btn" id="pnn">Continuar</button></div></div>';
-
-  const atualizar=()=>{
-    lista.forEach(e=>{const v=EMPRESAS.aurora.eixos[e.id].value;
-      $('#lb-'+e.id).textContent = v<35?e.poloA:v>65?e.poloB:'equilibrado';});
-    const dur = EIXOS.filter(e=>e.tolerancia<=20 && grupo.includes(e.grupo));
-    $('#leitura').textContent = dur.length
-      ? 'Eixos de baixa tolerância neste bloco: '+dur.map(e=>e.nome).join(', ')+
-        '. Distância aqui derruba o fit cultural bem mais rápido que nos outros.'
-      : 'Nenhum eixo crítico neste bloco. Distância aqui é mais negociável.';
+      '<b style="font-family:var(--d);font-size:var(--md)">O que NÃO fica aqui</b>'+
+      '<p style="font-size:var(--sm);color:var(--i72);margin-top:7px">Competência de cargo '+
+      'descreve a vaga, e não a empresa. Ela é declarada no anúncio, com peso e '+
+      'marcação de obrigatório, e toda vaga sua herda estes eixos sem repetir nada.</p>'+
+      '<p style="font-size:var(--sm);color:var(--i72);margin-top:9px">Característica '+
+      'protegida também não fica: nome, foto, idade, gênero, raça, estado civil, CEP exato e '+
+      'instituição estão na denylist da política e a projeção de features recusa na emissão.</p></div>'+
+    '<div style="display:flex;gap:9px"><button class="btn g" id="pv3">Voltar</button>'+
+    '<button class="btn" id="salvarE">Salvar perfil da empresa</button></div></div>';
+  $('#pv3').onclick=()=>{S.empPasso=0;vPerfil();};
+  $('#salvarE').onclick=async()=>{
+    const b=$('#salvarE'); b.disabled=true; b.innerHTML='<span class="spin"></span>Salvando';
+    await espera(560); S.empSalvo=true; tocar(EMPRESAS.aurora); salvar(); ir('evagas');
+    toast('Perfil salvo.');
   };
-  $$('[data-c]').forEach(i=>{i.oninput=e=>{
-    const id=e.target.dataset.c;
-    EMPRESAS.aurora.eixos[id]=sv(Number(e.target.value),'company',1);
-    tocar(EMPRESAS.aurora);
-    atualizar();};});
-  atualizar();
-  $('#pvv').onclick=()=>{S.empPasso--;vPerfil();};
-  $('#pnn').onclick=()=>{S.empPasso++;vPerfil();};
 }
 
 /* ══ parte: partes/js/51-emp-vagas.js ══ */
