@@ -147,7 +147,14 @@ function vHome(){
         'onde quer chegar. As vagas chegam a partir dele.</p>'+
       '</section>';
 
-  $('#v-home').innerHTML = hero +
+  const retomar = S.conta && S.onb && !['MATCHING_READY','PROFILE_CONFIRMED'].includes(S.onb.estado);
+  const passoOnb = retomar ? (ONB_PASSOS.find(p=>p.estados.includes(S.onb.estado))||ONB_PASSOS[0]).rot : '';
+  const faixa = retomar
+    ? '<div class="retoma rv">'+I.doc+'<div><b>Seu cadastro parou em '+esc(passoOnb.toLowerCase())+'.</b>'+
+      '<p>O que você já preencheu está guardado. Faltam poucos passos para ver sua aderência em cada vaga.</p></div>'+
+      '<button class="btn sm" data-n="triagem">Continuar</button></div>'
+    : '';
+  $('#v-home').innerHTML = faixa + hero +
   '<div class="buscador">'+
     '<div class="bfield">'+I.lupa+'<div style="flex:1;min-width:0">'+
       '<label for="q">Cargo, área ou empresa</label>'+

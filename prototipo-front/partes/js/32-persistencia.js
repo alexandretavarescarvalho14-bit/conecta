@@ -11,6 +11,10 @@ function salvar(){
       eixosCand:Object.fromEntries(EIXO_IDS.map(id=>[id,S.cand.eixos[id].value])),
       skills:S.cand.competencias.map(c=>[c.skillId,c.nivel.value]),
       eixosEmp:Object.fromEntries(EIXO_IDS.map(id=>[id,EMPRESAS.aurora.eixos[id].value])),
+      conta:S.conta, onb:S.onb, sugestoes:S.sugestoes,
+      candExtra:{areaId:S.cand.areaId||null, cargos:S.cand.cargos||[], resumo:S.cand.resumo||'',
+        anos:S.cand.anos??null, uf:S.cand.uf.value, modelos:S.cand.modelos.value,
+        pretensao:S.cand.pretensao?S.cand.pretensao.value:null},
     }));
   }catch(_){ /* modo privado ou storage cheio: o protótipo segue sem persistir */ }
 }
@@ -23,7 +27,15 @@ function restaurar(){
     if(d.skills) S.cand.competencias = d.skills.map(([skillId,n])=>({skillId, nivel:sv(n,'user',1)}));
     if(d.eixosCand) EIXO_IDS.forEach(id=>{ if(d.eixosCand[id]!=null) S.cand.eixos[id]=sv(d.eixosCand[id],'user',1); });
     if(d.eixosEmp) EIXO_IDS.forEach(id=>{ if(d.eixosEmp[id]!=null) EMPRESAS.aurora.eixos[id]=sv(d.eixosEmp[id],'company',1); });
+    if(d.candExtra){
+      const x=d.candExtra;
+      S.cand.areaId=x.areaId||null; S.cand.cargos=x.cargos||[]; S.cand.resumo=x.resumo||''; S.cand.anos=x.anos??null;
+      if(x.uf) S.cand.uf=sv(x.uf,'user',1);
+      if(x.modelos) S.cand.modelos=sv(x.modelos,'user',1);
+      S.cand.pretensao = x.pretensao!=null ? sv(x.pretensao,'user',1) : undefined;
+    }
     reprojetarFonte(d.fonte||'user');
+    S.conta=d.conta||null; S.onb=d.onb||null; S.sugestoes=d.sugestoes||[];
     return true;
   }catch(_){ return false; }
 }

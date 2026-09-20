@@ -8,6 +8,7 @@ const PUBLICO=['home','vaga'];
 function montarNav(){
   const itens = (S.modo==='emp' && S.contaEmp) ? NAV.emp
               : (S.modo==='cand' && S.logado) ? NAV.cand
+              : (S.conta && S.onb && S.onb.estado!=='MATCHING_READY') ? [['home','Vagas'],['triagem','Continuar cadastro']]
               : [['home','Vagas']];
   $('#tnav').innerHTML=itens.map(([k,r])=>
     '<button data-n="'+k+'"'+(S.view===k?' aria-current="page"':'')+'>'+esc(r)+'</button>').join('');
@@ -29,7 +30,7 @@ function montarNav(){
 
   $$('[data-n]').forEach(b=>b.onclick=()=>ir(b.dataset.n));
 
-  const logadoAlgum = S.logado || S.contaEmp;
+  const logadoAlgum = S.logado || S.contaEmp || !!S.conta;
   $('#tdir').innerHTML = logadoAlgum
     ? (S.logado && S.cand.fonte!=='user'
         ? '<span class="pill al" title="Perfil ainda apoiado em inferência">'+
@@ -81,7 +82,7 @@ function estadoErro(tela, err){
 function sair(){
   S.logado=false; S.contaEmp=false; S.conta=null; S.modo='cand';
   S.candidaturas=[]; S.comparar=[]; S.vaga=null;
-  S.cand=candidatoNovo('conversation');
+  S.cand=candidatoNovo('conversation'); S.onb=null;
   invalidarMatch();  // identidade trocada, não versionada: o cache inteiro sai
   salvar(); ir('home'); toast('Você saiu da conta.');
 }

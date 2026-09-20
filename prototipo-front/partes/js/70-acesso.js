@@ -97,11 +97,15 @@ async function autenticar(via, perfil, btn){
   S.modo='cand'; S.conta={via};
   if(S.aba==='entrar'){
     // quem já tinha conta tem perfil confirmado: dado de origem 'user'
-    S.logado=true; reprojetarFonte('user'); salvar();
+    S.logado=true; reprojetarFonte('user');
+    S.onb = S.onb && S.onb.estado==='MATCHING_READY' ? S.onb : Object.assign(onbNovo(via), {estado:'MATCHING_READY', fonte:'manual'});
+    salvar();
     ir('minhas'); toast('Bem-vinda de volta. Seu perfil já está confirmado.');
   } else {
+    // conta nova: o perfil ainda não existe. Só o onboarding confirmado o cria.
+    S.logado=false; S.onb = onbNovo(via); salvar();
     toast(via==='email'?'Conta criada. Agora vamos montar seu perfil.'
-      :'Conta criada via '+(via==='google'?'Google':'LinkedIn')+'. Puxamos o que deu para puxar.');
+      :'Conta criada via '+(via==='google'?'Google':'LinkedIn')+'.');
     ir('triagem');
   }
 }

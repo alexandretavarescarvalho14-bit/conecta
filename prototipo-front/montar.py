@@ -54,6 +54,7 @@ JS = [
     'js/11-prng.js',           # aleatório determinístico, âncora de tempo
     'js/12-empresas.js',
     'js/13-vagas.js',
+    'js/16-extracao.js',       # leitura de currículo e interpretação por catálogo
     # estado
     'js/20-estado.js',
     'js/21-fachada.js',        # memo do match
