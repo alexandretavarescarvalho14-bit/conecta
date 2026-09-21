@@ -29,6 +29,8 @@ const S = {
   comparar: [],
   onb: null,            // onboarding em andamento; null quando não há
   sugestoes: [],        // competências fora do catálogo, para a curadoria
+  pipeline: [],          // candidaturas às vagas da empresa logada, ver 15-pipeline-seed.js
+  vagaEmpSelecionada: null, // qual vaga está aberta no pipeline da empresa
 };
 
 /* Reprojeta a fonte de todo o perfil. É o que a tela de confirmação faz:

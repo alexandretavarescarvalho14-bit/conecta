@@ -1,7 +1,15 @@
 const eixosEmp = v => Object.fromEntries(EIXO_IDS.map(id=>[id, sv(v[id] ?? 50, 'company', 1)]));
 
+/* `estado` é o mesmo vocabulário fechado do cadastro: pendente, aprovada
+   ou recusada. Novo cadastro nasceria 'pendente' e dependeria da
+   curadoria (Etapa 4, admin) para virar 'aprovada'. O Grupo Aurora é a
+   empresa que o protótipo já usa como demo desde antes desse campo
+   existir — pré-aprovada, para não gatear atrás de um admin que ainda
+   não existe nesta versão o que já era o caminho principal da demo. */
 const EMPRESAS = {
   aurora:{id:'emp-aurora', versao:'emp-v1', n:'Grupo Aurora', c:'#0C5F92', s:'Varejo · 620 pessoas',
+    cnpj:'11.222.333/0001-81', razaoSocial:'Grupo Aurora Comércio de Materiais Ltda.',
+    site:'aurora.exemplo.com.br', estado:'aprovada',
     eixos: eixosEmp({ritmo:64,autonomia:78,formal:34,erro:62,decisao:70,colab:58,
       previsib:56,presenca:14,interrup:66,escopo:74,senior:76,espec:38,dados:52,relacional:68})},
   vertigo:{id:'emp-vertigo', versao:'emp-v1', n:'Vertigo Saúde', c:'#1E8E6A', s:'Healthtech · 90 pessoas',

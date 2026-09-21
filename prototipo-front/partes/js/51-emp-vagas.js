@@ -1,23 +1,34 @@
-/* ══════════════════ 21 · EMPRESA · VAGAS ══════════════════ */
+/* ══════════════════ 21 · EMPRESA · VAGAS ══════════════════
+   Lista TODAS as vagas do Grupo Aurora, cada uma com candidaturas e fit
+   médio derivados de verdade do pipeline — nunca escrito à mão. */
 function vEvagas(){
+  const vagas = vagasDe('aurora');
+  const linhas = vagas.map(v => {
+    const P = S.pipeline.filter(a => a.vagaId === v.id);
+    const fitMedio = P.length ? Math.round(P.reduce((a, x) => a + x.rec.total, 0) / P.length) : 0;
+    const ativas = P.filter(a => a.status === 'ativa').length;
+    return '<tr data-irvaga="' + v.id + '"><td><b style="font-family:var(--d);font-size:var(--md)">' +
+      esc(v.cargo) + '</b><div style="color:var(--i62);font-size:var(--xs)">' + esc(v.local) + ' · ' +
+      esc(v.faixa) + '</div></td>' +
+      '<td>' + P.length + (ativas !== P.length ? ' <span style="color:var(--i62)">(' + ativas + ' ativas)</span>' : '') + '</td>' +
+      '<td>' + (P.length ? fitMedio + '%' : '—') + '</td>' +
+      '<td>' + (v.dias === 1 ? 'ontem' : 'há ' + v.dias + ' dias') + '</td>' +
+      '<td><span class="pill ok"><i></i>ativa</span></td></tr>';
+  }).join('');
+
   $('#v-evagas').innerHTML=
   '<div class="barra" style="margin-top:var(--s5)"><h2>Suas vagas</h2>'+
-    '<p class="cont">1 anúncio ativo</p>'+
+    '<p class="cont">'+vagas.length+(vagas.length===1?' anúncio ativo':' anúncios ativos')+'</p>'+
     '<div class="chips"><button class="btn sm" id="nova">Anunciar nova vaga</button></div></div>'+
   '<div class="bloco" style="margin-top:0"><div class="tabw"><table class="tab"><thead><tr>'+
-    '<th>Vaga</th><th>Candidaturas</th><th>Match médio</th><th>Publicada</th><th>Situação</th>'+
-    '</tr></thead><tbody><tr data-ir="ecand">'+
-    '<td><b style="font-family:var(--d);font-size:var(--md)">Coordenador de RH</b>'+
-      '<div style="color:var(--i52);font-size:var(--xs)">Recife, presencial · R$ 9.000 a R$ 11.000</div></td>'+
-    '<td>'+CANDS_EMP.length+'</td><td>'+
-      Math.round(CANDS_EMP.reduce((a,c)=>a+c.match,0)/CANDS_EMP.length)+'%</td>'+
-    '<td>há 2 dias</td><td><span class="pill ok"><i></i>ativa</span></td></tr>'+
-  '</tbody></table></div></div>'+
+    '<th>Vaga</th><th>Candidaturas</th><th>Fit médio</th><th>Publicada</th><th>Situação</th>'+
+    '</tr></thead><tbody>'+linhas+'</tbody></table></div></div>'+
   '<div id="formVaga"></div>'+
   '<p class="nota">O anúncio herda os eixos de cultura do perfil da empresa, então você não '+
   'preenche a mesma informação duas vezes. Só o que é específico da vaga entra aqui: '+
   'competência com peso e marcação de obrigatório, faixa, local e modelo.</p>';
-  $('[data-ir]').onclick=()=>ir('ecand');
+
+  $$('[data-irvaga]').forEach(tr => tr.onclick = () => ir('ecand', tr.dataset.irvaga));
   $('#nova').onclick=()=>{
     $('#formVaga').innerHTML='<div class="bloco" style="padding:var(--s3)"><div class="form">'+
       '<h3 style="font-size:var(--lg)">Nova vaga</h3>'+
@@ -43,7 +54,7 @@ function vEvagas(){
       if(!$('#nc').value.trim()){ $('#nc').focus(); toast('Falta o cargo para publicar.', I.al); return; }
       const b=$('#pub'); b.disabled=true; b.innerHTML='<span class="spin"></span>Publicando';
       await espera(600); $('#formVaga').innerHTML='';
-      toast('Vaga publicada. A Conectaria buscou 9.014 perfis e achou 12 acima de 70%.');
+      toast('Vaga publicada. Ainda sem candidaturas: a busca leva um tempo para achar gente compatível.');
     };
   };
 }

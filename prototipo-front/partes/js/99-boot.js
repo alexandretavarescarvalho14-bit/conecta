@@ -68,6 +68,12 @@ addEventListener('keydown',e=>{
 
 conferirDados();
 
+/* Semeia o pipeline da empresa aqui, não em 14/15: é inicialização entre
+   módulos (PESSOAS de 14, Mp de 21), e essa mistura pertence ao boot.
+   Precisa vir antes de restaurar(), que sobrepõe as mutações salvas
+   (etapa, status, favorito) por cima desta base determinística. */
+S.pipeline = gerarPipelineInicial();
+
 const restaurou = restaurar();
 ir('home');
 if(restaurou) setTimeout(()=>toast('Retomei de onde você parou neste navegador.'),700);

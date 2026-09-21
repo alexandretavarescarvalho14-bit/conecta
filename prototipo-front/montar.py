@@ -54,6 +54,8 @@ JS = [
     'js/11-prng.js',           # aleatório determinístico, âncora de tempo
     'js/12-empresas.js',
     'js/13-vagas.js',
+    'js/14-pessoas.js',        # pessoas sintéticas ancoradas nas vagas da empresa
+    'js/15-pipeline-seed.js',  # candidaturas semeadas, aplicar() e recalcularFit()
     'js/16-extracao.js',       # leitura de currículo e interpretação por catálogo
     # estado
     'js/20-estado.js',

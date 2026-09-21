@@ -15,6 +15,16 @@ function salvar(){
       candExtra:{areaId:S.cand.areaId||null, cargos:S.cand.cargos||[], resumo:S.cand.resumo||'',
         anos:S.cand.anos??null, uf:S.cand.uf.value, modelos:S.cand.modelos.value,
         pretensao:S.cand.pretensao?S.cand.pretensao.value:null},
+      // Só o que muda por ação da empresa. O `rec` fica de fora: é
+      // congelado e determinístico a partir de pessoa+vaga+política, então
+      // recriá-lo no boot é mais barato e mais confiável que serializar
+      // evidências inteiras a cada candidatura.
+      empEstado:{cnpj:EMPRESAS.aurora.cnpj, razaoSocial:EMPRESAS.aurora.razaoSocial,
+        site:EMPRESAS.aurora.site, estado:EMPRESAS.aurora.estado},
+      pipelineDelta:S.pipeline.map(ap=>({id:ap.id, etapa:ap.etapa, status:ap.status,
+        motivoId:ap.motivoId, nota:ap.nota, favorito:ap.favorito, historico:ap.historico,
+        atualizadaEm:ap.atualizadaEm})),
+      vagaEmpSelecionada:S.vagaEmpSelecionada,
     }));
   }catch(_){ /* modo privado ou storage cheio: o protótipo segue sem persistir */ }
 }
@@ -36,6 +46,12 @@ function restaurar(){
     }
     reprojetarFonte(d.fonte||'user');
     S.conta=d.conta||null; S.onb=d.onb||null; S.sugestoes=d.sugestoes||[];
+    if(d.empEstado) Object.assign(EMPRESAS.aurora, d.empEstado);
+    if(d.pipelineDelta && Array.isArray(d.pipelineDelta)){
+      const porId = Object.fromEntries(d.pipelineDelta.map(x=>[x.id,x]));
+      S.pipeline.forEach(ap=>{ const dt=porId[ap.id]; if(dt) Object.assign(ap, dt); });
+    }
+    if(d.vagaEmpSelecionada) S.vagaEmpSelecionada = d.vagaEmpSelecionada;
     return true;
   }catch(_){ return false; }
 }
