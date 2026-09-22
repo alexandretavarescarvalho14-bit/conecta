@@ -67,6 +67,21 @@ function vVaga(id){
   animaMed(); animaEixos();
 }
 
+/* Único caminho que fecha uma candidatura. Chamado direto do botão na
+   vaga, e de novo em 71-cand-perfil.js quando a pessoa termina de
+   montar o perfil vindo de "Candidatar-se" sem conta (S.vaga guarda
+   para qual vaga voltar depois do cadastro). */
+async function candidatar(id, fromPerfil){
+  if(S.candidaturas.some(c=>c.v===id)) return;
+  const b=$('#cand');
+  if(b){ b.disabled=true; b.innerHTML='<span class="spin"></span>Enviando'; }
+  await espera(560);
+  S.candidaturas.push({v:id, et:0, quando:'hoje'});
+  S.vaga=null; salvar();
+  ir('minhas');
+  toast(fromPerfil ? 'Perfil pronto e candidatura enviada.' : 'Candidatura enviada. Acompanhe o andamento em Minhas candidaturas.');
+}
+
 function painelMatch(v){
   const m=M(v);
   const dim=(rot,o,peso)=>

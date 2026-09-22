@@ -109,6 +109,7 @@ function linhaPipeline(ap){
     '</td>' +
     '<td class="pipAcoes">' +
       (ap.status === 'ativa' ? (
+        (ap.etapa > 0 ? '<button class="btn g sm" data-voltar="' + ap.id + '" title="Voltar etapa">' + I.volta + '</button>' : '') +
         (ap.etapa < ETAPAS.length - 1 ? '<button class="btn g sm" data-avancar="' + ap.id + '" title="Avançar etapa">' + I.ch + '</button>' : '') +
         '<button class="btn g sm" data-favoritar="' + ap.id + '" title="Favoritar" aria-pressed="' + ap.favorito + '">' + I.spark + '</button>' +
         '<button class="btn g sm" data-reprovarbt="' + ap.id + '" title="Reprovar">' + I.x + '</button>'
@@ -129,6 +130,12 @@ function ligarEcand(v, P){
     const ap = S.pipeline.find(x => x.id === b.dataset.avancar);
     aplicar(ap, {tipo:'avancar'});
     toast('Movida para ' + ETAPAS[ap.etapa] + '.');
+    renderEcand();
+  });
+  $$('[data-voltar]').forEach(b => b.onclick = () => {
+    const ap = S.pipeline.find(x => x.id === b.dataset.voltar);
+    aplicar(ap, {tipo:'voltar'});
+    toast('Voltou para ' + ETAPAS[ap.etapa] + '.');
     renderEcand();
   });
   $$('[data-favoritar]').forEach(b => b.onclick = () => {
