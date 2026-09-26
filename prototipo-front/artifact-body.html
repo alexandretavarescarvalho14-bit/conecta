@@ -1334,7 +1334,7 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const BUILD = Object.freeze({partes:31, sha:"fe9ad0f8b5f7", em:"2026-09-22"});
+const BUILD = Object.freeze({partes:35, sha:"234029ad1f4a", em:"2026-09-26"});
 /* ══ parte: partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
@@ -2589,32 +2589,8 @@ const PESSOA = {};
    já existem — é inicialização entre módulos, e é para isso que o boot
    existe. */
 
-const DIST_ETAPA = [.34, .27, .18, .13, .08]; // onde a candidatura "parou", acumulado
-function etapaSorteada(r){
-  let k = r(), acc = 0;
-  for(let i = 0; i < DIST_ETAPA.length; i++){ acc += DIST_ETAPA[i]; if(k <= acc) return i; }
-  return DIST_ETAPA.length - 1;
-}
-/* motivo mais plausível quando a reprovação acontece NAQUELA etapa */
-const MOTIVOS_POR_ETAPA = {
-  0: ['mr-req', 'mr-exp', 'mr-local', 'mr-modelo'],
-  1: ['mr-req', 'mr-exp', 'mr-cultura', 'mr-pretensao'],
-  2: ['mr-cultura', 'mr-nivel', 'mr-outro'],
-  3: ['mr-outro', 'mr-congelada', 'mr-desistiu'],
-  4: ['mr-desistiu', 'mr-semresp'],
-};
-
-/* Puxa o motivo alinhado ao que o motor já apontou boa parte das vezes:
-   é o que dá sinal real ao widget "o motor já tinha avisado?" no
-   dashboard. O resto sorteia do vocabulário fechado da etapa. */
-function motivoPara(r, rec, etapa){
-  const gap = [...rec.tecnico_ev, ...rec.cultural_ev, ...rec.contexto_ev].find(e => e.kind !== 'strength');
-  if(gap && r() < .55){
-    const alinhado = MOTIVOS_REJEICAO.find(m => m.eng === gap.reasonCode);
-    if(alinhado) return alinhado.id;
-  }
-  return escolher(r, MOTIVOS_POR_ETAPA[etapa] || ['mr-outro']);
-}
+/* DIST_ETAPA, etapaSorteada, motivoPara e aplicar() moram em
+   37-pipeline-base.js, compartilhado com o Conectaria Vagas. */
 
 /* Snapshot no formato do trace, sem passar pelo hash canônico: aqui é
    dado semeado para popular a demo, não uma chamada real à API. Usa
@@ -2668,30 +2644,6 @@ function gerarPipelineInicial(){
     });
   }
   return pipeline;
-}
-
-/* ── ação única que muda estado de candidatura ──
-   Toda mudança passa por aqui, e toda mudança empilha em `historico` —
-   é de onde o funil do dashboard sai. */
-function aplicar(ap, acao){
-  const antes = ap.etapa, agora = new Date().toISOString();
-  switch(acao.tipo){
-    case 'avancar':  ap.etapa = Math.min(ETAPAS.length - 1, ap.etapa + 1); ap.status = 'ativa'; break;
-    case 'voltar':   ap.etapa = Math.max(0, ap.etapa - 1); break;
-    case 'reprovar':
-      if(!MOTIVO[acao.motivoId]) throw new Error('motivo fora do vocabulário: ' + acao.motivoId);
-      ap.status = 'reprovada'; ap.motivoId = acao.motivoId; ap.nota = acao.nota || '';
-      break;
-    case 'contratar': ap.status = 'contratada'; ap.etapa = ETAPAS.length - 1; break;
-    case 'reabrir':   ap.status = 'ativa'; ap.motivoId = null; break;
-    case 'favoritar': ap.favorito = !ap.favorito; break;
-  }
-  if(acao.tipo !== 'favoritar'){
-    ap.historico.push({de:antes, para:ap.etapa, em:agora, quem:'empresa',
-      ...(ap.motivoId ? {motivoId:ap.motivoId} : {}), status:ap.status});
-  }
-  ap.atualizadaEm = agora;
-  salvar();
 }
 
 /* Recalcula o fit ao vivo e arquiva o anterior — nunca sobrescreve.
@@ -3571,6 +3523,233 @@ function revelar(escopo){
     io.observe(el);
   });
   setTimeout(()=>alvos.forEach(el=>{ if(!el.classList.contains('vis')) mostrar(el); }), 2500);
+}
+
+/* ══ parte: partes/js/34-cnpj.js ══ */
+/* ══════════════════ CNPJ ══════════════════
+   Compartilhado entre o protótipo e o Conectaria Vagas (montar.py).
+
+   Dígito verificador de CNPJ, mod 11. Confirma só que o número está bem
+   formado, não que a empresa existe de verdade — por isso o texto na
+   tela diz "formato válido", nunca "verificado". Consulta cadastral real
+   é integração que este protótipo não tem. */
+function validarCNPJ(cnpj){
+  const d = String(cnpj || '').replace(/\D/g, '');
+  if(d.length !== 14) return false;
+  if(/^(\d)\1{13}$/.test(d)) return false; // todos os dígitos iguais: formalmente inválido
+  const calc = base => {
+    const pesos = base.length === 12 ? [5,4,3,2,9,8,7,6,5,4,3,2] : [6,5,4,3,2,9,8,7,6,5,4,3,2];
+    const soma = base.split('').reduce((a, n, i) => a + (+n) * pesos[i], 0);
+    const resto = soma % 11;
+    return resto < 2 ? 0 : 11 - resto;
+  };
+  const dv1 = calc(d.slice(0, 12));
+  const dv2 = calc(d.slice(0, 12) + dv1);
+  return d === d.slice(0, 12) + String(dv1) + String(dv2);
+}
+function mascararCNPJ(v){
+  const d = String(v || '').replace(/\D/g, '').slice(0, 14);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2}\.\d{3})(\d)/, '$1.$2')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+/* ══ parte: partes/js/35-descricao-vaga.js ══ */
+/* ══════════════════ DESCRIÇÃO DE VAGA POR IA ══════════════════
+   Compartilhado entre o protótipo e o Conectaria Vagas (montar.py).
+
+   "IA sugere, pessoa confirma" — a mesma regra da extração de currículo
+   (16-extracao.js), do outro lado do match. Nada aqui chama serviço
+   externo: é um rascunho por template a partir do que quem cadastra já
+   preencheu, sempre editável antes de publicar. Trocar por um modelo de
+   linguagem de verdade é mexer só nesta função.
+
+   `extras` é opcional: {empresa, regime, requisitos:[nomes], obrigatorios:[nomes]}.
+   Sem ele sai o parágrafo curto de sempre. */
+const FAMILIA_ROTINA = {
+  'Gente':       ['cuidar dos processos de pessoas do dia a dia', 'apoiar as lideranças em decisões de gente', 'acompanhar clima e retenção do time'],
+  'Liderança':   ['liderar o time e distribuir a rotina entre as pessoas', 'reportar resultados e prioridades para a diretoria', 'desenvolver quem está no time'],
+  'Tecnologia':  ['desenvolver e manter os sistemas em produção', 'participar do planejamento técnico do time', 'resolver problemas de performance e estabilidade'],
+  'Marketing':   ['planejar e executar campanhas', 'acompanhar métricas de canal e ajustar investimento', 'alinhar a mensagem com o time comercial'],
+  'Financeiro':  ['acompanhar os indicadores financeiros do mês', 'apoiar o fechamento e as conciliações', 'dar suporte a decisões de orçamento'],
+  'Operações':   ['garantir que a operação rode dentro do padrão', 'acompanhar indicadores de produtividade e qualidade', 'resolver gargalos do dia a dia'],
+  'Produto':     ['priorizar o backlog junto com o time', 'conduzir descoberta com usuários', 'acompanhar métricas de uso do produto'],
+  'Atendimento': ['atender e resolver as demandas dos clientes', 'acompanhar indicadores de SLA e satisfação', 'escalar os casos fora do padrão'],
+  'Vendas':      ['prospectar e qualificar oportunidades', 'conduzir negociações até o fechamento', 'acompanhar a carteira e a meta do mês'],
+};
+function gerarDescricaoVaga(cargo, local, familia, extras){
+  const cidade = (local || '').split(',')[0].trim() || 'nossa unidade';
+  const cargoTxt = (cargo || '').trim() || 'a posição';
+  const [r1, r2, r3] = FAMILIA_ROTINA[familia] || FAMILIA_ROTINA['Operações'];
+  const base = 'Buscamos ' + cargoTxt + ' para atuar em ' + cidade + '. No dia a dia, a pessoa vai ' +
+    r1 + ', ' + r2 + ' e ' + r3 + '. Valorizamos quem já passou por rotina parecida e consegue ' +
+    'propor melhoria sem esperar processo pronto.';
+  if(!extras) return base;
+
+  const partes = [];
+  if(extras.empresa) partes.push('Sobre a empresa\n' + extras.empresa + ' está contratando e conta com a Conectaria para conduzir o processo.');
+  partes.push('Sobre a vaga\n' + base);
+  const obrig = extras.obrigatorios || [], desej = (extras.requisitos || []).filter(n => !obrig.includes(n));
+  if(obrig.length || desej.length){
+    partes.push('O que buscamos\n' +
+      obrig.map(n => '- Experiência com ' + n.toLowerCase() + ' (obrigatório)').concat(
+      desej.map(n => '- ' + n + ' é um diferencial')).join('\n'));
+  }
+  if(extras.regime) partes.push('Contratação\n' + extras.regime + '.');
+  partes.push('Como funciona\nA Conectaria faz a primeira conversa com você e acompanha todas as etapas até a resposta final da empresa.');
+  return partes.join('\n\n');
+}
+
+/* ══ parte: partes/js/36-painel-base.js ══ */
+/* ══════════════════ PAINEL · BASE ══════════════════
+   Compartilhado entre o protótipo e o Conectaria Vagas (montar.py).
+
+   Uma função só calcula tudo (derivarDash), e nenhum widget faz conta
+   dentro de template string. P é sempre um array de candidaturas no
+   formato {etapa, status, motivoId, favorito, origem, criadaEm,
+   historico[], rec} — a mesma função serve o painel geral e o cabeçalho
+   de KPIs de uma vaga só. */
+const media = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+function derivarDash(P){
+  const ativas = P.filter(a => a.status === 'ativa');
+  const reprovadas = P.filter(a => a.status === 'reprovada');
+
+  // Funil por HISTÓRICO, não por etapa atual: quem foi reprovado na
+  // etapa 4 tem que contar como tendo passado pelas 1, 2 e 3.
+  const alcancou = i => P.filter(a => a.historico.some(h => h.para >= i)).length;
+  const funil = ETAPAS.map((n, i) => {
+    const chegou = alcancou(i);
+    const base = i === 0 ? P.length : alcancou(i - 1);
+    return {n, chegou, taxa: base ? chegou / base : 0};
+  });
+
+  // tempo médio entre marcos consecutivos do histórico, por etapa de origem
+  const temposPorEtapa = ETAPAS.map(() => []);
+  P.forEach(a => {
+    for(let i = 1; i < a.historico.length; i++){
+      const h0 = a.historico[i - 1], h1 = a.historico[i];
+      if(h0.para == null) continue;
+      const dias = (new Date(h1.em) - new Date(h0.em)) / 86400000;
+      if(dias >= 0) temposPorEtapa[h0.para].push(dias);
+    }
+  });
+
+  const fontes = {};
+  P.forEach(a => { fontes[a.origem] = (fontes[a.origem] || 0) + 1; });
+
+  const porMotivo = {}, porGrupo = {};
+  reprovadas.forEach(a => {
+    porMotivo[a.motivoId] = (porMotivo[a.motivoId] || 0) + 1;
+    const g = MOTIVO[a.motivoId]?.g || 'processo';
+    porGrupo[g] = (porGrupo[g] || 0) + 1;
+  });
+
+  // "o motor já tinha avisado?": das reprovações cujo motivo tem um
+  // reasonCode correspondente, em quantas esse reasonCode já estava nas
+  // evidências do trace? É o sinal de calibração mais direto que existe.
+  const comEng = reprovadas.filter(a => MOTIVO[a.motivoId]?.eng);
+  const acertos = comEng.filter(a => {
+    const ev = [...a.rec.tecnico_ev, ...a.rec.cultural_ev, ...a.rec.contexto_ev];
+    return ev.some(e => e.reasonCode === MOTIVO[a.motivoId].eng);
+  });
+
+  return {
+    total: P.length, emProcesso: ativas.length, favoritos: P.filter(a => a.favorito).length,
+    contratados: P.filter(a => a.status === 'contratada').length,
+    fitMedio: media(P.map(a => a.rec.total)),
+    fitMedioAvancou: media(P.filter(a => a.etapa >= 2).map(a => a.rec.total)),
+    confMedia: media(P.map(a => a.rec.confidence)),
+    aguardandoDecisao: ativas.filter(a => a.rec.desfecho !== 'allow').length,
+    retidasBlock: P.filter(a => a.rec.desfecho === 'block').length,
+    retidasReview: P.filter(a => a.rec.desfecho === 'review').length,
+    porEtapaAtiva: ETAPAS.map((n, i) => ({n, q: ativas.filter(a => a.etapa === i).length})),
+    funil, tempoMedio: temposPorEtapa.map(media),
+    fontes, porMotivo, porGrupo, reprovadasTotal: reprovadas.length,
+    motorAcertos: comEng.length ? acertos.length / comEng.length : null, motorBaseN: comEng.length,
+  };
+}
+
+/* classe 'n' é neutra: contagem sem juízo de valor, então a célula de
+   status fica vazia em vez de um chip sem texto nenhum dentro. */
+const linhaSaude = (n, val, classe) =>
+  '<tr style="cursor:default"><td>'+n+'</td><td style="width:110px"><b>'+val+'</b></td>'+
+  '<td style="width:130px">'+(classe==='n' ? '' :
+    '<span class="pill '+classe+'">'+(classe==='al'?'atenção':'saudável')+'</span>')+'</td></tr>';
+
+/* Número inteiro puro conta na entrada; o resto ("21 dias", "80%") entra
+   direto, porque animar só metade de um rótulo fica pior que não animar. */
+function kpi(l,n,d,sp){
+  const puro = /^\d+$/.test(String(n));
+  const valor = puro ? '<span class="tnum" data-kpi="'+n+'">0</span>' : n;
+  return '<div class="kpi rv"><div class="l">'+l+'</div><div class="n">'+valor+'</div>'+
+    '<div class="d">'+d+'</div>'+(sp?spark(sp):'')+'</div>';
+}
+function animaKpis(){
+  requestAnimationFrame(()=>$$('[data-kpi]').forEach((el,i)=>
+    setTimeout(()=>contar(el, +el.dataset.kpi), 120+i*90)));
+}
+
+/* ══ parte: partes/js/37-pipeline-base.js ══ */
+/* ══════════════════ PIPELINE · BASE ══════════════════
+   Compartilhado entre o protótipo e o Conectaria Vagas (montar.py).
+   Depende de ETAPAS, MOTIVO/MOTIVOS_REJEICAO, escolher() e salvar(),
+   que cada alvo define. */
+
+const DIST_ETAPA = [.34, .27, .18, .13, .08]; // onde a candidatura "parou", acumulado
+function etapaSorteada(r){
+  let k = r(), acc = 0;
+  for(let i = 0; i < DIST_ETAPA.length; i++){ acc += DIST_ETAPA[i]; if(k <= acc) return i; }
+  return DIST_ETAPA.length - 1;
+}
+/* motivo mais plausível quando a reprovação acontece NAQUELA etapa */
+const MOTIVOS_POR_ETAPA = {
+  0: ['mr-req', 'mr-exp', 'mr-local', 'mr-modelo'],
+  1: ['mr-req', 'mr-exp', 'mr-cultura', 'mr-pretensao'],
+  2: ['mr-cultura', 'mr-nivel', 'mr-outro'],
+  3: ['mr-outro', 'mr-congelada', 'mr-desistiu'],
+  4: ['mr-desistiu', 'mr-semresp'],
+};
+
+/* Puxa o motivo alinhado ao que o motor já apontou boa parte das vezes:
+   é o que dá sinal real ao widget "o motor já tinha avisado?" no
+   dashboard. O resto sorteia do vocabulário fechado da etapa. */
+function motivoPara(r, rec, etapa){
+  const gap = [...rec.tecnico_ev, ...rec.cultural_ev, ...rec.contexto_ev].find(e => e.kind !== 'strength');
+  if(gap && r() < .55){
+    const alinhado = MOTIVOS_REJEICAO.find(m => m.eng === gap.reasonCode);
+    if(alinhado) return alinhado.id;
+  }
+  return escolher(r, MOTIVOS_POR_ETAPA[etapa] || ['mr-outro']);
+}
+
+/* ── ação única que muda estado de candidatura ──
+   Toda mudança passa por aqui, e toda mudança empilha em `historico` —
+   é de onde o funil do painel sai. `quem` diz de onde partiu: 'empresa'
+   no protótipo, 'conectaria' na versão operada pela Conectaria. */
+function aplicar(ap, acao){
+  const antes = ap.etapa, agora = new Date().toISOString();
+  switch(acao.tipo){
+    case 'avancar':  ap.etapa = Math.min(ETAPAS.length - 1, ap.etapa + 1); ap.status = 'ativa'; break;
+    case 'voltar':   ap.etapa = Math.max(0, ap.etapa - 1); break;
+    case 'mover':
+      if(!(acao.etapa >= 0 && acao.etapa < ETAPAS.length)) throw new Error('etapa inválida: ' + acao.etapa);
+      ap.etapa = acao.etapa; ap.status = 'ativa';
+      break;
+    case 'reprovar':
+      if(!MOTIVO[acao.motivoId]) throw new Error('motivo fora do vocabulário: ' + acao.motivoId);
+      ap.status = 'reprovada'; ap.motivoId = acao.motivoId; ap.nota = acao.nota || '';
+      break;
+    case 'contratar': ap.status = 'contratada'; ap.etapa = ETAPAS.length - 1; break;
+    case 'reabrir':   ap.status = 'ativa'; ap.motivoId = null; break;
+    case 'favoritar': ap.favorito = !ap.favorito; break;
+    default: throw new Error('ação desconhecida: ' + acao.tipo);
+  }
+  if(acao.tipo !== 'favoritar'){
+    ap.historico.push({de:antes, para:ap.etapa, em:agora, quem:acao.quem || 'empresa',
+      ...(ap.motivoId ? {motivoId:ap.motivoId} : {}), status:ap.status});
+  }
+  ap.atualizadaEm = agora;
+  salvar();
 }
 
 /* ══ parte: partes/js/40-cand-busca.js ══ */
@@ -4902,29 +5081,8 @@ function repintarSkills(){
    Aurora já é pré-aprovado, porque é a empresa que toda a demo usa
    desde antes desse campo existir — ver a nota em 12-empresas.js. */
 
-/* Dígito verificador de CNPJ, mod 11. Confirma só que o número está bem
-   formado, não que a empresa existe de verdade — por isso o texto na
-   tela diz "formato válido", nunca "verificado". Consulta cadastral real
-   é integração que este protótipo não tem. */
-function validarCNPJ(cnpj){
-  const d = String(cnpj || '').replace(/\D/g, '');
-  if(d.length !== 14) return false;
-  if(/^(\d)\1{13}$/.test(d)) return false; // todos os dígitos iguais: formalmente inválido
-  const calc = base => {
-    const pesos = base.length === 12 ? [5,4,3,2,9,8,7,6,5,4,3,2] : [6,5,4,3,2,9,8,7,6,5,4,3,2];
-    const soma = base.split('').reduce((a, n, i) => a + (+n) * pesos[i], 0);
-    const resto = soma % 11;
-    return resto < 2 ? 0 : 11 - resto;
-  };
-  const dv1 = calc(d.slice(0, 12));
-  const dv2 = calc(d.slice(0, 12) + dv1);
-  return d === d.slice(0, 12) + String(dv1) + String(dv2);
-}
-function mascararCNPJ(v){
-  const d = String(v || '').replace(/\D/g, '').slice(0, 14);
-  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2}\.\d{3})(\d)/, '$1.$2')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
-}
+/* validarCNPJ/mascararCNPJ moram em 34-cnpj.js, compartilhado com o
+   Conectaria Vagas. */
 
 const ESTADO_EMP_ROT = {
   aprovada: ['ok', 'Aprovada'], pendente: ['al', 'Aguardando aprovação'], recusada: ['bl', 'Recusada'],
@@ -5019,29 +5177,8 @@ function renderEmpForm(){
    Lista TODAS as vagas do Grupo Aurora, cada uma com candidaturas e fit
    médio derivados de verdade do pipeline — nunca escrito à mão. */
 
-/* "IA sugere, pessoa confirma" — a mesma regra da extração de currículo
-   (16-extracao.js), do outro lado do match. Nada aqui chama serviço
-   externo: é um rascunho por template a partir do que a pessoa de RH já
-   preencheu (cargo, local, família), sempre editável antes de publicar. */
-const FAMILIA_ROTINA = {
-  'Gente':       ['cuidar dos processos de pessoas do dia a dia', 'apoiar as lideranças em decisões de gente', 'acompanhar clima e retenção do time'],
-  'Liderança':   ['liderar o time e distribuir a rotina entre as pessoas', 'reportar resultados e prioridades para a diretoria', 'desenvolver quem está no time'],
-  'Tecnologia':  ['desenvolver e manter os sistemas em produção', 'participar do planejamento técnico do time', 'resolver problemas de performance e estabilidade'],
-  'Marketing':   ['planejar e executar campanhas', 'acompanhar métricas de canal e ajustar investimento', 'alinhar a mensagem com o time comercial'],
-  'Financeiro':  ['acompanhar os indicadores financeiros do mês', 'apoiar o fechamento e as conciliações', 'dar suporte a decisões de orçamento'],
-  'Operações':   ['garantir que a operação rode dentro do padrão', 'acompanhar indicadores de produtividade e qualidade', 'resolver gargalos do dia a dia'],
-  'Produto':     ['priorizar o backlog junto com o time', 'conduzir descoberta com usuários', 'acompanhar métricas de uso do produto'],
-  'Atendimento': ['atender e resolver as demandas dos clientes', 'acompanhar indicadores de SLA e satisfação', 'escalar os casos fora do padrão'],
-  'Vendas':      ['prospectar e qualificar oportunidades', 'conduzir negociações até o fechamento', 'acompanhar a carteira e a meta do mês'],
-};
-function gerarDescricaoVaga(cargo, local, familia){
-  const cidade = (local || '').split(',')[0].trim() || 'nossa unidade';
-  const cargoTxt = (cargo || '').trim() || 'a posição';
-  const [r1, r2, r3] = FAMILIA_ROTINA[familia] || FAMILIA_ROTINA['Operações'];
-  return 'Buscamos ' + cargoTxt + ' para atuar em ' + cidade + '. No dia a dia, a pessoa vai ' +
-    r1 + ', ' + r2 + ' e ' + r3 + '. Valorizamos quem já passou por rotina parecida e consegue ' +
-    'propor melhoria sem esperar processo pronto.';
-}
+/* gerarDescricaoVaga mora em 35-descricao-vaga.js, compartilhado com o
+   Conectaria Vagas. */
 
 function vEvagas(){
   const vagas = vagasDe('aurora');
@@ -5291,11 +5428,9 @@ function renderBarraSel(){
     const alvo = +$('#moverPara').value;
     pipSel.forEach(id => {
       const ap = S.pipeline.find(x => x.id === id); if(!ap || ap.status !== 'ativa') return;
-      const antes = ap.etapa; ap.etapa = alvo; ap.status = 'ativa';
-      ap.historico.push({de:antes, para:alvo, em:new Date().toISOString(), quem:'empresa'});
-      ap.atualizadaEm = new Date().toISOString();
+      aplicar(ap, {tipo:'mover', etapa:alvo});
     });
-    salvar(); toast(pipSel.size + ' movida(s) para ' + ETAPAS[alvo] + '.');
+    toast(pipSel.size + ' movida(s) para ' + ETAPAS[alvo] + '.');
     pipSel = new Set(); renderEcand();
   };
   $('#reprovarSelBt').onclick = () => abrirReprovar([...pipSel]);
@@ -5339,71 +5474,8 @@ function abrirReprovar(ids){
 /* ══ parte: partes/js/53-emp-dash.js ══ */
 /* ══════════════════ 23 · EMPRESA · DASHBOARD ══════════════════
 
-   Uma função só calcula tudo (derivarDash), e nenhum widget faz conta
-   dentro de template string. P é sempre um array de candidaturas — a
-   mesma função serve o dashboard geral (todas as vagas da empresa) e o
-   cabeçalho de KPIs da tela de pipeline (candidaturas de uma vaga só). */
-
-const media = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-
-function derivarDash(P){
-  const ativas = P.filter(a => a.status === 'ativa');
-  const reprovadas = P.filter(a => a.status === 'reprovada');
-
-  // Funil por HISTÓRICO, não por etapa atual: quem foi reprovado na
-  // etapa 4 tem que contar como tendo passado pelas 1, 2 e 3.
-  const alcancou = i => P.filter(a => a.historico.some(h => h.para >= i)).length;
-  const funil = ETAPAS.map((n, i) => {
-    const chegou = alcancou(i);
-    const base = i === 0 ? P.length : alcancou(i - 1);
-    return {n, chegou, taxa: base ? chegou / base : 0};
-  });
-
-  // tempo médio entre marcos consecutivos do histórico, por etapa de origem
-  const temposPorEtapa = ETAPAS.map(() => []);
-  P.forEach(a => {
-    for(let i = 1; i < a.historico.length; i++){
-      const h0 = a.historico[i - 1], h1 = a.historico[i];
-      if(h0.para == null) continue;
-      const dias = (new Date(h1.em) - new Date(h0.em)) / 86400000;
-      if(dias >= 0) temposPorEtapa[h0.para].push(dias);
-    }
-  });
-
-  const fontes = {};
-  P.forEach(a => { fontes[a.origem] = (fontes[a.origem] || 0) + 1; });
-
-  const porMotivo = {}, porGrupo = {};
-  reprovadas.forEach(a => {
-    porMotivo[a.motivoId] = (porMotivo[a.motivoId] || 0) + 1;
-    const g = MOTIVO[a.motivoId]?.g || 'processo';
-    porGrupo[g] = (porGrupo[g] || 0) + 1;
-  });
-
-  // "o motor já tinha avisado?": das reprovações cujo motivo tem um
-  // reasonCode correspondente, em quantas esse reasonCode já estava nas
-  // evidências do trace? É o sinal de calibração mais direto que existe.
-  const comEng = reprovadas.filter(a => MOTIVO[a.motivoId]?.eng);
-  const acertos = comEng.filter(a => {
-    const ev = [...a.rec.tecnico_ev, ...a.rec.cultural_ev, ...a.rec.contexto_ev];
-    return ev.some(e => e.reasonCode === MOTIVO[a.motivoId].eng);
-  });
-
-  return {
-    total: P.length, emProcesso: ativas.length, favoritos: P.filter(a => a.favorito).length,
-    contratados: P.filter(a => a.status === 'contratada').length,
-    fitMedio: media(P.map(a => a.rec.total)),
-    fitMedioAvancou: media(P.filter(a => a.etapa >= 2).map(a => a.rec.total)),
-    confMedia: media(P.map(a => a.rec.confidence)),
-    aguardandoDecisao: ativas.filter(a => a.rec.desfecho !== 'allow').length,
-    retidasBlock: P.filter(a => a.rec.desfecho === 'block').length,
-    retidasReview: P.filter(a => a.rec.desfecho === 'review').length,
-    porEtapaAtiva: ETAPAS.map((n, i) => ({n, q: ativas.filter(a => a.etapa === i).length})),
-    funil, tempoMedio: temposPorEtapa.map(media),
-    fontes, porMotivo, porGrupo, reprovadasTotal: reprovadas.length,
-    motorAcertos: comEng.length ? acertos.length / comEng.length : null, motorBaseN: comEng.length,
-  };
-}
+   derivarDash, kpi e linhaSaude moram em 36-painel-base.js, compartilhado
+   com o Conectaria Vagas. Aqui fica só a tela da empresa. */
 
 function vEdash(){
   const P = S.pipeline; // todas as vagas do Grupo Aurora
@@ -5478,25 +5550,6 @@ function vEdash(){
   requestAnimationFrame(()=>$$('.col[data-h]').forEach((el,i)=>
     setTimeout(()=>{el.style.height=el.dataset.h+'%'},120+i*70)));
   animaEixos(); animaKpis();
-}
-/* classe 'n' é neutra: contagem sem juízo de valor, então a célula de
-   status fica vazia em vez de um chip sem texto nenhum dentro. */
-const linhaSaude = (n, val, classe) =>
-  '<tr style="cursor:default"><td>'+n+'</td><td style="width:110px"><b>'+val+'</b></td>'+
-  '<td style="width:130px">'+(classe==='n' ? '' :
-    '<span class="pill '+classe+'">'+(classe==='al'?'atenção':'saudável')+'</span>')+'</td></tr>';
-
-/* Número inteiro puro conta na entrada; o resto ("21 dias", "80%") entra
-   direto, porque animar só metade de um rótulo fica pior que não animar. */
-function kpi(l,n,d,sp){
-  const puro = /^\d+$/.test(String(n));
-  const valor = puro ? '<span class="tnum" data-kpi="'+n+'">0</span>' : n;
-  return '<div class="kpi rv"><div class="l">'+l+'</div><div class="n">'+valor+'</div>'+
-    '<div class="d">'+d+'</div>'+(sp?spark(sp):'')+'</div>';
-}
-function animaKpis(){
-  requestAnimationFrame(()=>$$('[data-kpi]').forEach((el,i)=>
-    setTimeout(()=>contar(el, +el.dataset.kpi), 120+i*90)));
 }
 
 /* ══ parte: partes/js/70-acesso.js ══ */

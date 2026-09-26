@@ -1,0 +1,56 @@
+<div class="util">
+  <div class="utin">
+    <span class="teste"><i></i>Versão de teste · os dados ficam só neste navegador</span>
+    <div class="uidir">
+      <div class="papel" role="group" aria-label="Ver como">
+        <button data-papel="cand" aria-pressed="true">Candidato</button>
+        <button data-papel="admin" aria-pressed="false">Conectaria</button>
+      </div>
+      <button class="uic" id="btReset">Recomeçar</button>
+      <button class="uic" id="btTema" aria-label="Alternar tema claro e escuro">
+        <svg class="moon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></svg>
+        <svg class="sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2v2.6M12 19.4V22M2 12h2.6M19.4 12H22M4.9 4.9l1.9 1.9M17.2 17.2l1.9 1.9M19.1 4.9l-1.9 1.9M6.8 17.2l-1.9 1.9"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<header class="topo" id="topo">
+  <div class="tin">
+__LOGO__
+    <nav class="tnav" id="tnav" aria-label="Menu"></nav>
+    <div class="tdir" id="tdir"></div>
+  </div>
+</header>
+
+<main class="pg">
+  <section class="view on" id="v-vagas"></section>
+  <section class="view" id="v-vaga" tabindex="-1"></section>
+  <section class="view" id="v-cadastro" tabindex="-1"></section>
+  <section class="view" id="v-minhas"></section>
+  <section class="view" id="v-perfil"></section>
+  <section class="view" id="v-painel"></section>
+  <section class="view" id="v-empresas"></section>
+  <section class="view" id="v-avagas"></section>
+  <section class="view" id="v-vagaform" tabindex="-1"></section>
+  <section class="view" id="v-pipeline"></section>
+  <section class="view" id="v-talentos"></section>
+</main>
+
+<nav class="tabbar" id="tabbar" aria-label="Navegação principal" hidden></nav>
+
+<aside class="drw" id="drw" role="dialog" aria-modal="false" aria-labelledby="drwTit" aria-hidden="true">
+  <header>
+    <h3 id="drwTit"></h3>
+    <span class="pill n" id="drwId"></span>
+    <button class="btn g sm" id="drwX" style="margin-left:auto" aria-label="Fechar">Fechar</button>
+  </header>
+  <div class="body" id="drwBody"></div>
+</aside>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTit"
+  aria-hidden="true"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>

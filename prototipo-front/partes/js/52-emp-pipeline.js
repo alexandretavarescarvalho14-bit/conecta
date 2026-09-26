@@ -176,11 +176,9 @@ function renderBarraSel(){
     const alvo = +$('#moverPara').value;
     pipSel.forEach(id => {
       const ap = S.pipeline.find(x => x.id === id); if(!ap || ap.status !== 'ativa') return;
-      const antes = ap.etapa; ap.etapa = alvo; ap.status = 'ativa';
-      ap.historico.push({de:antes, para:alvo, em:new Date().toISOString(), quem:'empresa'});
-      ap.atualizadaEm = new Date().toISOString();
+      aplicar(ap, {tipo:'mover', etapa:alvo});
     });
-    salvar(); toast(pipSel.size + ' movida(s) para ' + ETAPAS[alvo] + '.');
+    toast(pipSel.size + ' movida(s) para ' + ETAPAS[alvo] + '.');
     pipSel = new Set(); renderEcand();
   };
   $('#reprovarSelBt').onclick = () => abrirReprovar([...pipSel]);

@@ -1,0 +1,125 @@
+/* ══════════════════ CONECTARIA VAGAS · ACRÉSCIMOS ══════════════════
+   O visual é o do protótipo (prototipo-front/partes/app.css, que entra
+   inteiro antes deste arquivo). Aqui só o que a versão operada tem de
+   novo, sempre pelos mesmos tokens, para funcionar nos dois temas. */
+
+/* ── barra de teste ── */
+.teste{display:inline-flex;align-items:center;gap:7px;font-weight:600;letter-spacing:.01em;min-width:0}
+.teste i{width:7px;height:7px;border-radius:50%;background:var(--al);flex:none}
+.papel{display:inline-flex;background:rgba(255,255,255,.08);border-radius:var(--pill);padding:3px;gap:2px}
+.papel button{border-radius:var(--pill);padding:5px 12px;font-weight:600;color:rgba(255,255,255,.72)}
+.papel button[aria-pressed="true"]{background:#fff;color:#0E2233}
+.papel button:focus-visible{outline:2px solid var(--ac4);outline-offset:1px}
+
+/* ── vitrine ── */
+.hv{padding-bottom:var(--s3)}
+.hv p{max-width:62ch;line-height:1.6}
+.achips{margin:var(--s2) 0 6px}
+.vres{font-size:var(--sm);color:var(--i72);margin-top:8px;line-height:1.55;max-width:70ch}
+.vver{display:inline-flex;align-items:center;gap:4px;font-size:var(--sm);font-weight:600;color:var(--ac1);white-space:nowrap}
+.tag.trab{border-color:transparent;background:var(--veu);color:var(--ac1);font-weight:600}
+.ctaeq{margin:var(--s5) 0 var(--s3);padding:var(--s4) var(--s3);border-radius:var(--r);background:var(--escura);
+  color:#E6F1F8;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);flex-wrap:wrap}
+.ctaeq h3{font-family:var(--d);font-size:var(--xl);text-wrap:balance}
+.ctaeq p{color:rgba(230,241,248,.72);margin-top:6px;font-size:var(--md)}
+.ctaeq .btn{background:#fff;color:#0E2233}
+
+/* ── cadastro ── */
+.comofunc{list-style:none;display:grid;gap:10px;margin-top:var(--s2);font-size:var(--sm);color:var(--i72);line-height:1.5;counter-reset:cf}
+.comofunc li{display:grid;grid-template-columns:22px 1fr;gap:8px}
+.comofunc li::before{counter-increment:cf;content:counter(cf);width:22px;height:22px;border-radius:50%;
+  background:var(--veu);color:var(--ac1);font-size:var(--xs);font-weight:700;display:grid;place-items:center}
+.comofunc b{color:var(--i92)}
+.achou{display:flex;gap:10px;align-items:flex-start;background:var(--ok-bg);border:1px solid var(--ok);border-radius:var(--r2);
+  padding:12px 14px;font-size:var(--sm);color:var(--i92);margin:var(--s2) 0 var(--s3);line-height:1.55}
+.achou svg{flex:none;margin-top:2px;color:var(--ok)}
+.opc{font-size:var(--xs);font-weight:500;color:var(--i34);margin-left:auto}
+label .opc{margin-left:6px}
+.acoesform{display:flex;gap:9px;flex-wrap:wrap}
+.erroform{font-size:var(--sm);color:var(--bl-fg);min-height:0}
+.erroform:empty{display:none}
+.btn.perigo{color:var(--bl-fg)}
+.btn.w.perigo:not(.g){background:var(--bl);color:#fff}
+.link{color:var(--ac1);font-weight:600;font-size:inherit;text-decoration:underline;text-underline-offset:3px;padding:0}
+.fg .link{justify-self:start;margin-top:6px;font-size:var(--sm)}
+.expect.enc svg{color:var(--al)}
+
+/* ── tabelas da Conectaria ── */
+.sub2{font-size:var(--xs);color:var(--i62)}
+.celemp{display:flex;align-items:center;gap:10px}
+.celemp > div{min-width:0}
+.tab tr.off td{opacity:.55}
+.nomebt{font-family:var(--d);font-size:var(--md);font-weight:600;color:var(--i92);text-align:left;padding:0;display:inline-flex;align-items:center;gap:5px}
+@media(hover:hover){.nomebt:hover{color:var(--ac1);text-decoration:underline;text-underline-offset:3px}}
+.nomebt .fav{color:var(--al);display:inline-flex}
+.porq{max-width:260px;color:var(--i72);font-size:var(--sm)}
+.fitb{display:inline-flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.fitb > span{width:64px;height:6px;border-radius:3px;background:var(--i08);overflow:hidden;display:block}
+.fitb i{display:block;height:100%;background:var(--ok);border-radius:3px}
+.fitb.medio i{background:var(--al)} .fitb.baixo i{background:var(--bl)}
+.fitb b{font-size:var(--sm);min-width:2ch}
+
+/* o seletor de vaga do processo leva "empresa · título", que pode ser longo */
+#v-pipeline .barra{min-width:0}
+#v-pipeline .selVaga{max-width:min(100%,460px);min-width:0;text-overflow:ellipsis}
+#v-pipeline .barra > .cont{max-width:100%}
+
+/* ── painel ── */
+.painelg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
+.painelg > .bloco{margin-top:var(--s3)}
+.bloco > .hint, .bloco > p.hint{padding:0 var(--s3) var(--s3)}
+.bloco header .hint{font-size:var(--xs)}
+.tab td small{color:var(--i62);font-weight:500}
+.avisoex{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--veu2);border:1px solid var(--veu);
+  border-radius:var(--r2);padding:12px 14px;font-size:var(--sm);color:var(--i92);margin-bottom:var(--s3)}
+.avisoex > svg{color:var(--ac1);flex:none}
+.avisoex > div{flex:1;min-width:220px}
+
+/* ── formulário de vaga ── */
+.corpo.form{gap:0}
+.reqs{display:grid;gap:8px}
+.req{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:8px 10px;
+  border:1px solid var(--i08);border-radius:var(--r3);background:var(--card)}
+.req b{font-size:var(--sm);font-weight:600;min-width:0}
+.req select{padding:6px 8px;font-size:var(--sm);width:auto}
+.req .check{font-size:var(--xs)}
+.vfacoes{display:grid;gap:8px}
+
+/* ── banco de talentos ── */
+.filtrost{display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:var(--s2);margin-bottom:var(--s3)}
+.apsl{list-style:none;display:grid;gap:8px;font-size:var(--sm)}
+.apsl li{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* ── gaveta do candidato ── */
+.gv{display:grid;gap:6px}
+.gv h4{font-family:var(--d);font-size:var(--md);margin-bottom:4px}
+.gvres{font-size:var(--sm);color:var(--i72);line-height:1.6;margin-bottom:6px}
+.gvtopo{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gvacoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.gvacoes .btn{padding:8px 11px}
+.sel{user-select:all;font-variant-numeric:tabular-nums}
+.fitgrande{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.fitgrande .fitb > span{width:140px;height:9px}
+.fitgrande .fitb b{font-size:var(--xl);font-family:var(--d)}
+.hist{list-style:none;display:grid;gap:10px;border-left:2px solid var(--i08);padding-left:14px}
+.hist li{display:grid;gap:2px;font-size:var(--sm);position:relative}
+.hist li::before{content:"";position:absolute;left:-19px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--ac3)}
+.hist li span{font-size:var(--xs);color:var(--i62)}
+
+@media(max-width:900px){
+  .painelg{grid-template-columns:1fr;gap:0}
+  .filtrost{grid-template-columns:1fr 1fr}
+  .teste{font-size:.68rem}
+}
+@media(max-width:560px){
+  .utin{flex-wrap:wrap;row-gap:6px;padding-block:6px}
+  .teste{width:100%}
+  .uidir{width:100%;justify-content:space-between}
+  .filtrost{grid-template-columns:1fr}
+  .req{grid-template-columns:1fr auto auto}
+  .req b{grid-column:1 / -1}
+  .ctaeq{padding:var(--s3)}
+  .ctaeq .btn{width:100%}
+  .porq{min-width:180px}
+  #v-pipeline .selVaga{width:100%;max-width:100%}
+}
