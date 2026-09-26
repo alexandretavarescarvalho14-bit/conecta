@@ -32,6 +32,11 @@ function formEmpresa(id, aoSalvar){
   const nVagas = id ? DB.vagas.filter(v => v.empresaId === id).length : 0;
   abrirModal('<h2 id="mTit">' + (id ? 'Editar empresa' : 'Nova empresa') + '</h2>' +
     '<form class="form" id="fEmp" style="gap:var(--s2)" novalidate>' +
+      '<div class="logocampo"><span id="eLogoPrev"></span><div>' +
+        '<div class="acoesform"><label class="btn g sm" for="eLogoIn" id="eLogoBt">' + (e.logo ? 'Trocar logo' : 'Enviar logo') + '</label>' +
+        '<button type="button" class="link" id="eLogoTira"' + (e.logo ? '' : ' hidden') + '>Tirar logo</button></div>' +
+        '<input type="file" id="eLogoIn" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">' +
+        '<p class="hint" id="eLogoHint">PNG, JPG, WEBP ou SVG, de preferência quadrado. Sem logo, aparecem as iniciais.</p></div></div>' +
       '<div class="fg"><label for="eN">Nome da empresa</label><input id="eN" value="' + esc(e.n) + '"></div>' +
       '<div class="dupla"><div class="fg"><label for="eSetor">Setor</label><input id="eSetor" value="' + esc(e.setor) + '" placeholder="Varejo, Logística..."></div>' +
       '<div class="fg"><label for="eCid">Cidade</label><input id="eCid" value="' + esc(e.cidade) + '" placeholder="Recife, PE"></div></div>' +
@@ -45,6 +50,25 @@ function formEmpresa(id, aoSalvar){
       (id ? '<button class="btn g w perigo" type="button" id="eApagar"' + (nVagas ? ' disabled title="Tem vagas ligadas"' : '') + '>Apagar empresa</button>' +
         (nVagas ? '<p class="hint" style="text-align:center">Para apagar, encerre e apague as ' + plural(nVagas, 'vaga', 'vagas') + ' dela antes.</p>' : '') : '') +
       '<button class="btn g w" type="button" id="eCancEmp">Cancelar</button></form>');
+
+  let logo = e.logo || null;
+  const cor = e.c || CORES_EMP[DB.empresas.length % CORES_EMP.length];
+  const pintaLogo = () => {
+    $('#eLogoPrev').innerHTML = logoEmp({n:$('#eN').value.trim() || '?', c:cor, logo}, true);
+    $('#eLogoBt').textContent = logo ? 'Trocar logo' : 'Enviar logo';
+    $('#eLogoTira').hidden = !logo;
+  };
+  pintaLogo();
+  $('#eN').addEventListener('input', () => { if(!logo) pintaLogo(); });
+  $('#eLogoIn').onchange = async ev => {
+    const f = ev.target.files[0]; ev.target.value = '';
+    if(!f) return;
+    const h = $('#eLogoHint');
+    try{ logo = await reduzirImagem(f); h.textContent = f.name + ' pronto. Salve para aplicar.'; h.style.color = ''; }
+    catch(err){ h.textContent = err.message; h.style.color = 'var(--bl)'; }
+    pintaLogo();
+  };
+  $('#eLogoTira').onclick = () => { logo = null; $('#eLogoHint').textContent = 'Logo removido. Salve para aplicar.'; pintaLogo(); };
 
   const cn = $('#eCnpj');
   cn.oninput = () => {
@@ -62,7 +86,7 @@ function formEmpresa(id, aoSalvar){
   $('#fEmp').onsubmit = ev => {
     ev.preventDefault();
     const dados = {n:$('#eN').value.trim(), setor:$('#eSetor').value.trim(), cidade:$('#eCid').value.trim(),
-      site:$('#eSite').value.trim(), cnpj:cn.value.trim(), contato:$('#eCont').value.trim(), obs:$('#eObs').value.trim()};
+      site:$('#eSite').value.trim(), cnpj:cn.value.trim(), contato:$('#eCont').value.trim(), obs:$('#eObs').value.trim(), logo};
     const erro = !dados.n ? 'Escreva o nome da empresa.'
       : DB.empresas.some(x => x.id !== id && normalizar(x.n) === normalizar(dados.n)) ? 'Já existe uma empresa com este nome.'
       : dados.cnpj && !validarCNPJ(dados.cnpj) ? 'CNPJ com formato inválido. Corrija ou deixe em branco.' : '';
@@ -70,7 +94,7 @@ function formEmpresa(id, aoSalvar){
     let emp;
     if(id){ emp = empresaPor(id); Object.assign(emp, dados); }
     else {
-      emp = {id:novoId('e'), c:CORES_EMP[DB.empresas.length % CORES_EMP.length], criadaEm:iso(Date.now()), ...dados};
+      emp = {id:novoId('e'), c:cor, criadaEm:iso(Date.now()), ...dados};
       DB.empresas.push(emp);
     }
     salvar(); fecharModal();

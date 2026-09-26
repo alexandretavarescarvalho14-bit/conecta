@@ -83,6 +83,51 @@ function recalcularRec(ap){
   salvar();
   return novo;
 }
+/* ── recomendações para o candidato ──
+   O mesmo motor ordena as vagas para a pessoa, mas o que ela vê é a
+   lista e o motivo em palavras, nunca o número: a nota continua sendo
+   ferramenta da Conectaria. No app real isto vem pronto do servidor;
+   aqui roda no navegador porque o teste não tem servidor.
+
+   Quatro cortes: vaga a que ela já se candidatou sai; vaga em que falta
+   requisito obrigatório sai, mesmo com nota alta (é a indicação que gera
+   entrevista que não devia existir); vaga presencial ou híbrida em outro
+   estado sai, porque na nota ela só perde pontos mas na vida real
+   significa mudar de cidade; e o resto precisa passar de
+   CORTE_RECOMENDACAO. */
+const CORTE_RECOMENDACAO = 60;
+
+function recomendacoesPara(c, limite){
+  if(!c || !(c.competencias || []).length) return [];
+  return vagasPublicadas()
+    .filter(v => !jaCandidatou(c.id, v.id))
+    .map(v => ({v, m:avaliar(c, v)}))
+    .filter(({v, m}) => m.total >= CORTE_RECOMENDACAO && m.desfecho !== 'block' &&
+      !m.tecnico.evidencias.some(e => e.reasonCode === 'REQ_OBRIGATORIO_AUSENTE') &&
+      !(v.modelo !== 'remoto' && m.contexto.evidencias.some(e => e.reasonCode === 'LOCAL_DIVERGENTE')))
+    .sort((a, b) => b.m.total - a.m.total)
+    .slice(0, limite || 3)
+    .map(({v, m}) => ({v, porque:porqueRecomendada(c, v, m)}));
+}
+
+function porqueRecomendada(c, v, m){
+  const tem = new Set(c.competencias.map(k => k.skillId));
+  // só a inicial em minúscula, e só em palavra comum: "B2B" e "SAP" ficam como estão
+  const cobre = v.requisitos.filter(r => tem.has(r.skillId)).map(r => {
+    const n = skillNome(r.skillId);
+    return /^\p{Lu}\p{Ll}/u.test(n) ? n.charAt(0).toLowerCase() + n.slice(1) : n;
+  });
+  const partes = [];
+  if(cobre.length) partes.push('Pede ' + (cobre.length === 1 ? cobre[0]
+    : cobre.slice(0, 2).join(' e ') + (cobre.length > 2 ? ' e mais ' + (cobre.length - 2) : '')) + ', que você já fez');
+  const ctx = m.contexto.evidencias;
+  if(v.uf === 'BR') partes.push(v.modelo === 'remoto' ? 'é remota' : 'tem vaga em vários estados');
+  else if(ctx.some(e => e.reasonCode === 'LOCAL_OK')) partes.push('fica no seu estado');
+  if(ctx.some(e => e.reasonCode === 'MODELO_OK') && v.uf !== 'BR') partes.push('no modelo ' + MODELO_ROT[v.modelo].toLowerCase() + ' que você aceita');
+  const txt = partes.join(', ');
+  return txt ? txt.charAt(0).toUpperCase() + txt.slice(1) + '.' : 'Combina com as atividades do seu perfil.';
+}
+
 /* Principal motivo em uma linha, para a tabela. */
 function motivoPrincipal(rec){
   const ev = [...rec.tecnico_ev, ...rec.contexto_ev];

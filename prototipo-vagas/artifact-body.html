@@ -1277,6 +1277,27 @@ h1,h2,h3{font-family:var(--d);font-weight:700;letter-spacing:-.03em;line-height:
 .ctaeq p{color:rgba(230,241,248,.72);margin-top:6px;font-size:var(--md)}
 .ctaeq .btn{background:#fff;color:#0E2233}
 
+/* ── logo da empresa ── */
+/* fundo branco nos dois temas: logo de empresa é desenhado para fundo claro */
+.emplogo.img{background:#fff;border:1px solid var(--i14);overflow:hidden;padding:2px}
+.emplogo.img img{width:100%;height:100%;object-fit:contain;display:block}
+.emplogo.g{width:56px;height:56px;border-radius:14px;font-size:1rem}
+.logocampo{display:flex;align-items:center;gap:14px}
+.logocampo > div{display:grid;gap:4px;min-width:0}
+.logocampo label.btn{cursor:pointer}
+.logocampo:focus-within label.btn{outline:2px solid var(--ac3);outline-offset:2px}
+
+/* ── recomendações ── */
+.recs{margin:var(--s2) 0 var(--s4)}
+.recstop{margin-bottom:var(--s2)}
+.recstop h2, .todash{font-family:var(--d);font-size:var(--xl);text-wrap:balance}
+.recstop p{font-size:var(--sm);color:var(--i62);margin-top:4px}
+.todash{margin:0 0 var(--s2)}
+.vaga.rec{border-color:var(--ac4);background:linear-gradient(var(--veu2),var(--veu2)),var(--card)}
+.vaga.rec .vres{color:var(--i92)}
+.tag.combina{border-color:transparent;background:var(--ok-bg);color:var(--ok-fg);font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.tag.combina svg{width:12px;height:12px}
+
 /* ── cadastro ── */
 .comofunc{list-style:none;display:grid;gap:10px;margin-top:var(--s2);font-size:var(--sm);color:var(--i72);line-height:1.5;counter-reset:cf}
 .comofunc li{display:grid;grid-template-columns:22px 1fr;gap:8px}
@@ -1437,7 +1458,7 @@ label .opc{margin-left:6px}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const BUILD = Object.freeze({partes:30, sha:"9f0240899c83", em:"2026-09-26"});
+const BUILD = Object.freeze({partes:30, sha:"eaea38296c39", em:"2026-09-26"});
 /* ══ parte: prototipo-front/partes/js/00-politica.js ══ */
 /* ═══════════════════════════════════════════════════════════════════════
    Conectaria · protótipo de plataforma
@@ -3142,6 +3163,51 @@ function recalcularRec(ap){
   salvar();
   return novo;
 }
+/* ── recomendações para o candidato ──
+   O mesmo motor ordena as vagas para a pessoa, mas o que ela vê é a
+   lista e o motivo em palavras, nunca o número: a nota continua sendo
+   ferramenta da Conectaria. No app real isto vem pronto do servidor;
+   aqui roda no navegador porque o teste não tem servidor.
+
+   Quatro cortes: vaga a que ela já se candidatou sai; vaga em que falta
+   requisito obrigatório sai, mesmo com nota alta (é a indicação que gera
+   entrevista que não devia existir); vaga presencial ou híbrida em outro
+   estado sai, porque na nota ela só perde pontos mas na vida real
+   significa mudar de cidade; e o resto precisa passar de
+   CORTE_RECOMENDACAO. */
+const CORTE_RECOMENDACAO = 60;
+
+function recomendacoesPara(c, limite){
+  if(!c || !(c.competencias || []).length) return [];
+  return vagasPublicadas()
+    .filter(v => !jaCandidatou(c.id, v.id))
+    .map(v => ({v, m:avaliar(c, v)}))
+    .filter(({v, m}) => m.total >= CORTE_RECOMENDACAO && m.desfecho !== 'block' &&
+      !m.tecnico.evidencias.some(e => e.reasonCode === 'REQ_OBRIGATORIO_AUSENTE') &&
+      !(v.modelo !== 'remoto' && m.contexto.evidencias.some(e => e.reasonCode === 'LOCAL_DIVERGENTE')))
+    .sort((a, b) => b.m.total - a.m.total)
+    .slice(0, limite || 3)
+    .map(({v, m}) => ({v, porque:porqueRecomendada(c, v, m)}));
+}
+
+function porqueRecomendada(c, v, m){
+  const tem = new Set(c.competencias.map(k => k.skillId));
+  // só a inicial em minúscula, e só em palavra comum: "B2B" e "SAP" ficam como estão
+  const cobre = v.requisitos.filter(r => tem.has(r.skillId)).map(r => {
+    const n = skillNome(r.skillId);
+    return /^\p{Lu}\p{Ll}/u.test(n) ? n.charAt(0).toLowerCase() + n.slice(1) : n;
+  });
+  const partes = [];
+  if(cobre.length) partes.push('Pede ' + (cobre.length === 1 ? cobre[0]
+    : cobre.slice(0, 2).join(' e ') + (cobre.length > 2 ? ' e mais ' + (cobre.length - 2) : '')) + ', que você já fez');
+  const ctx = m.contexto.evidencias;
+  if(v.uf === 'BR') partes.push(v.modelo === 'remoto' ? 'é remota' : 'tem vaga em vários estados');
+  else if(ctx.some(e => e.reasonCode === 'LOCAL_OK')) partes.push('fica no seu estado');
+  if(ctx.some(e => e.reasonCode === 'MODELO_OK') && v.uf !== 'BR') partes.push('no modelo ' + MODELO_ROT[v.modelo].toLowerCase() + ' que você aceita');
+  const txt = partes.join(', ');
+  return txt ? txt.charAt(0).toUpperCase() + txt.slice(1) + '.' : 'Combina com as atividades do seu perfil.';
+}
+
 /* Principal motivo em uma linha, para a tabela. */
 function motivoPrincipal(rec){
   const ev = [...rec.tecnico_ev, ...rec.contexto_ev];
@@ -3719,6 +3785,7 @@ function mascararWhats(v){
 const emailValido = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || '').trim());
 
 function logoEmp(e, grande){
+  if(e.logo) return '<span class="emplogo img' + (grande ? ' g' : '') + '" aria-hidden="true"><img src="' + esc(e.logo) + '" alt=""></span>';
   const ini = e.n.replace(/[^\p{L}\s]/gu, '').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
   return '<span class="emplogo' + (grande ? ' g' : '') + '" style="background:' + esc(e.c || '#189CCC') + '" aria-hidden="true">' + esc(ini) + '</span>';
 }
@@ -3836,6 +3903,30 @@ function blocoFit(rec, pesos){
     '</div>';
 }
 
+/* Logo enviada pela Conectaria: reduzida para no máximo 200 px antes de
+   guardar. O teste guarda tudo no navegador, que tem pouco espaço, e o
+   logo nunca aparece maior que isso. No app real vai para o storage. */
+const LOGO_MAX_PX = 200, LOGO_MAX_BYTES = 5 * 1024 * 1024;
+function reduzirImagem(arquivo){
+  return new Promise((ok, falha) => {
+    if(!/^image\/(png|jpe?g|webp|gif|svg\+xml)$/.test(arquivo.type)) return falha(new Error('Use PNG, JPG, WEBP ou SVG.'));
+    if(arquivo.size > LOGO_MAX_BYTES) return falha(new Error('A imagem passa de 5 MB. Use uma versão menor do logo.'));
+    const url = URL.createObjectURL(arquivo), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, LOGO_MAX_PX / Math.max(img.naturalWidth || LOGO_MAX_PX, img.naturalHeight || LOGO_MAX_PX));
+      const cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round((img.naturalWidth || LOGO_MAX_PX) * k));
+      cv.height = Math.max(1, Math.round((img.naturalHeight || LOGO_MAX_PX) * k));
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      // JPG não tem transparência, então fica menor como JPG; o resto vira PNG para manter o fundo
+      ok(/jpe?g/.test(arquivo.type) ? cv.toDataURL('image/jpeg', .86) : cv.toDataURL('image/png'));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); falha(new Error('Não consegui abrir esta imagem.')); };
+    img.src = url;
+  });
+}
+
 async function copiar(txt){
   try{ await navigator.clipboard.writeText(txt); toast('Copiado: ' + txt); }
   catch(_){ toast('Não consegui copiar. Selecione o texto e copie manualmente.', I.al); }
@@ -3863,13 +3954,18 @@ function vVagas(){
   const porArea = {};
   pub.forEach(v => { porArea[v.areaId] = (porArea[v.areaId] || 0) + 1; });
   const areas = areasOrdenadas().filter(a => porArea[a.id]);
+  const c = eu();
 
   $('#v-vagas').innerHTML =
   '<section class="heroc hv">' +
-    '<h1>Vagas conectadas a você</h1>' +
-    '<p>Oportunidades das empresas parceiras da Conectaria. Cadastre-se uma vez, candidate-se com um clique ' +
-    'e acompanhe cada etapa por aqui. A nossa equipe fala com você pelo WhatsApp.</p>' +
+    (c ? '<h1>Olá, ' + esc(c.nome.split(' ')[0]) + '</h1>' +
+      '<p>Separamos as vagas que combinam com o seu perfil. Todas as outras estão logo abaixo.</p>'
+    : '<h1>Vagas conectadas a você</h1>' +
+      '<p>Oportunidades das empresas parceiras da Conectaria. Cadastre-se uma vez, candidate-se com um clique ' +
+      'e acompanhe cada etapa por aqui. A nossa equipe fala com você pelo WhatsApp.</p>') +
   '</section>' +
+  (c ? blocoRecomendacoes(c, 'Recomendadas para você', 'Pelas atividades, local e modelo de trabalho do seu perfil.') : '') +
+  (c ? '<h2 class="todash">Todas as vagas</h2>' : '') +
   '<div class="buscador">' +
     '<div class="bfield">' + I.lupa + '<div style="flex:1;min-width:0">' +
       '<label for="q">Cargo, empresa ou cidade</label>' +
@@ -3888,6 +3984,7 @@ function vVagas(){
     '<a class="btn" href="' + WHATS_EQUIPE + '" target="_blank" rel="noopener">Falar com a equipe</a>' +
   '</section>';
 
+  $$('#v-vagas .recs [data-abrevaga]').forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
   $('#q').oninput = debounce(e => { S.q = e.target.value; renderListaVagas(); }, 160);
   $$('[data-farea]').forEach(b => b.onclick = () => {
     S.area = b.dataset.farea || null;
@@ -3907,24 +4004,43 @@ function renderListaVagas(){
     $('#limpaVitrine').onclick = () => { S.q = ''; S.area = null; vVagas(); };
     return;
   }
-  $('#listaVagas').innerHTML = '<div class="vagas">' + lista.map(v => {
-    const e = empresaPor(v.empresaId), foi = c && jaCandidatou(c.id, v.id);
-    return '<article class="vaga">' +
-      '<button class="stretch" data-abrevaga="' + v.id + '" aria-label="Abrir vaga ' + esc(v.titulo) + ' em ' + esc(e.n) + '"></button>' +
-      '<div class="conteudo">' +
-        '<div class="vtopo">' + logoEmp(e) + '<b>' + esc(e.n) + '</b>' +
-          '<span class="vsetor">' + esc(AREA[v.areaId].n) + '</span>' +
-          (v.conectaria ? '<span class="tag trab">Vaga trabalhada pela Conectaria</span>' : '') + '</div>' +
-        '<h3>' + esc(v.titulo) + '</h3>' +
-        '<div class="vmeta"><span>' + I.pin + esc(v.local) + '</span><span>' + esc(v.regime) + '</span>' +
-          '<span>' + tempoRel(v.publicadaEm) + '</span></div>' +
-        '<p class="vres">' + esc(v.resumo) + '</p>' +
-      '</div>' +
-      '<div class="vdir">' + (foi ? '<span class="pill ok"><i></i>candidatura enviada</span>'
-        : '<span class="vver">Ver vaga ' + I.ch + '</span>') + '</div>' +
-    '</article>';
-  }).join('') + '</div>';
-  $$('[data-abrevaga]').forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
+  $('#listaVagas').innerHTML = '<div class="vagas">' + lista.map(v => cardVaga(v, c)).join('') + '</div>';
+  $$('#listaVagas [data-abrevaga]').forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
+}
+
+/* Card de vaga. Com `porque`, é uma recomendação: o resumo dá lugar ao
+   motivo em palavras, e o selo diz que combina, sem número nenhum. */
+function cardVaga(v, c, porque){
+  const e = empresaPor(v.empresaId), foi = c && jaCandidatou(c.id, v.id);
+  return '<article class="vaga' + (porque ? ' rec' : '') + '">' +
+    '<button class="stretch" data-abrevaga="' + v.id + '" aria-label="Abrir vaga ' + esc(v.titulo) + ' em ' + esc(e.n) + '"></button>' +
+    '<div class="conteudo">' +
+      '<div class="vtopo">' + logoEmp(e) + '<b>' + esc(e.n) + '</b>' +
+        '<span class="vsetor">' + esc(AREA[v.areaId].n) + '</span>' +
+        (porque ? '<span class="tag combina">' + I.spark + 'Combina com você</span>'
+          : v.conectaria ? '<span class="tag trab">Vaga trabalhada pela Conectaria</span>' : '') + '</div>' +
+      '<h3>' + esc(v.titulo) + '</h3>' +
+      '<div class="vmeta"><span>' + I.pin + esc(v.local) + '</span><span>' + esc(v.regime) + '</span>' +
+        '<span>' + tempoRel(v.publicadaEm) + '</span></div>' +
+      '<p class="vres">' + esc(porque || v.resumo) + '</p>' +
+    '</div>' +
+    '<div class="vdir">' + (foi ? '<span class="pill ok"><i></i>candidatura enviada</span>'
+      : '<span class="vver">Ver vaga ' + I.ch + '</span>') + '</div>' +
+  '</article>';
+}
+
+/* Bloco de recomendações. Serve a vitrine e Minhas candidaturas. */
+function blocoRecomendacoes(c, titulo, sub){
+  const recs = recomendacoesPara(c, 3);
+  if(!recs.length){
+    return (c.competencias || []).length
+      ? '<div class="avisoex">' + I.spark + '<div><b>Nenhuma vaga aberta combina com o seu perfil agora.</b> Quando entrar uma, ' +
+        'ela aparece aqui, e a equipe da Conectaria também pode indicar você.</div></div>'
+      : '<div class="avisoex">' + I.spark + '<div><b>Sem recomendações ainda.</b> Adicione ao seu perfil as atividades que você já fez e ' +
+        'a gente indica as vagas que combinam.</div><button class="btn g sm" data-ir="perfil">Completar perfil</button></div>';
+  }
+  return '<section class="recs"><div class="recstop"><h2>' + esc(titulo) + '</h2><p>' + esc(sub) + '</p></div>' +
+    '<div class="vagas">' + recs.map(({v, porque}) => cardVaga(v, c, porque)).join('') + '</div></section>';
 }
 
 function vVaga(id){
@@ -4334,10 +4450,10 @@ function confirmarCadastro(k){
   if(alvo){
     criarCandidatura(c.id, alvo, 'site', 'candidato');
     S.vagaAlvo = null; salvar();
-    ir('minhas'); toast('Cadastro pronto e candidatura enviada. A equipe fala com você pelo WhatsApp.');
+    ir('minhas'); toast('Candidatura enviada. Logo abaixo, outras vagas que combinam com o seu perfil.');
   } else {
     S.vagaAlvo = null; salvar();
-    ir('vagas'); toast('Cadastro pronto. Agora é só escolher a vaga e se candidatar.');
+    ir('vagas'); toast('Cadastro pronto. Separamos as vagas que combinam com você.');
   }
 }
 
@@ -4375,11 +4491,14 @@ function abrirEntrar(){
 function vMinhas(){
   const c = eu(), el = $('#v-minhas');
   const lista = candidaturasDoCandidato(c.id).sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm));
+  const recs = blocoRecomendacoes(c, lista.length ? 'Outras vagas que combinam com você' : 'Vagas que combinam com você',
+    'Pelas atividades, local e modelo de trabalho do seu perfil.');
   if(!lista.length){
-    el.innerHTML = '<div class="estado"><div class="ic">' + I.vazio + '</div>' +
+    el.innerHTML = '<div class="estado" style="padding-bottom:var(--s3)"><div class="ic">' + I.vazio + '</div>' +
       '<h3>Você ainda não se candidatou.</h3>' +
       '<p>Quando se candidatar, o andamento aparece aqui, etapa por etapa.</p>' +
-      '<button class="btn" data-ir="vagas">Ver vagas abertas</button></div>';
+      '<button class="btn" data-ir="vagas">Ver todas as vagas</button></div>' + recs;
+    ligarRecs(el);
     return;
   }
   const ativas = lista.filter(a => a.status === 'ativa').length;
@@ -4405,8 +4524,10 @@ function vMinhas(){
           '<button class="btn g sm" data-ir="vaga" data-irarg="' + v.id + '">Ver a vaga</button>' +
           '<a class="btn g sm" href="' + WHATS_EQUIPE + '" target="_blank" rel="noopener">Falar com a equipe</a></div>' +
       '</div>';
-    }).join('') + '</div>';
+    }).join('') + '</div>' + recs;
+  ligarRecs(el);
 }
+const ligarRecs = el => $$('.recs [data-abrevaga]', el).forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
 
 function vPerfil(){
   const c = eu();
@@ -4563,6 +4684,11 @@ function formEmpresa(id, aoSalvar){
   const nVagas = id ? DB.vagas.filter(v => v.empresaId === id).length : 0;
   abrirModal('<h2 id="mTit">' + (id ? 'Editar empresa' : 'Nova empresa') + '</h2>' +
     '<form class="form" id="fEmp" style="gap:var(--s2)" novalidate>' +
+      '<div class="logocampo"><span id="eLogoPrev"></span><div>' +
+        '<div class="acoesform"><label class="btn g sm" for="eLogoIn" id="eLogoBt">' + (e.logo ? 'Trocar logo' : 'Enviar logo') + '</label>' +
+        '<button type="button" class="link" id="eLogoTira"' + (e.logo ? '' : ' hidden') + '>Tirar logo</button></div>' +
+        '<input type="file" id="eLogoIn" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">' +
+        '<p class="hint" id="eLogoHint">PNG, JPG, WEBP ou SVG, de preferência quadrado. Sem logo, aparecem as iniciais.</p></div></div>' +
       '<div class="fg"><label for="eN">Nome da empresa</label><input id="eN" value="' + esc(e.n) + '"></div>' +
       '<div class="dupla"><div class="fg"><label for="eSetor">Setor</label><input id="eSetor" value="' + esc(e.setor) + '" placeholder="Varejo, Logística..."></div>' +
       '<div class="fg"><label for="eCid">Cidade</label><input id="eCid" value="' + esc(e.cidade) + '" placeholder="Recife, PE"></div></div>' +
@@ -4576,6 +4702,25 @@ function formEmpresa(id, aoSalvar){
       (id ? '<button class="btn g w perigo" type="button" id="eApagar"' + (nVagas ? ' disabled title="Tem vagas ligadas"' : '') + '>Apagar empresa</button>' +
         (nVagas ? '<p class="hint" style="text-align:center">Para apagar, encerre e apague as ' + plural(nVagas, 'vaga', 'vagas') + ' dela antes.</p>' : '') : '') +
       '<button class="btn g w" type="button" id="eCancEmp">Cancelar</button></form>');
+
+  let logo = e.logo || null;
+  const cor = e.c || CORES_EMP[DB.empresas.length % CORES_EMP.length];
+  const pintaLogo = () => {
+    $('#eLogoPrev').innerHTML = logoEmp({n:$('#eN').value.trim() || '?', c:cor, logo}, true);
+    $('#eLogoBt').textContent = logo ? 'Trocar logo' : 'Enviar logo';
+    $('#eLogoTira').hidden = !logo;
+  };
+  pintaLogo();
+  $('#eN').addEventListener('input', () => { if(!logo) pintaLogo(); });
+  $('#eLogoIn').onchange = async ev => {
+    const f = ev.target.files[0]; ev.target.value = '';
+    if(!f) return;
+    const h = $('#eLogoHint');
+    try{ logo = await reduzirImagem(f); h.textContent = f.name + ' pronto. Salve para aplicar.'; h.style.color = ''; }
+    catch(err){ h.textContent = err.message; h.style.color = 'var(--bl)'; }
+    pintaLogo();
+  };
+  $('#eLogoTira').onclick = () => { logo = null; $('#eLogoHint').textContent = 'Logo removido. Salve para aplicar.'; pintaLogo(); };
 
   const cn = $('#eCnpj');
   cn.oninput = () => {
@@ -4593,7 +4738,7 @@ function formEmpresa(id, aoSalvar){
   $('#fEmp').onsubmit = ev => {
     ev.preventDefault();
     const dados = {n:$('#eN').value.trim(), setor:$('#eSetor').value.trim(), cidade:$('#eCid').value.trim(),
-      site:$('#eSite').value.trim(), cnpj:cn.value.trim(), contato:$('#eCont').value.trim(), obs:$('#eObs').value.trim()};
+      site:$('#eSite').value.trim(), cnpj:cn.value.trim(), contato:$('#eCont').value.trim(), obs:$('#eObs').value.trim(), logo};
     const erro = !dados.n ? 'Escreva o nome da empresa.'
       : DB.empresas.some(x => x.id !== id && normalizar(x.n) === normalizar(dados.n)) ? 'Já existe uma empresa com este nome.'
       : dados.cnpj && !validarCNPJ(dados.cnpj) ? 'CNPJ com formato inválido. Corrija ou deixe em branco.' : '';
@@ -4601,7 +4746,7 @@ function formEmpresa(id, aoSalvar){
     let emp;
     if(id){ emp = empresaPor(id); Object.assign(emp, dados); }
     else {
-      emp = {id:novoId('e'), c:CORES_EMP[DB.empresas.length % CORES_EMP.length], criadaEm:iso(Date.now()), ...dados};
+      emp = {id:novoId('e'), c:cor, criadaEm:iso(Date.now()), ...dados};
       DB.empresas.push(emp);
     }
     salvar(); fecharModal();

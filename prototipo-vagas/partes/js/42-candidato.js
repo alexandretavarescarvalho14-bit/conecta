@@ -6,11 +6,14 @@
 function vMinhas(){
   const c = eu(), el = $('#v-minhas');
   const lista = candidaturasDoCandidato(c.id).sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm));
+  const recs = blocoRecomendacoes(c, lista.length ? 'Outras vagas que combinam com você' : 'Vagas que combinam com você',
+    'Pelas atividades, local e modelo de trabalho do seu perfil.');
   if(!lista.length){
-    el.innerHTML = '<div class="estado"><div class="ic">' + I.vazio + '</div>' +
+    el.innerHTML = '<div class="estado" style="padding-bottom:var(--s3)"><div class="ic">' + I.vazio + '</div>' +
       '<h3>Você ainda não se candidatou.</h3>' +
       '<p>Quando se candidatar, o andamento aparece aqui, etapa por etapa.</p>' +
-      '<button class="btn" data-ir="vagas">Ver vagas abertas</button></div>';
+      '<button class="btn" data-ir="vagas">Ver todas as vagas</button></div>' + recs;
+    ligarRecs(el);
     return;
   }
   const ativas = lista.filter(a => a.status === 'ativa').length;
@@ -36,8 +39,10 @@ function vMinhas(){
           '<button class="btn g sm" data-ir="vaga" data-irarg="' + v.id + '">Ver a vaga</button>' +
           '<a class="btn g sm" href="' + WHATS_EQUIPE + '" target="_blank" rel="noopener">Falar com a equipe</a></div>' +
       '</div>';
-    }).join('') + '</div>';
+    }).join('') + '</div>' + recs;
+  ligarRecs(el);
 }
+const ligarRecs = el => $$('.recs [data-abrevaga]', el).forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
 
 function vPerfil(){
   const c = eu();

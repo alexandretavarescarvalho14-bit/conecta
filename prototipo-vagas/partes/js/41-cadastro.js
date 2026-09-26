@@ -330,10 +330,10 @@ function confirmarCadastro(k){
   if(alvo){
     criarCandidatura(c.id, alvo, 'site', 'candidato');
     S.vagaAlvo = null; salvar();
-    ir('minhas'); toast('Cadastro pronto e candidatura enviada. A equipe fala com você pelo WhatsApp.');
+    ir('minhas'); toast('Candidatura enviada. Logo abaixo, outras vagas que combinam com o seu perfil.');
   } else {
     S.vagaAlvo = null; salvar();
-    ir('vagas'); toast('Cadastro pronto. Agora é só escolher a vaga e se candidatar.');
+    ir('vagas'); toast('Cadastro pronto. Separamos as vagas que combinam com você.');
   }
 }
 

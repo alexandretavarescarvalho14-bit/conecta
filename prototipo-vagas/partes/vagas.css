@@ -24,6 +24,27 @@
 .ctaeq p{color:rgba(230,241,248,.72);margin-top:6px;font-size:var(--md)}
 .ctaeq .btn{background:#fff;color:#0E2233}
 
+/* ── logo da empresa ── */
+/* fundo branco nos dois temas: logo de empresa é desenhado para fundo claro */
+.emplogo.img{background:#fff;border:1px solid var(--i14);overflow:hidden;padding:2px}
+.emplogo.img img{width:100%;height:100%;object-fit:contain;display:block}
+.emplogo.g{width:56px;height:56px;border-radius:14px;font-size:1rem}
+.logocampo{display:flex;align-items:center;gap:14px}
+.logocampo > div{display:grid;gap:4px;min-width:0}
+.logocampo label.btn{cursor:pointer}
+.logocampo:focus-within label.btn{outline:2px solid var(--ac3);outline-offset:2px}
+
+/* ── recomendações ── */
+.recs{margin:var(--s2) 0 var(--s4)}
+.recstop{margin-bottom:var(--s2)}
+.recstop h2, .todash{font-family:var(--d);font-size:var(--xl);text-wrap:balance}
+.recstop p{font-size:var(--sm);color:var(--i62);margin-top:4px}
+.todash{margin:0 0 var(--s2)}
+.vaga.rec{border-color:var(--ac4);background:linear-gradient(var(--veu2),var(--veu2)),var(--card)}
+.vaga.rec .vres{color:var(--i92)}
+.tag.combina{border-color:transparent;background:var(--ok-bg);color:var(--ok-fg);font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.tag.combina svg{width:12px;height:12px}
+
 /* ── cadastro ── */
 .comofunc{list-style:none;display:grid;gap:10px;margin-top:var(--s2);font-size:var(--sm);color:var(--i72);line-height:1.5;counter-reset:cf}
 .comofunc li{display:grid;grid-template-columns:22px 1fr;gap:8px}

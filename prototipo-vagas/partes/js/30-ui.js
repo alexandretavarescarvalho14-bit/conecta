@@ -19,6 +19,7 @@ function mascararWhats(v){
 const emailValido = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || '').trim());
 
 function logoEmp(e, grande){
+  if(e.logo) return '<span class="emplogo img' + (grande ? ' g' : '') + '" aria-hidden="true"><img src="' + esc(e.logo) + '" alt=""></span>';
   const ini = e.n.replace(/[^\p{L}\s]/gu, '').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
   return '<span class="emplogo' + (grande ? ' g' : '') + '" style="background:' + esc(e.c || '#189CCC') + '" aria-hidden="true">' + esc(ini) + '</span>';
 }
@@ -134,6 +135,30 @@ function blocoFit(rec, pesos){
     evidencias([...rec.tecnico_ev, ...rec.contexto_ev]) +
     '<p class="hint" style="margin-top:8px">Calculado ' + tempoRel(rec.geradoEm) + '. Técnico compara as competências com os requisitos da vaga; contexto compara local, modelo e, quando a vaga tem faixa, a pretensão.</p>' +
     '</div>';
+}
+
+/* Logo enviada pela Conectaria: reduzida para no máximo 200 px antes de
+   guardar. O teste guarda tudo no navegador, que tem pouco espaço, e o
+   logo nunca aparece maior que isso. No app real vai para o storage. */
+const LOGO_MAX_PX = 200, LOGO_MAX_BYTES = 5 * 1024 * 1024;
+function reduzirImagem(arquivo){
+  return new Promise((ok, falha) => {
+    if(!/^image\/(png|jpe?g|webp|gif|svg\+xml)$/.test(arquivo.type)) return falha(new Error('Use PNG, JPG, WEBP ou SVG.'));
+    if(arquivo.size > LOGO_MAX_BYTES) return falha(new Error('A imagem passa de 5 MB. Use uma versão menor do logo.'));
+    const url = URL.createObjectURL(arquivo), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, LOGO_MAX_PX / Math.max(img.naturalWidth || LOGO_MAX_PX, img.naturalHeight || LOGO_MAX_PX));
+      const cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round((img.naturalWidth || LOGO_MAX_PX) * k));
+      cv.height = Math.max(1, Math.round((img.naturalHeight || LOGO_MAX_PX) * k));
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      // JPG não tem transparência, então fica menor como JPG; o resto vira PNG para manter o fundo
+      ok(/jpe?g/.test(arquivo.type) ? cv.toDataURL('image/jpeg', .86) : cv.toDataURL('image/png'));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); falha(new Error('Não consegui abrir esta imagem.')); };
+    img.src = url;
+  });
 }
 
 async function copiar(txt){

@@ -19,13 +19,18 @@ function vVagas(){
   const porArea = {};
   pub.forEach(v => { porArea[v.areaId] = (porArea[v.areaId] || 0) + 1; });
   const areas = areasOrdenadas().filter(a => porArea[a.id]);
+  const c = eu();
 
   $('#v-vagas').innerHTML =
   '<section class="heroc hv">' +
-    '<h1>Vagas conectadas a você</h1>' +
-    '<p>Oportunidades das empresas parceiras da Conectaria. Cadastre-se uma vez, candidate-se com um clique ' +
-    'e acompanhe cada etapa por aqui. A nossa equipe fala com você pelo WhatsApp.</p>' +
+    (c ? '<h1>Olá, ' + esc(c.nome.split(' ')[0]) + '</h1>' +
+      '<p>Separamos as vagas que combinam com o seu perfil. Todas as outras estão logo abaixo.</p>'
+    : '<h1>Vagas conectadas a você</h1>' +
+      '<p>Oportunidades das empresas parceiras da Conectaria. Cadastre-se uma vez, candidate-se com um clique ' +
+      'e acompanhe cada etapa por aqui. A nossa equipe fala com você pelo WhatsApp.</p>') +
   '</section>' +
+  (c ? blocoRecomendacoes(c, 'Recomendadas para você', 'Pelas atividades, local e modelo de trabalho do seu perfil.') : '') +
+  (c ? '<h2 class="todash">Todas as vagas</h2>' : '') +
   '<div class="buscador">' +
     '<div class="bfield">' + I.lupa + '<div style="flex:1;min-width:0">' +
       '<label for="q">Cargo, empresa ou cidade</label>' +
@@ -44,6 +49,7 @@ function vVagas(){
     '<a class="btn" href="' + WHATS_EQUIPE + '" target="_blank" rel="noopener">Falar com a equipe</a>' +
   '</section>';
 
+  $$('#v-vagas .recs [data-abrevaga]').forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
   $('#q').oninput = debounce(e => { S.q = e.target.value; renderListaVagas(); }, 160);
   $$('[data-farea]').forEach(b => b.onclick = () => {
     S.area = b.dataset.farea || null;
@@ -63,24 +69,43 @@ function renderListaVagas(){
     $('#limpaVitrine').onclick = () => { S.q = ''; S.area = null; vVagas(); };
     return;
   }
-  $('#listaVagas').innerHTML = '<div class="vagas">' + lista.map(v => {
-    const e = empresaPor(v.empresaId), foi = c && jaCandidatou(c.id, v.id);
-    return '<article class="vaga">' +
-      '<button class="stretch" data-abrevaga="' + v.id + '" aria-label="Abrir vaga ' + esc(v.titulo) + ' em ' + esc(e.n) + '"></button>' +
-      '<div class="conteudo">' +
-        '<div class="vtopo">' + logoEmp(e) + '<b>' + esc(e.n) + '</b>' +
-          '<span class="vsetor">' + esc(AREA[v.areaId].n) + '</span>' +
-          (v.conectaria ? '<span class="tag trab">Vaga trabalhada pela Conectaria</span>' : '') + '</div>' +
-        '<h3>' + esc(v.titulo) + '</h3>' +
-        '<div class="vmeta"><span>' + I.pin + esc(v.local) + '</span><span>' + esc(v.regime) + '</span>' +
-          '<span>' + tempoRel(v.publicadaEm) + '</span></div>' +
-        '<p class="vres">' + esc(v.resumo) + '</p>' +
-      '</div>' +
-      '<div class="vdir">' + (foi ? '<span class="pill ok"><i></i>candidatura enviada</span>'
-        : '<span class="vver">Ver vaga ' + I.ch + '</span>') + '</div>' +
-    '</article>';
-  }).join('') + '</div>';
-  $$('[data-abrevaga]').forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
+  $('#listaVagas').innerHTML = '<div class="vagas">' + lista.map(v => cardVaga(v, c)).join('') + '</div>';
+  $$('#listaVagas [data-abrevaga]').forEach(b => b.onclick = () => ir('vaga', b.dataset.abrevaga));
+}
+
+/* Card de vaga. Com `porque`, é uma recomendação: o resumo dá lugar ao
+   motivo em palavras, e o selo diz que combina, sem número nenhum. */
+function cardVaga(v, c, porque){
+  const e = empresaPor(v.empresaId), foi = c && jaCandidatou(c.id, v.id);
+  return '<article class="vaga' + (porque ? ' rec' : '') + '">' +
+    '<button class="stretch" data-abrevaga="' + v.id + '" aria-label="Abrir vaga ' + esc(v.titulo) + ' em ' + esc(e.n) + '"></button>' +
+    '<div class="conteudo">' +
+      '<div class="vtopo">' + logoEmp(e) + '<b>' + esc(e.n) + '</b>' +
+        '<span class="vsetor">' + esc(AREA[v.areaId].n) + '</span>' +
+        (porque ? '<span class="tag combina">' + I.spark + 'Combina com você</span>'
+          : v.conectaria ? '<span class="tag trab">Vaga trabalhada pela Conectaria</span>' : '') + '</div>' +
+      '<h3>' + esc(v.titulo) + '</h3>' +
+      '<div class="vmeta"><span>' + I.pin + esc(v.local) + '</span><span>' + esc(v.regime) + '</span>' +
+        '<span>' + tempoRel(v.publicadaEm) + '</span></div>' +
+      '<p class="vres">' + esc(porque || v.resumo) + '</p>' +
+    '</div>' +
+    '<div class="vdir">' + (foi ? '<span class="pill ok"><i></i>candidatura enviada</span>'
+      : '<span class="vver">Ver vaga ' + I.ch + '</span>') + '</div>' +
+  '</article>';
+}
+
+/* Bloco de recomendações. Serve a vitrine e Minhas candidaturas. */
+function blocoRecomendacoes(c, titulo, sub){
+  const recs = recomendacoesPara(c, 3);
+  if(!recs.length){
+    return (c.competencias || []).length
+      ? '<div class="avisoex">' + I.spark + '<div><b>Nenhuma vaga aberta combina com o seu perfil agora.</b> Quando entrar uma, ' +
+        'ela aparece aqui, e a equipe da Conectaria também pode indicar você.</div></div>'
+      : '<div class="avisoex">' + I.spark + '<div><b>Sem recomendações ainda.</b> Adicione ao seu perfil as atividades que você já fez e ' +
+        'a gente indica as vagas que combinam.</div><button class="btn g sm" data-ir="perfil">Completar perfil</button></div>';
+  }
+  return '<section class="recs"><div class="recstop"><h2>' + esc(titulo) + '</h2><p>' + esc(sub) + '</p></div>' +
+    '<div class="vagas">' + recs.map(({v, porque}) => cardVaga(v, c, porque)).join('') + '</div></section>';
 }
 
 function vVaga(id){
